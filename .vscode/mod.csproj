@@ -7,7 +7,7 @@
 		<!-- Modify [RootNamespace], [AssemblyName], [OutputPath], [VersionPrefix] -->
 		<RootNamespace>SecondFloor</RootNamespace>
 		<AssemblyName>SecondFloor</AssemblyName>
-		<OutputPath>../1.5/Common/Assemblies</OutputPath>
+		<OutputPath>../1.6/Common/Assemblies</OutputPath>
 		<VersionPrefix>0.1.0.0</VersionPrefix>
 
 		<!-- Do not generate pdb file -->

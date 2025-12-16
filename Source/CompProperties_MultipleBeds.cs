@@ -35,9 +35,8 @@ namespace SecondFloor
             multipleBeds.Add(this.parent);
         }
 
-        public override void PostDeSpawn(Map map)
+        public void PostDeSpawn(Map map)
         {
-            base.PostDeSpawn(map);
             multipleBeds.Remove(this.parent);
         }
 

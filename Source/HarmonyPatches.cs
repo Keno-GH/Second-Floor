@@ -47,7 +47,7 @@ namespace SecondFloor
 
     // Remove the SoakingWet thought if the pawn is in a bed with RemoveSoakingWet set to true
     // Weather thoughts are not memories, so they need to be removed by using weatherManager.CurWeatherLerped
-    [HarmonyPatch(typeof(Pawn_MindState), "MindStateTick")]
+    /* [HarmonyPatch(typeof(Pawn_MindState), "MindStateTick")]
     public class Pawn_MindState_MindStateTick
     {
         public static void Postfix(Pawn_MindState __instance)
@@ -66,7 +66,7 @@ namespace SecondFloor
                 }
             }
         }
-    }
+    } */ // Unecessary since SoakingWet is only applied when outside and our second floors will always require a roof
 
     // Remove memory thoughts when pawns sleep in a second floor bed with the appropriate settings
     [HarmonyPatch(typeof(Toils_LayDown), "ApplyBedThoughts", new Type[] { typeof(Pawn), typeof(Building_Bed) })]
@@ -193,49 +193,31 @@ namespace SecondFloor
         }
     }
 
-    // Transpiler to set the pawn position to the bed position if the bed has CompMultipleBeds
-    [HarmonyPatch]
-    public static class LayDown_InitAction_Patch
+    // Postfix to set the pawn position to the bed position if the bed has CompMultipleBeds
+    [HarmonyPatch(typeof(Toils_LayDown), "LayDown")]
+    public static class Toils_LayDown_LayDown_Patch
     {
-        public static MethodBase TargetMethod()
+        public static void Postfix(Toil __result)
         {
-            foreach (var nested in typeof(Toils_LayDown).GetNestedTypes(AccessTools.all))
-            {
-                var method = nested.GetMethods(AccessTools.all).Where(x => x.Name.Contains("<LayDown>")).FirstOrDefault();
-                if (method != null)
-                {
-                    return method;
-                }
-            }
-            return null;
-        }
+            if (__result == null) return;
 
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
-        {
-            var cellRectContains = AccessTools.Method(typeof(CellRect), nameof(CellRect.Contains), new Type[] { typeof(IntVec3) });
-            var codes = codeInstructions.ToList();
-            for (var i = 0; i < codes.Count; i++)
+            Action originalInitAction = __result.initAction;
+            __result.initAction = delegate
             {
-                var code = codes[i];
-                yield return code;
-                if (code.opcode == OpCodes.Brtrue_S && codes[i - 1].Calls(cellRectContains))
+                Pawn actor = __result.actor;
+                if (actor != null)
                 {
-                    yield return new CodeInstruction(OpCodes.Ldloc_2);  // Load Building_Bed instance
-                    yield return new CodeInstruction(OpCodes.Ldloc_0);  // Load Pawn instance
-                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(LayDown_InitAction_Patch), nameof(SetBedPositionIfComp)));
-                    yield return new CodeInstruction(OpCodes.Brfalse_S, code.operand);
+                    // Logic to fix position before the original check runs
+                    Building_Bed bed = actor.CurrentBed();
+                    if (bed != null && bed.GetComp<CompMultipleBeds>() != null)
+                    {
+                        actor.Position = bed.Position;
+                    }
                 }
-            }
-        }
 
-        public static bool SetBedPositionIfComp(Building_Bed bed, Pawn pawn)
-        {
-            if (bed.GetComp<CompMultipleBeds>() != null)
-            {
-                pawn.Position = bed.Position;
-                return false;
-            }
-            return true;
+                // Run original initAction
+                originalInitAction?.Invoke();
+            };
         }
     }
 

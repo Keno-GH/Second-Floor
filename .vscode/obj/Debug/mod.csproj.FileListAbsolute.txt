@@ -6,3 +6,4 @@ C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\.vscode
 C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\1.5\Assemblies\SecondFloor.dll
 C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\.vscode\obj\Debug\SecondFloor.dll
 C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\1.5\Common\Assemblies\SecondFloor.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\1.6\Common\Assemblies\SecondFloor.dll

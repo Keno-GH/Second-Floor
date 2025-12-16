@@ -147,7 +147,7 @@ namespace SecondFloor
         }
     }
     // PlaceWorker that limits building to one per 40 tiles in a whole construction
-    public class PlaceWorkerOnlyOnePerFortyTilesInBuilding : PlaceWorker // I can't make this work, hopefully someone more intelligent than me can pick this up in the future (maybe me in the future)
+    /* public class PlaceWorkerOnlyOnePerFortyTilesInBuilding : PlaceWorker // I can't make this work, hopefully someone more intelligent than me can pick this up in the future (maybe me in the future)
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
@@ -213,5 +213,5 @@ namespace SecondFloor
     
             return true;
         }
-    }
+    } */
 }
