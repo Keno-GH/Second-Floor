@@ -1,0 +1,10 @@
+C:\Users\neocv\source\repos\source\SecondFloor\obj\Debug\SecondFloor.csproj.AssemblyReference.cache
+C:\Users\neocv\source\repos\source\SecondFloor\obj\Debug\SecondFloor.csproj.CoreCompileInputs.cache
+C:\Users\neocv\source\repos\1.4\Assemblies\SecondFloor.dll
+C:\Users\neocv\source\repos\1.4\Assemblies\SecondFloor.pdb
+C:\Users\neocv\source\repos\source\SecondFloor\obj\Debug\SecondFloor.dll
+C:\Users\neocv\source\repos\source\SecondFloor\obj\Debug\SecondFloor.pdb
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\1.4\Assemblies\SecondFloor.dll
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\source\SecondFloor\obj\Debug\SecondFloor.csproj.AssemblyReference.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\source\SecondFloor\obj\Debug\SecondFloor.csproj.CoreCompileInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\source\SecondFloor\obj\Debug\SecondFloor.dll
