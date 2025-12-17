@@ -89,6 +89,17 @@ namespace SecondFloor
             if (effect.RemoveSleptInBedroom) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptInBedroom);
             //if (effect.RemoveSunlightSensitivity_Mild) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SunlightSensitivity_Mild);
 
+            var upgradesComp = building_Bed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp != null)
+            {
+                foreach (var upgrade in upgradesComp.upgrades)
+                {
+                    if (upgrade.removeSleepDisturbed)
+                    {
+                        actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleepDisturbed);
+                    }
+                }
+            }
         }
     }
 

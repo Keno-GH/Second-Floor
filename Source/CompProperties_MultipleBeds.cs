@@ -25,7 +25,22 @@ namespace SecondFloor
 
         public CompProperties_MultipleBeds Props => props as CompProperties_MultipleBeds;
 
-        public int bedCount => Props.bedCount;
+        public int bedCount
+        {
+            get
+            {
+                int count = Props.bedCount;
+                var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
+                {
+                    foreach (var upgrade in upgradesComp.upgrades)
+                    {
+                        count += upgrade.bedCountOffset;
+                    }
+                }
+                return count;
+            }
+        }
 
         public Graphic bedCounts;
 

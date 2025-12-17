@@ -1,0 +1,33 @@
+<Defs>
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_NoTemperaturePenalties</defName>
+        <label>No Temperature Penalties</label>
+        <description>Removes temperature-related sleep penalties for pawns sleeping in this floor. - This is for testing only and has no effect as of now.</description>
+        <spaceCost>50</spaceCost>
+    </SecondFloor.StaircaseUpgradeDef>
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_OnlyForBasements</defName>
+        <label>Only For Basements</label>
+        <description>This upgrade only shows up for basements.</description>
+        <spaceCost>50</spaceCost>
+        <applyToStairs>
+            <li>SF_Basement</li>
+        </applyToStairs>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_ExtraBeds</defName>
+        <label>Extra Beds</label>
+        <description>Adds 2 extra beds to the staircase.</description>
+        <spaceCost>20</spaceCost>
+        <bedCountOffset>2</bedCountOffset>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_Soundproofing</defName>
+        <label>Soundproofing</label>
+        <description>Prevents sleep disturbed thoughts.</description>
+        <spaceCost>10</spaceCost>
+        <removeSleepDisturbed>true</removeSleepDisturbed>
+    </SecondFloor.StaircaseUpgradeDef>
+</Defs>
