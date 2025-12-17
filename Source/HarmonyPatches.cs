@@ -68,41 +68,6 @@ namespace SecondFloor
         }
     } */ // Unecessary since SoakingWet is only applied when outside and our second floors will always require a roof
 
-    // Remove memory thoughts when pawns sleep in a second floor bed with the appropriate settings
-    [HarmonyPatch(typeof(Toils_LayDown), "ApplyBedThoughts", new Type[] { typeof(Pawn), typeof(Building_Bed) })]
-    public class Toils_LayDown_ApplyBedThoughts
-    {
-        public static void Postfix(Pawn actor)
-        {
-            Building_Bed building_Bed = actor.CurrentBed();
-            if (building_Bed == null) return;
-            var modExt = building_Bed.def.GetModExtension<SecondFloorModExtension>();
-            if (modExt == null) return;
-
-            var effect = building_Bed.def.GetModExtension<SecondFloorModExtension>();
-            if (effect == null) return;
-            if (effect.RemoveSleptOutside) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptOutside);
-            if (effect.RemoveSleptInCold) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptInCold);
-            if (effect.RemoveSleptInHeat) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptInHeat);
-            if (effect.RemoveSleptInBarracks) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptInBarracks);
-            if (effect.RemoveSleepDisturbed) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleepDisturbed);
-            if (effect.RemoveSleptInBedroom) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleptInBedroom);
-            //if (effect.RemoveSunlightSensitivity_Mild) actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SunlightSensitivity_Mild);
-
-            var upgradesComp = building_Bed.GetComp<CompStaircaseUpgrades>();
-            if (upgradesComp != null)
-            {
-                foreach (var upgrade in upgradesComp.upgrades)
-                {
-                    if (upgrade.removeSleepDisturbed)
-                    {
-                        actor.needs.mood.thoughts.memories.RemoveMemoriesOfDef(ThoughtDefOf.SleepDisturbed);
-                    }
-                }
-            }
-        }
-    }
-
 
     // Remove SharedBed Tought by postfixing the ThoughtWorker
     // SharedBed is a ThoughtWorker that checks if a pawn is sharing a bed with another pawn
@@ -316,6 +281,49 @@ namespace SecondFloor
                 }
             }
             return false;
+        }
+    }
+
+    // Remove MemoryThoughts based on bed mod extensions and staircase upgrades
+    [HarmonyPatch(typeof(MemoryThoughtHandler), "TryGainMemory", new Type[] { typeof(Thought_Memory), typeof(Pawn) })]
+    public static class MemoryThoughtHandler_TryGainMemory_Patch
+    {
+        public static bool Prefix(MemoryThoughtHandler __instance, Thought_Memory newThought)
+        {
+            Pawn pawn = __instance.pawn;
+            if (pawn == null) return true;
+
+            Building_Bed bed = pawn.CurrentBed();
+            if (bed == null) return true;
+
+            var modExt = bed.def.GetModExtension<SecondFloorModExtension>();
+            if (modExt == null) return true;
+
+            if (newThought.def == ThoughtDefOf.SleptOutside && modExt.RemoveSleptOutside) return false;
+            if (newThought.def == ThoughtDefOf.SleptInCold && modExt.RemoveSleptInCold) return false;
+            if (newThought.def == ThoughtDefOf.SleptInHeat && modExt.RemoveSleptInHeat) return false;
+            if (newThought.def == ThoughtDefOf.SleptInBarracks && modExt.RemoveSleptInBarracks) return false;
+            if (newThought.def == ThoughtDefOf.SleptInBedroom && modExt.RemoveSleptInBedroom) return false;
+
+            if (newThought.def == ThoughtDefOf.SleepDisturbed)
+            {
+                if (modExt.RemoveSleepDisturbed) return false;
+
+                // Check for Upgrades
+                var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
+                {
+                    foreach (var upgrade in upgradesComp.upgrades)
+                    {
+                        if (upgrade.removeSleepDisturbed)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
     }
 
