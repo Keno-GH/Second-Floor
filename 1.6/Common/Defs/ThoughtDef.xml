@@ -20,6 +20,17 @@
   </ThoughtDef>
 
   <ThoughtDef ParentName="SF_SleepingBase">
+    <defName>SF_Barracks_Room</defName>
+    <stages>
+      <li>
+        <label>Rested in an upstairs barracks</label>
+        <description>I slept in a crowded room on a second floor. It's better than sleeping on the ground, but I'd prefer my own room.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef ParentName="SF_SleepingBase">
     <defName>SF_Low_Quality_Basement</defName>
     <stages>
       <li>

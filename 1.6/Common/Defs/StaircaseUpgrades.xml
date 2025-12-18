@@ -24,6 +24,15 @@
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_Barracks</defName>
+        <label>Barracks</label>
+        <description>Doubles the amount of beds in the staircase, turning it into a barracks.</description>
+        <spaceCost>20</spaceCost>
+        <bedCountMultiplier>2</bedCountMultiplier>
+        <thoughtReplacement>SF_Barracks_Room</thoughtReplacement>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_Soundproofing</defName>
         <label>Soundproofing</label>
         <description>Prevents sleep disturbed thoughts.</description>

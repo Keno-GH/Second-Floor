@@ -29,7 +29,7 @@ namespace SecondFloor
         {
             get
             {
-                int count = Props.bedCount;
+                float count = Props.bedCount;
                 var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
                 if (upgradesComp != null)
                 {
@@ -37,8 +37,12 @@ namespace SecondFloor
                     {
                         count += upgrade.bedCountOffset;
                     }
+                    foreach (var upgrade in upgradesComp.upgrades)
+                    {
+                        count *= upgrade.bedCountMultiplier;
+                    }
                 }
-                return count;
+                return (int)count;
             }
         }
 

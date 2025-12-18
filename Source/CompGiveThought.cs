@@ -41,7 +41,22 @@ namespace SecondFloor
                 if (bed?.CurOccupants == null) return;
                 if (bed?.GetComp<CompRefuelable>() != null && !bed.GetComp<CompRefuelable>().HasFuel) return; // Skip if bed is unfueled
                 if (bed?.GetComp<CompPowerTrader>() != null && !bed.GetComp<CompPowerTrader>().PowerOn) return; // Skip if bed is unpowered
-                foreach (var sleppingOccupant in bed.CurOccupants) sleppingOccupant.needs.mood.thoughts.memories.TryGainMemory(Props.thoughtDef);
+
+                ThoughtDef thoughtToGive = Props.thoughtDef;
+                var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
+                {
+                    foreach (var upgrade in upgradesComp.upgrades)
+                    {
+                        if (upgrade.thoughtReplacement != null)
+                        {
+                            thoughtToGive = upgrade.thoughtReplacement;
+                            break;
+                        }
+                    }
+                }
+
+                foreach (var sleppingOccupant in bed.CurOccupants) sleppingOccupant.needs.mood.thoughts.memories.TryGainMemory(thoughtToGive);
             }
         }
 

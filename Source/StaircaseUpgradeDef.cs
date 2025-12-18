@@ -9,6 +9,8 @@ namespace SecondFloor
         public float spaceCost;
         public List<ThingDef> applyToStairs;
         public int bedCountOffset;
+        public float bedCountMultiplier = 1f;
         public bool removeSleepDisturbed;
+        public ThoughtDef thoughtReplacement;
     }
 }

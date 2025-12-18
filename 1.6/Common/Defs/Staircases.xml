@@ -255,7 +255,7 @@
     <comps>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
-        <bedCount>4</bedCount>
+        <bedCount>2</bedCount>
       </li>
       <li Class="CompProperties_Refuelable">
         <fuelConsumptionRate>25</fuelConsumptionRate>
