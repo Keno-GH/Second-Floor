@@ -11,6 +11,7 @@ namespace SecondFloor
         public int bedCountOffset;
         public float bedCountMultiplier = 1f;
         public bool removeSleepDisturbed;
-        public ThoughtDef thoughtReplacement;
+        public ThoughtDef thoughtReplacement; // Keep for backwards compatibility
+        public int impressivenessLevel = 0; // New: Adds to the impressiveness level (0-9)
     }
 }

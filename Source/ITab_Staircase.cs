@@ -42,6 +42,67 @@ namespace SecondFloor
                 listing.Label($"Bedrooms: {bedsComp.bedCount}");
             }
 
+            // Calculate impressiveness level and room type
+            int impressivenessLevel = 1; // Default "dull"
+            string roomType = "Private Rooms";
+            bool isBarracks = false;
+            bool isBasement = false;
+
+            // Check if it's a basement
+            CompProperties_GiveThoughtStairs thoughtComp = SelThing.TryGetComp<CompGiveThoughtStairs>()?.Props;
+            if (thoughtComp != null && thoughtComp.thoughtDef != null)
+            {
+                isBasement = thoughtComp.thoughtDef.defName == "SF_Low_Quality_Basement";
+            }
+
+            // Calculate impressiveness from upgrades
+            int totalImpressivenessBonus = 0;
+            foreach (var upgrade in comp.upgrades)
+            {
+                totalImpressivenessBonus += upgrade.impressivenessLevel;
+                if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
+                {
+                    isBarracks = true;
+                }
+            }
+            impressivenessLevel = Mathf.Clamp(1 + totalImpressivenessBonus, 0, 9);
+
+            // Check if naturally a barracks (multiple beds)
+            if (!isBarracks && bedsComp != null && bedsComp.bedCount > 1)
+            {
+                isBarracks = true;
+            }
+
+            // Determine room type description
+            if (isBasement)
+            {
+                roomType = isBarracks ? "Basement Barracks" : "Basement";
+            }
+            else
+            {
+                roomType = isBarracks ? "Barracks" : "Private Rooms";
+            }
+
+            // Display impressiveness and room type
+            string[] impressivenessLabels = new string[]
+            {
+                "Awful",
+                "Dull",
+                "Mediocre",
+                "Decent",
+                "Slightly Impressive",
+                "Impressive",
+                "Very Impressive",
+                "Extremely Impressive",
+                "Unbelievably Impressive",
+                "Wondrously Impressive"
+            };
+            
+            listing.Label($"Room Type: {roomType}");
+            listing.Label($"Impressiveness: {impressivenessLabels[impressivenessLevel]}");
+
+            listing.Gap();
+
             float totalSpace = comp.GetTotalSpace();
             float usedSpace = comp.GetUsedSpace();
             

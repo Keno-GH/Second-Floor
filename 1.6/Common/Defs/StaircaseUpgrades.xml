@@ -39,4 +39,38 @@
         <spaceCost>10</spaceCost>
         <removeSleepDisturbed>true</removeSleepDisturbed>
     </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- Impressiveness upgrades -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_BasicDecoration</defName>
+        <label>Basic Decoration</label>
+        <description>Adds simple decorations to improve the room's impressiveness slightly.</description>
+        <spaceCost>15</spaceCost>
+        <impressivenessLevel>1</impressivenessLevel>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_ComfortableUpgrade</defName>
+        <label>Comfortable Upgrade</label>
+        <description>Upgrades furniture and amenities to make the room more comfortable.</description>
+        <spaceCost>25</spaceCost>
+        <impressivenessLevel>2</impressivenessLevel>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_FineDecoration</defName>
+        <label>Fine Decoration</label>
+        <description>Adds fine art and decorations to make the room impressive.</description>
+        <spaceCost>35</spaceCost>
+        <impressivenessLevel>3</impressivenessLevel>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_LuxuryFinishing</defName>
+        <label>Luxury Finishing</label>
+        <description>High-end materials and luxury amenities make this room extremely impressive.</description>
+        <spaceCost>50</spaceCost>
+        <impressivenessLevel>4</impressivenessLevel>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
