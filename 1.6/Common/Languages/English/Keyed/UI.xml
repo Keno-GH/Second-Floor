@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
   <TabStaircase>Staircase</TabStaircase>
+  
+  <!-- Upgrade system messages -->
+  <SF_UpgradeInstalled>{0} upgrade installed on {1}!</SF_UpgradeInstalled>
+  <SF_UpgradePlanned>{0} upgrade construction planned.</SF_UpgradePlanned>
+  <SF_CannotPlaceBlueprint>Cannot place upgrade blueprint here.</SF_CannotPlaceBlueprint>
+  <SF_NotEnoughSpaceMessage>Not enough space for this upgrade!</SF_NotEnoughSpaceMessage>
+  
+  <!-- PlaceWorker messages -->
+  <SF_MustPlaceOnStaircase>Must be placed on a staircase.</SF_MustPlaceOnStaircase>
+  <SF_AlreadyHasUpgrade>This staircase already has the {0} upgrade.</SF_AlreadyHasUpgrade>
+  <SF_UpgradeNotForThisStaircase>This upgrade cannot be applied to this type of staircase.</SF_UpgradeNotForThisStaircase>
+  <SF_NotEnoughSpace>Not enough space! Need {0}, have {1}.</SF_NotEnoughSpace>
+  <SF_UpgradeAlreadyPlanned>The {0} upgrade is already planned for this staircase.</SF_UpgradeAlreadyPlanned>
+  <SF_UpgradeUnderConstruction>The {0} upgrade is already under construction.</SF_UpgradeUnderConstruction>
+  
+  <!-- Building inspection -->
+  <SF_UpgradeType>Upgrade: {0}</SF_UpgradeType>
 </LanguageData>

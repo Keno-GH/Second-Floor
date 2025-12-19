@@ -1,6 +1,6 @@
 is_global = true
 build_property.RootNamespace = SecondFloor
-build_property.ProjectDir = C:\Program Files (x86)\Steam\steamapps\common\Rimworld\Mods\Second Floor\.vscode\
+build_property.ProjectDir = C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Second Floor\.vscode\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.CsWinRTUseWindowsUIXamlProjections = false

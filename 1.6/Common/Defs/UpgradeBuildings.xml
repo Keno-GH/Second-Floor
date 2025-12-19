@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <!-- 
+    =====================================================
+    Base ThingDef for Staircase Upgrade Buildings
+    =====================================================
+    These are "phantom" buildings that exist in the BuildingOnTop altitude layer.
+    When construction completes, they apply the upgrade to the parent staircase and despawn.
+    They use vanilla construction mechanics (blueprints, frames, materials, work, skill checks).
+    -->
+    
+    <ThingDef Name="SF_UpgradeBuildingBase" Abstract="True">
+        <thingClass>SecondFloor.Building_StaircaseUpgrade</thingClass>
+        <category>Building</category>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>Standable</passability>
+        <selectable>true</selectable>
+        <useHitPoints>false</useHitPoints>
+        <building>
+            <isEdifice>false</isEdifice>
+            <artificialForMeditationPurposes>false</artificialForMeditationPurposes>
+        </building>
+        <constructEffect>ConstructMetal</constructEffect>
+        <placeWorkers>
+            <li>SecondFloor.PlaceWorker_OnStaircase</li>
+        </placeWorkers>
+        <!-- designationCategory is required for RimWorld to auto-generate blueprint and frame defs -->
+        <!-- The PlaceWorker prevents manual placement anyway since it requires a staircase -->
+        <designationCategory>Misc</designationCategory>
+        <size>(1,1)</size>
+        <graphicData>
+            <!-- Use a vanilla texture until we have custom ones -->
+            <texPath>Things/Building/Misc/MultiAnalyzer</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+    </ThingDef>
+
+    <!-- 
+    =====================================================
+    Individual Upgrade Buildings
+    =====================================================
+    -->
+    
+    <!-- Extra Beds / Extra Room Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ExtraBeds</defName>
+        <label>extra room upgrade</label>
+        <description>Construct an additional private room with a double bed.</description>
+        <statBases>
+            <WorkToBuild>3000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>50</WoodLog>
+            <Cloth>20</Cloth>
+        </costList>
+        <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_ExtraBeds</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Barracks Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Barracks</defName>
+        <label>barracks upgrade</label>
+        <description>Convert the upstairs into a barracks with double the bed capacity.</description>
+        <statBases>
+            <WorkToBuild>4000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>80</WoodLog>
+            <Cloth>30</Cloth>
+        </costList>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_Barracks</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Soundproofing Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Soundproofing</defName>
+        <label>soundproofing upgrade</label>
+        <description>Install soundproofing materials to prevent sleep disturbance.</description>
+        <statBases>
+            <WorkToBuild>2500</WorkToBuild>
+        </statBases>
+        <costList>
+            <Cloth>40</Cloth>
+            <WoodLog>20</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_Soundproofing</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Basic Decoration Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_BasicDecoration</defName>
+        <label>basic decoration upgrade</label>
+        <description>Add simple decorations to improve the room's impressiveness.</description>
+        <statBases>
+            <WorkToBuild>1500</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>30</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_BasicDecoration</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Comfortable Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ComfortableUpgrade</defName>
+        <label>comfortable upgrade</label>
+        <description>Upgrade furniture and amenities for improved comfort.</description>
+        <statBases>
+            <WorkToBuild>3500</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>40</WoodLog>
+            <Cloth>25</Cloth>
+            <Steel>20</Steel>
+        </costList>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_ComfortableUpgrade</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Fine Decoration Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_FineDecoration</defName>
+        <label>fine decoration upgrade</label>
+        <description>Add fine art and decorations for an impressive room.</description>
+        <statBases>
+            <WorkToBuild>5000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>60</WoodLog>
+            <Silver>50</Silver>
+        </costList>
+        <constructionSkillPrerequisite>7</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_FineDecoration</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Luxury Finishing Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_LuxuryFinishing</defName>
+        <label>luxury finishing upgrade</label>
+        <description>Install high-end materials and luxury amenities.</description>
+        <statBases>
+            <WorkToBuild>8000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>80</WoodLog>
+            <Gold>15</Gold>
+            <Jade>10</Jade>
+        </costList>
+        <constructionSkillPrerequisite>10</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_LuxuryFinishing</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+</Defs>

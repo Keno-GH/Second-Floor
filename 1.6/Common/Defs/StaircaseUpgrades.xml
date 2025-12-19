@@ -1,10 +1,22 @@
 <Defs>
+    <!-- 
+    =====================================================
+    Staircase Upgrade Definitions (1.6)
+    =====================================================
+    These define the upgrade effects. Each upgrade references an upgradeBuildingDef
+    that colonists will construct to apply the upgrade.
+    -->
+    
+    <!-- Testing upgrade - no construction required -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_NoTemperaturePenalties</defName>
         <label>No Temperature Penalties</label>
         <description>Removes temperature-related sleep penalties for pawns sleeping in this floor. - This is for testing only and has no effect as of now.</description>
         <spaceCost>50</spaceCost>
+        <!-- No upgradeBuildingDef = instant apply for testing -->
     </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Testing upgrade for basements only - no construction required -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_OnlyForBasements</defName>
         <label>Only For Basements</label>
@@ -15,14 +27,18 @@
         </applyToStairs>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Extra Room upgrade - requires construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_ExtraBeds</defName>
         <label>Extra Room</label>
         <description>Adds another room with a double bed (2 bedspaces). This creates multiple private rooms, eliminating the shared bed debuff.</description>
         <spaceCost>20</spaceCost>
         <bedCountOffset>2</bedCountOffset>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds</upgradeBuildingDef>
+        <minConstructionSkill>4</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Barracks upgrade - requires construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_Barracks</defName>
         <label>Barracks</label>
@@ -30,23 +46,30 @@
         <spaceCost>20</spaceCost>
         <bedCountMultiplier>2</bedCountMultiplier>
         <thoughtReplacement>SF_Barracks_Room</thoughtReplacement>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Barracks</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Soundproofing upgrade - requires construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_Soundproofing</defName>
         <label>Soundproofing</label>
         <description>Prevents sleep disturbed thoughts.</description>
         <spaceCost>10</spaceCost>
         <removeSleepDisturbed>true</removeSleepDisturbed>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
+        <minConstructionSkill>3</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
-    <!-- Impressiveness upgrades -->
+    <!-- Impressiveness upgrades - all require construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_BasicDecoration</defName>
         <label>Basic Decoration</label>
         <description>Adds simple decorations to improve the room's impressiveness slightly.</description>
         <spaceCost>15</spaceCost>
         <impressivenessLevel>1</impressivenessLevel>
+        <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
+        <minConstructionSkill>2</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -55,6 +78,8 @@
         <description>Upgrades furniture and amenities to make the room more comfortable.</description>
         <spaceCost>25</spaceCost>
         <impressivenessLevel>2</impressivenessLevel>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -63,6 +88,8 @@
         <description>Adds fine art and decorations to make the room impressive.</description>
         <spaceCost>35</spaceCost>
         <impressivenessLevel>3</impressivenessLevel>
+        <upgradeBuildingDef>SF_UpgradeBuilding_FineDecoration</upgradeBuildingDef>
+        <minConstructionSkill>7</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -71,6 +98,9 @@
         <description>High-end materials and luxury amenities make this room extremely impressive.</description>
         <spaceCost>50</spaceCost>
         <impressivenessLevel>4</impressivenessLevel>
+        <upgradeBuildingDef>SF_UpgradeBuilding_LuxuryFinishing</upgradeBuildingDef>
+        <minConstructionSkill>10</minConstructionSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
 </Defs>
+
