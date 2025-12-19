@@ -94,11 +94,8 @@ namespace SecondFloor
                         }
                     }
                     
-                    // Also check if multiple pawns are using this bed
-                    if (!isBarracks && bed.GetComp<CompMultipleBeds>()?.bedCount > 1)
-                    {
-                        isBarracks = true;
-                    }
+                    // Note: bedCount >= 2 means multiple private rooms, not barracks
+                    // Only the barracks upgrade makes it barracks
                     
                     // Get the appropriate new thought
                     ThoughtDef newThought = null;

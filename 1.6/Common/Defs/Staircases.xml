@@ -234,7 +234,7 @@
   <ThingDef ParentName="StaircaseBedMidQualityBase">
     <defName>SF_Upstairs</defName>
     <label>Upstairs</label>
-    <description>A staircase leading to an upper floor with a basic bedroom. It can be updated with better accomodations and more rooms.</description>
+    <description>A staircase leading to an upper floor with a single bedroom (2 bedspaces). It can be updated with better accommodations and more rooms.</description>
     <graphicData>
       <texPath>Things/Building/22staircase/22staircase</texPath>
       <graphicClass>Graphic_Multi</graphicClass>

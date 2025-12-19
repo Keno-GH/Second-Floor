@@ -39,7 +39,7 @@ namespace SecondFloor
             CompMultipleBeds bedsComp = SelThing.TryGetComp<CompMultipleBeds>();
             if (bedsComp != null)
             {
-                listing.Label($"Bedrooms: {bedsComp.bedCount}");
+                listing.Label($"Bed Spaces: {bedsComp.bedCount}");
             }
 
             // Calculate impressiveness level and room type
@@ -67,20 +67,28 @@ namespace SecondFloor
             }
             impressivenessLevel = Mathf.Clamp(1 + totalImpressivenessBonus, 0, 9);
 
-            // Check if naturally a barracks (multiple beds)
-            if (!isBarracks && bedsComp != null && bedsComp.bedCount > 1)
-            {
-                isBarracks = true;
-            }
-
             // Determine room type description
+            // bedCount=2: Single bedroom with 2 bedspaces (shared bed)
+            // bedCount>=4: Multiple private rooms (2+ bedrooms, no shared bed debuff)
+            // Barracks upgrade: Forces barracks type
             if (isBasement)
             {
                 roomType = isBarracks ? "Basement Barracks" : "Basement";
             }
             else
             {
-                roomType = isBarracks ? "Barracks" : "Private Rooms";
+                if (isBarracks)
+                {
+                    roomType = "Barracks";
+                }
+                else if (bedsComp != null && bedsComp.bedCount >= 4)
+                {
+                    roomType = "Multiple Private Rooms";
+                }
+                else
+                {
+                    roomType = "Single Bedroom";
+                }
             }
 
             // Display impressiveness and room type

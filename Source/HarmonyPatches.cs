@@ -69,24 +69,68 @@ namespace SecondFloor
     } */ // Unecessary since SoakingWet is only applied when outside and our second floors will always require a roof
 
 
-    // Remove SharedBed Tought by postfixing the ThoughtWorker
+    // Remove SharedBed Thought by postfixing the ThoughtWorker
     // SharedBed is a ThoughtWorker that checks if a pawn is sharing a bed with another pawn
     // Since its not a memory, we can't remove it with RemoveMemoriesOfDef and we have
-    // to use a postfix to change the result to false if the bed has RemoveSharedBed set to true
+    // to use a postfix to change the result to false if the bed is barracks or multiple private rooms
     [HarmonyPatch(typeof(ThoughtWorker_SharedBed), "CurrentStateInternal")]
     public static class Patch_CurrentStateInternal
     {
         [HarmonyPostfix]
         public static void Postfix(Pawn p, ref ThoughtState __result)
         {
+            // Only modify if the thought would apply
+            if (!__result.Active) return;
+            
             Building_Bed building_Bed = p.ownership.OwnedBed;
             if (building_Bed == null) return;
+            
             var modExt = building_Bed.def.GetModExtension<SecondFloorModExtension>();
             if (modExt == null) return;
 
-            var effect = building_Bed.def.GetModExtension<SecondFloorModExtension>();
-            if (effect == null) return;
-            if (effect.RemoveSharedBed) __result = false;
+            // Check if RemoveSharedBed is set (legacy behavior)
+            if (modExt.RemoveSharedBed)
+            {
+                __result = false;
+                return;
+            }
+            
+            // Check if this is barracks or multiple private rooms
+            var bedsComp = building_Bed.GetComp<CompMultipleBeds>();
+            var upgradesComp = building_Bed.GetComp<CompStaircaseUpgrades>();
+            
+            if (bedsComp == null) return;
+            
+            bool isBarracks = false;
+            
+            // Check if barracks upgrade is installed
+            if (upgradesComp != null)
+            {
+                foreach (var upgrade in upgradesComp.upgrades)
+                {
+                    if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
+                    {
+                        isBarracks = true;
+                        break;
+                    }
+                }
+            }
+            
+            // If barracks, remove shared bed thought
+            if (isBarracks)
+            {
+                __result = false;
+                return;
+            }
+            
+            // If multiple private rooms (bedCount >= 4), remove shared bed thought
+            if (bedsComp.bedCount >= 4)
+            {
+                __result = false;
+                return;
+            }
+            
+            // Otherwise, it's a single bedroom - allow shared bed thought
         }
     }
 

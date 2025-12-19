@@ -17,8 +17,8 @@
 
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_ExtraBeds</defName>
-        <label>Extra Beds</label>
-        <description>Adds 2 extra beds to the staircase.</description>
+        <label>Extra Room</label>
+        <description>Adds another room with a double bed (2 bedspaces). This creates multiple private rooms, eliminating the shared bed debuff.</description>
         <spaceCost>20</spaceCost>
         <bedCountOffset>2</bedCountOffset>
     </SecondFloor.StaircaseUpgradeDef>

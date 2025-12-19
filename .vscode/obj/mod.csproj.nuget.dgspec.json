@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Second Floor\\.vscode\\mod.csproj": {}
+    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Rimworld\\Mods\\Second Floor\\.vscode\\mod.csproj": {}
   },
   "projects": {
-    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Second Floor\\.vscode\\mod.csproj": {
+    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Rimworld\\Mods\\Second Floor\\.vscode\\mod.csproj": {
       "version": "0.1.0",
       "restore": {
-        "projectUniqueName": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Second Floor\\.vscode\\mod.csproj",
+        "projectUniqueName": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Rimworld\\Mods\\Second Floor\\.vscode\\mod.csproj",
         "projectName": "SecondFloor",
-        "projectPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Second Floor\\.vscode\\mod.csproj",
+        "projectPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Rimworld\\Mods\\Second Floor\\.vscode\\mod.csproj",
         "packagesPath": "C:\\Users\\neocv\\.nuget\\packages\\",
-        "outputPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\Second Floor\\.vscode\\obj\\",
+        "outputPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Rimworld\\Mods\\Second Floor\\.vscode\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\neocv\\AppData\\Roaming\\NuGet\\NuGet.Config"
