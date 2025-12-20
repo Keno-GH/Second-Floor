@@ -51,10 +51,9 @@
             <WorkToBuild>3000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>50</WoodLog>
-            <Cloth>20</Cloth>
+            <WoodLog>200</WoodLog>
         </costList>
-        <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+        <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_ExtraBeds</upgradeDef>
@@ -68,13 +67,12 @@
         <label>barracks upgrade</label>
         <description>Convert the upstairs into a barracks with double the bed capacity.</description>
         <statBases>
-            <WorkToBuild>4000</WorkToBuild>
+            <WorkToBuild>3000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>80</WoodLog>
-            <Cloth>30</Cloth>
+            <WoodLog>400</WoodLog>
         </costList>
-        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_Barracks</upgradeDef>
@@ -88,11 +86,11 @@
         <label>soundproofing upgrade</label>
         <description>Install soundproofing materials to prevent sleep disturbance.</description>
         <statBases>
-            <WorkToBuild>2500</WorkToBuild>
+            <WorkToBuild>5000</WorkToBuild>
         </statBases>
         <costList>
-            <Cloth>40</Cloth>
-            <WoodLog>20</WoodLog>
+            <Cloth>200</Cloth>
+            <WoodLog>200</WoodLog>
         </costList>
         <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
         <modExtensions>
@@ -111,7 +109,7 @@
             <WorkToBuild>1500</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>30</WoodLog>
+            <WoodLog>150</WoodLog>
         </costList>
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <modExtensions>
@@ -130,8 +128,8 @@
             <WorkToBuild>3500</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>40</WoodLog>
-            <Cloth>25</Cloth>
+            <WoodLog>400</WoodLog>
+            <Cloth>200</Cloth>
             <Steel>20</Steel>
         </costList>
         <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
@@ -151,10 +149,10 @@
             <WorkToBuild>5000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>60</WoodLog>
-            <Silver>50</Silver>
+            <WoodLog>200</WoodLog>
+            <Steel>50</Steel>
         </costList>
-        <constructionSkillPrerequisite>7</constructionSkillPrerequisite>
+        <artisticSkillPrerequisite>2</artisticSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_FineDecoration</upgradeDef>
@@ -168,14 +166,14 @@
         <label>luxury finishing upgrade</label>
         <description>Install high-end materials and luxury amenities.</description>
         <statBases>
-            <WorkToBuild>8000</WorkToBuild>
+            <WorkToBuild>12000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>80</WoodLog>
-            <Gold>15</Gold>
-            <Jade>10</Jade>
+            <WoodLog>400</WoodLog>
+            <Gold>150</Gold>
+            <Jade>100</Jade>
         </costList>
-        <constructionSkillPrerequisite>10</constructionSkillPrerequisite>
+        <artisticSkillPrerequisite>10</artisticSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_LuxuryFinishing</upgradeDef>

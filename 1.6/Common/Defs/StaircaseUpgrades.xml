@@ -89,7 +89,7 @@
         <spaceCost>35</spaceCost>
         <impressivenessLevel>3</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_FineDecoration</upgradeBuildingDef>
-        <minConstructionSkill>7</minConstructionSkill>
+        <minArtisticSkill>7</minArtisticSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -99,7 +99,7 @@
         <spaceCost>50</spaceCost>
         <impressivenessLevel>4</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_LuxuryFinishing</upgradeBuildingDef>
-        <minConstructionSkill>10</minConstructionSkill>
+        <minArtisticSkill>10</minArtisticSkill>
     </SecondFloor.StaircaseUpgradeDef>
 
 </Defs>

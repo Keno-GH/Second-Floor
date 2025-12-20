@@ -21,6 +21,9 @@ namespace SecondFloor
         // Minimum construction skill required (0 = no requirement)
         public int minConstructionSkill = 0;
 
+        // Minimum artistic skill required (0 = no requirement)
+        public int minArtisticSkill = 0;
+
         // Work amount (if upgradeBuildingDef is null and we want custom work)
         // Note: If upgradeBuildingDef is set, use its WorkToBuild stat instead
         public float workToBuild = 0f;

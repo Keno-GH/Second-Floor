@@ -218,12 +218,28 @@ namespace SecondFloor
                         tooltip.AppendLine($"Requires construction skill: {def.minConstructionSkill}");
                         
                         // Check if any colonist can build it
-                        hasSkill = SelThing.Map.mapPawns.FreeColonists.Any(p => 
+                        bool hasConstructionSkill = SelThing.Map.mapPawns.FreeColonists.Any(p => 
                             p.skills.GetSkill(SkillDefOf.Construction).Level >= def.minConstructionSkill);
                         
-                        if (!hasSkill)
+                        if (!hasConstructionSkill)
                         {
-                            tooltip.AppendLine("(No colonist has required skill!)");
+                            tooltip.AppendLine("(No colonist has required construction skill!)");
+                            hasSkill = false;
+                        }
+                    }
+
+                    if (def.minArtisticSkill > 0)
+                    {
+                        tooltip.AppendLine($"Requires artistic skill: {def.minArtisticSkill}");
+
+                        // Check if any colonist can build it
+                        bool hasArtisticSkill = SelThing.Map.mapPawns.FreeColonists.Any(p =>
+                            p.skills.GetSkill(SkillDefOf.Artistic).Level >= def.minArtisticSkill);
+
+                        if (!hasArtisticSkill)
+                        {
+                            tooltip.AppendLine("(No colonist has required artistic skill!)");
+                            hasSkill = false;
                         }
                     }
                 }
@@ -253,6 +269,16 @@ namespace SecondFloor
                 Rect buttonRect = listing.GetRect(Text.LineHeight + 4f);
                 
                 // Draw the button - only space blocks placement, materials/skill just show warnings
+                Color oldColor = GUI.color;
+                if (!canBuild)
+                {
+                    GUI.color = Color.red;
+                }
+                else if (!canAffordMaterials || !hasSkill)
+                {
+                    GUI.color = Color.yellow;
+                }
+
                 if (Widgets.ButtonText(buttonRect, buttonText.ToString(), active: canBuild))
                 {
                     if (canBuild)
@@ -260,6 +286,7 @@ namespace SecondFloor
                         TryAddUpgrade(def, comp, SelThing);
                     }
                 }
+                GUI.color = oldColor;
                 
                 TooltipHandler.TipRegion(buttonRect, tooltip.ToString());
             }

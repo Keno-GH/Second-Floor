@@ -243,11 +243,7 @@
     </graphicData>
     <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
     <size>(2,2)</size>
-    <costList>
-      <Cloth>200</Cloth>
-      <Steel>50</Steel>
-    </costList>
-    <costStuffCount>700</costStuffCount>
+    <costStuffCount>200</costStuffCount>
     <stuffCategories>
       <li>Woody</li>
       <li>Metallic</li>
@@ -345,7 +341,7 @@
       <WorkToBuild>20000</WorkToBuild>      <!-- Stony materials have a 6x multiplier in worktobuild, this would be equivalent to 120K worktobuild -->
     </statBases>
     <size>(2,2)</size>
-    <costStuffCount>300</costStuffCount>
+    <costStuffCount>200</costStuffCount>
     <comps>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
