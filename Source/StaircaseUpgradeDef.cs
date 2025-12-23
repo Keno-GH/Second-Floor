@@ -1,6 +1,7 @@
 using Verse;
 using RimWorld;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace SecondFloor
 {
@@ -13,6 +14,28 @@ namespace SecondFloor
         public bool removeSleepDisturbed;
         public ThoughtDef thoughtReplacement; // Keep for backwards compatibility
         public int impressivenessLevel = 0; // Adds to the impressiveness level (0-9)
+
+        // Icon texture for this upgrade (optional)
+        // Path relative to Textures/ folder (e.g., "Icons/Upgrades/MyUpgrade")
+        public string iconPath;
+        
+        // Required upgrades that must be installed before this one
+        public List<StaircaseUpgradeDef> requiredUpgrades;
+        
+        // Cached texture
+        private Texture2D cachedIcon;
+        
+        public Texture2D Icon
+        {
+            get
+            {
+                if (cachedIcon == null && !string.IsNullOrEmpty(iconPath))
+                {
+                    cachedIcon = ContentFinder<Texture2D>.Get(iconPath, false);
+                }
+                return cachedIcon;
+            }
+        }
 
         // Construction requirements - the actual building ThingDef that colonists construct
         // If null, upgrade is applied instantly (legacy behavior for 1.5 compatibility)

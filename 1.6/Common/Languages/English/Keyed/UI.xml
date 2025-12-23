@@ -16,6 +16,11 @@
   <SF_UpgradeAlreadyPlanned>The {0} upgrade is already planned for this staircase.</SF_UpgradeAlreadyPlanned>
   <SF_UpgradeUnderConstruction>The {0} upgrade is already under construction.</SF_UpgradeUnderConstruction>
   
+  <!-- Upgrade removal and management -->
+  <SF_UpgradeRemoved>{0} upgrade has been removed.</SF_UpgradeRemoved>
+  <SF_UpgradeCancelled>{0} upgrade construction has been cancelled.</SF_UpgradeCancelled>
+  <SF_BedAssignmentsReset>Bed assignments for {0} have been reset. Only {1} bed space(s) are now available.</SF_BedAssignmentsReset>
+  
   <!-- Building inspection -->
   <SF_UpgradeType>Upgrade: {0}</SF_UpgradeType>
 </LanguageData>

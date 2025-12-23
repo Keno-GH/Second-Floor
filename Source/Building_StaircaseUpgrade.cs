@@ -46,10 +46,22 @@ namespace SecondFloor
                     var upgradeComp = staircase.TryGetComp<CompStaircaseUpgrades>();
                     if (upgradeComp != null && UpgradeDef != null)
                     {
+                        // Store bed count before the upgrade
+                        var bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+                        int bedCountBefore = bedsComp?.bedCount ?? 0;
+                        
                         // Apply the upgrade
                         if (!upgradeComp.upgrades.Contains(UpgradeDef))
                         {
                             upgradeComp.upgrades.Add(UpgradeDef);
+                            
+                            // Check bed count after upgrade - may need to reset assignments
+                            int bedCountAfter = bedsComp?.bedCount ?? 0;
+                            if (bedCountAfter < bedCountBefore)
+                            {
+                                CheckAndResetBedAssignments(staircase, bedCountAfter);
+                            }
+                            
                             Messages.Message("SF_UpgradeInstalled".Translate(UpgradeDef.label, staircase.Label), 
                                 staircase, MessageTypeDefOf.PositiveEvent, false);
                         }
@@ -66,6 +78,36 @@ namespace SecondFloor
 
                 // Despawn this building - it's just a construction vehicle
                 this.Destroy(DestroyMode.Vanish);
+            }
+        }
+
+        private void CheckAndResetBedAssignments(Thing staircase, int newBedCount)
+        {
+            Building_Bed bed = staircase as Building_Bed;
+            if (bed == null)
+            {
+                return;
+            }
+
+            System.Collections.Generic.List<Pawn> owners = bed.OwnersForReading.ToList();
+            int currentAssignments = owners.Count;
+
+            if (currentAssignments > newBedCount)
+            {
+                // Remove excess pawns from assignment (keep the first N pawns)
+                for (int i = owners.Count - 1; i >= newBedCount; i--)
+                {
+                    Pawn pawn = owners[i];
+                    pawn.ownership.UnclaimBed();
+                }
+
+                // Show message to player
+                Messages.Message(
+                    "SF_BedAssignmentsReset".Translate(bed.Label, newBedCount),
+                    new LookTargets(bed),
+                    MessageTypeDefOf.CautionInput,
+                    false
+                );
             }
         }
 
