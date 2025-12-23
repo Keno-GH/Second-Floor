@@ -451,28 +451,73 @@ namespace SecondFloor
                 bool isLocked = IsUpgradeLocked(def, comp);
                 bool canBuild = canAffordSpace && !isLocked;
                 
-                Color oldColor = GUI.color;
-                if (!canBuild)
+                // Dev mode: show two buttons side by side
+                if (Prefs.DevMode)
                 {
-                    GUI.color = Color.red;
-                }
-                
-                if (Widgets.ButtonText(buttonRect, "Build Upgrade", active: canBuild))
-                {
-                    if (canBuild)
+                    float buttonWidth = (buttonRect.width - 5f) / 2f;
+                    Rect buildButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect devButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // Regular build button
+                    Color oldColor = GUI.color;
+                    if (!canBuild)
                     {
-                        TryAddUpgrade(def, comp, SelThing);
+                        GUI.color = Color.red;
                     }
+                    
+                    if (Widgets.ButtonText(buildButtonRect, "Build Upgrade", active: canBuild))
+                    {
+                        if (canBuild)
+                        {
+                            TryAddUpgrade(def, comp, SelThing);
+                        }
+                    }
+                    GUI.color = oldColor;
+                    
+                    if (isLocked)
+                    {
+                        TooltipHandler.TipRegion(buildButtonRect, "This upgrade is locked. Install the required upgrades first.");
+                    }
+                    else if (!canAffordSpace)
+                    {
+                        TooltipHandler.TipRegion(buildButtonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                    }
+                    
+                    // Dev mode instant button
+                    GUI.color = new Color(0.8f, 0.5f, 1f); // Purple-ish color for dev button
+                    if (Widgets.ButtonText(devButtonRect, "DEV: Instant"))
+                    {
+                        DevModeInstantUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(devButtonRect, "[Dev Mode] Instantly apply this upgrade without materials or construction.");
                 }
-                GUI.color = oldColor;
-                
-                if (isLocked)
+                else
                 {
-                    TooltipHandler.TipRegion(buttonRect, "This upgrade is locked. Install the required upgrades first.");
-                }
-                else if (!canAffordSpace)
-                {
-                    TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                    // Normal mode: single build button
+                    Color oldColor = GUI.color;
+                    if (!canBuild)
+                    {
+                        GUI.color = Color.red;
+                    }
+                    
+                    if (Widgets.ButtonText(buttonRect, "Build Upgrade", active: canBuild))
+                    {
+                        if (canBuild)
+                        {
+                            TryAddUpgrade(def, comp, SelThing);
+                        }
+                    }
+                    GUI.color = oldColor;
+                    
+                    if (isLocked)
+                    {
+                        TooltipHandler.TipRegion(buttonRect, "This upgrade is locked. Install the required upgrades first.");
+                    }
+                    else if (!canAffordSpace)
+                    {
+                        TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                    }
                 }
             }
             else
@@ -891,6 +936,31 @@ namespace SecondFloor
             }
             
             return dependentUpgrades;
+        }
+
+        private void DevModeInstantUpgrade(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
+        {
+            // Dev mode: ignore space requirements and instantly apply upgrade
+            
+            // Store bed count before the upgrade
+            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            int bedCountBefore = bedsComp?.bedCount ?? 0;
+
+            // Apply the upgrade directly
+            if (!comp.upgrades.Contains(def))
+            {
+                comp.upgrades.Add(def);
+                
+                // Check bed count after upgrade
+                int bedCountAfter = bedsComp?.bedCount ?? 0;
+                if (bedCountAfter < bedCountBefore)
+                {
+                    CheckAndResetBedAssignments(staircase, bedCountAfter, "dev mode upgrade");
+                }
+                
+                Messages.Message($"[DEV] {def.label} instantly applied to {staircase.Label}", 
+                    staircase, MessageTypeDefOf.PositiveEvent, false);
+            }
         }
     }
 }
