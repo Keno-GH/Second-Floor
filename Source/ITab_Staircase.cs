@@ -325,6 +325,17 @@ namespace SecondFloor
             
             // Status indicator
             string status = isInstalled ? "INSTALLED" : (isPending ? "UNDER CONSTRUCTION" : "NOT INSTALLED");
+            
+            // Add stuff material to status if upgrade is stuffable and installed
+            if (isInstalled && def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
+            {
+                ActiveUpgrade activeUpgrade = comp.activeUpgrades.FirstOrDefault(au => au.def == def);
+                if (activeUpgrade != null && activeUpgrade.stuff != null)
+                {
+                    status += $" ({activeUpgrade.stuff.LabelCap})";
+                }
+            }
+            
             Color statusColor = isInstalled ? Color.green : (isPending ? Color.yellow : Color.gray);
             GUI.color = statusColor;
             Rect statusRect = new Rect(0f, curY, viewRect.width, 24f);
@@ -350,12 +361,53 @@ namespace SecondFloor
             Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Space: {def.spaceCost}");
             curY += 24f;
             
+            // Get bed count for cost calculations
+            CompMultipleBeds bedsComp = SelThing.TryGetComp<CompMultipleBeds>();
+            int bedCount = bedsComp?.bedCount ?? 1;
+            
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
                 ThingDef buildingDef = def.upgradeBuildingDef;
+                
+                // Check if this uses costStuffCount (stuffable)
+                if (buildingDef.costStuffCount > 0)
+                {
+                    // Get the stuff category label(s)
+                    string stuffCategoryLabel = "material";
+                    if (def.stuffCategories != null && def.stuffCategories.Count > 0)
+                    {
+                        if (def.stuffCategories.Count == 1)
+                        {
+                            stuffCategoryLabel = def.stuffCategories[0].label;
+                        }
+                        else
+                        {
+                            stuffCategoryLabel = string.Join(" or ", def.stuffCategories.Select(sc => sc.label));
+                        }
+                    }
+                    
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Cost: {buildingDef.costStuffCount} {stuffCategoryLabel} per bed");
+                    curY += 24f;
+                    int totalStuffCost = buildingDef.costStuffCount * bedCount;
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Total: {totalStuffCost} {stuffCategoryLabel} ({bedCount} beds)");
+                    curY += 24f;
+                    
+                    // If installed, show the material used
+                    if (isInstalled)
+                    {
+                        ActiveUpgrade activeUpgrade = comp.activeUpgrades.FirstOrDefault(au => au.def == def);
+                        if (activeUpgrade != null && activeUpgrade.stuff != null)
+                        {
+                            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  <color=#00ff00>Material: {activeUpgrade.stuff.LabelCap}</color>");
+                            curY += 24f;
+                        }
+                    }
+                }
+                
+                // Also show regular costList items (if any) - these can exist alongside costStuffCount
                 if (buildingDef.costList != null && buildingDef.costList.Count > 0)
                 {
-                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "  Materials:");
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "  Additional Materials:");
                     curY += 24f;
                     foreach (var cost in buildingDef.costList)
                     {
@@ -575,6 +627,49 @@ namespace SecondFloor
                 hasEffects = true;
             }
             
+            // Temperature effects
+            if (def.heatOffset > 0)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Heating: +{def.heatOffset.ToStringTemperature("F1")}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.maxHeatCap < 100f)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Max Temperature Cap: {def.maxHeatCap.ToStringTemperature("F0")}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.coolOffset > 0)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Cooling: -{def.coolOffset.ToStringTemperature("F1")}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.minCoolCap > -273f)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Min Temperature Cap: {def.minCoolCap.ToStringTemperature("F0")}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.insulationAdjustment > 0)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Insulation: {def.insulationAdjustment.ToStringTemperature("F1")} towards {def.insulationTarget.ToStringTemperature("F0")}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.fuelPerBed > 0)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Fuel Consumption: {def.fuelPerBed:F1} per bed per day");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
             if (!hasEffects)
             {
                 Widgets.Label(new Rect(x, curY, width, 24f), "  No gameplay effects");
@@ -670,70 +765,58 @@ namespace SecondFloor
             CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
             int bedCount = bedsComp?.bedCount ?? 1;
             
-            // Find all valid stuff ThingDefs that match the stuff categories
-            List<ThingDef> validStuffs = new List<ThingDef>();
-            foreach (StuffCategoryDef category in def.stuffCategories)
+            // Get base cost from costStuffCount
+            int baseCost = 50; // default
+            if (def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
             {
-                foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs)
-                {
-                    if (thingDef.IsStuff && thingDef.stuffProps != null && 
-                        thingDef.stuffProps.categories != null && 
-                        thingDef.stuffProps.categories.Contains(category) &&
-                        !validStuffs.Contains(thingDef))
-                    {
-                        validStuffs.Add(thingDef);
-                    }
-                }
-            }
-            
-            // Calculate base cost - use the costList from the upgrade or building def
-            List<ThingDefCountClass> costs = null;
-            if (def.RequiresConstruction && def.upgradeBuildingDef != null)
-            {
-                costs = def.upgradeBuildingDef.costList;
-            }
-            else if (def.costList != null)
-            {
-                costs = def.costList;
-            }
-            
-            // Get base cost amount (use first item as reference, or default to 50)
-            int baseCost = 50;
-            if (costs != null && costs.Count > 0)
-            {
-                baseCost = costs[0].count;
+                baseCost = def.upgradeBuildingDef.costStuffCount;
             }
             
             // Scale by bed count
             int totalCost = baseCost * bedCount;
             
-            // Create menu options for each valid stuff
-            foreach (ThingDef stuff in validStuffs)
+            // Get all valid stuffs using GenStuff helper
+            IEnumerable<ThingDef> allowedStuffs = GenStuff.AllowedStuffsFor(def.upgradeBuildingDef, TechLevel.Undefined);
+            
+            // Filter to only materials that exist on the map and are not forbidden
+            foreach (ThingDef stuff in allowedStuffs)
             {
-                int available = staircase.Map.resourceCounter.GetCount(stuff);
-                bool canAfford = available >= totalCost;
+                // Check if this material exists on the map and is not forbidden
+                var availableThings = staircase.Map.listerThings.ThingsOfDef(stuff)
+                    .Where(t => !t.IsForbidden(Faction.OfPlayer));
                 
-                string label = $"{stuff.LabelCap} (Cost: {totalCost}, Available: {available})";
-                
-                if (!canAfford)
+                if (!availableThings.Any())
                 {
-                    // Disabled option - not enough material
-                    options.Add(new FloatMenuOption(label + " (Not enough)", null));
+                    continue; // Skip materials not available on map
+                }
+                
+                // Count available materials
+                int available = availableThings.Sum(t => t.stackCount);
+                bool hasEnough = available >= totalCost;
+                
+                // Format label: "MaterialName (Available: X)"
+                // Color red if insufficient, but still allow placement (vanilla behavior)
+                string label;
+                if (hasEnough)
+                {
+                    label = $"{stuff.LabelCap} (Available: {available})";
                 }
                 else
                 {
-                    // Enabled option
-                    ThingDef stuffCopy = stuff; // Capture for closure
-                    options.Add(new FloatMenuOption(label, delegate()
-                    {
-                        ApplyUpgrade(def, stuffCopy, comp, staircase, bedCountBefore);
-                    }));
+                    label = $"<color=#ff6666>{stuff.LabelCap} (Available: {available})</color>";
                 }
+                
+                // Always create an enabled option (allow partial materials)
+                ThingDef stuffCopy = stuff; // Capture for closure
+                options.Add(new FloatMenuOption(label, delegate()
+                {
+                    ApplyUpgrade(def, stuffCopy, comp, staircase, bedCountBefore);
+                }));
             }
             
             if (options.Count == 0)
             {
-                options.Add(new FloatMenuOption("No valid materials available", null));
+                options.Add(new FloatMenuOption("No valid materials available on map", null));
             }
             
             Find.WindowStack.Add(new FloatMenu(options));
@@ -743,7 +826,7 @@ namespace SecondFloor
         {
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
-                PlaceUpgradeBlueprint(def, staircase);
+                PlaceUpgradeBlueprint(def, stuff, staircase);
             }
             else
             {
@@ -756,20 +839,11 @@ namespace SecondFloor
                     CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
                     int bedCount = bedsComp?.bedCount ?? 1;
                     
-                    List<ThingDefCountClass> costs = null;
-                    if (def.RequiresConstruction && def.upgradeBuildingDef != null)
-                    {
-                        costs = def.upgradeBuildingDef.costList;
-                    }
-                    else if (def.costList != null)
-                    {
-                        costs = def.costList;
-                    }
-                    
+                    // Get base cost from costStuffCount
                     int baseCost = 50;
-                    if (costs != null && costs.Count > 0)
+                    if (def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
                     {
-                        baseCost = costs[0].count;
+                        baseCost = def.upgradeBuildingDef.costStuffCount;
                     }
                     
                     int totalCost = baseCost * bedCount;
@@ -831,14 +905,8 @@ namespace SecondFloor
             CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
             int bedCountBefore = bedsComp?.bedCount ?? 0;
 
-            // Remove the upgrade
-            comp.RemoveUpgrade(def);
-
-            // Refund 75% of materials
-            if (def.RequiresConstruction && def.upgradeBuildingDef != null)
-            {
-                RefundMaterials(def.upgradeBuildingDef, staircase, 0.75f);
-            }
+            // Remove the upgrade with refund
+            string refundInfo = comp.RemoveUpgradeWithRefund(def, 0.75f);
 
             // Check bed count after removal
             int bedCountAfter = bedsComp?.bedCount ?? 0;
@@ -847,32 +915,10 @@ namespace SecondFloor
                 CheckAndResetBedAssignments(staircase, bedCountAfter, "upgrade removal");
             }
 
-            Messages.Message("SF_UpgradeRemoved".Translate(def.label), staircase, MessageTypeDefOf.NeutralEvent, false);
+            Messages.Message("SF_UpgradeRemoved".Translate(def.label) + (refundInfo ?? ""), staircase, MessageTypeDefOf.NeutralEvent, false);
             
             // Clear selection since the upgrade is gone
             selectedUpgrade = null;
-        }
-
-        private void RefundMaterials(ThingDef buildingDef, Thing staircase, float refundPercent)
-        {
-            if (buildingDef.costList == null || buildingDef.costList.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var cost in buildingDef.costList)
-            {
-                int refundAmount = Mathf.FloorToInt(cost.count * refundPercent);
-                if (refundAmount > 0)
-                {
-                    Thing refundThing = ThingMaker.MakeThing(cost.thingDef);
-                    refundThing.stackCount = refundAmount;
-                    
-                    // Try to spawn near the staircase
-                    IntVec3 dropPos = staircase.Position;
-                    GenPlace.TryPlaceThing(refundThing, dropPos, staircase.Map, ThingPlaceMode.Near);
-                }
-            }
         }
 
         private void CheckAndResetBedAssignments(Thing staircase, int newBedCount, string reason)
@@ -959,7 +1005,7 @@ namespace SecondFloor
             }
         }
 
-        private void PlaceUpgradeBlueprint(StaircaseUpgradeDef upgradeDef, Thing staircase)
+        private void PlaceUpgradeBlueprint(StaircaseUpgradeDef upgradeDef, ThingDef stuff, Thing staircase)
         {
             ThingDef buildingDef = upgradeDef.upgradeBuildingDef;
             if (buildingDef == null || buildingDef.blueprintDef == null)
@@ -977,7 +1023,7 @@ namespace SecondFloor
                 map, 
                 rotation, 
                 Faction.OfPlayer, 
-                null
+                stuff
             );
 
             if (blueprint != null)

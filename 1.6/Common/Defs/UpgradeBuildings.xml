@@ -57,6 +57,7 @@
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_ExtraBeds</upgradeDef>
+                <onePerBed>false</onePerBed>
             </li>
         </modExtensions>
     </ThingDef>
@@ -76,6 +77,7 @@
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_Barracks</upgradeDef>
+                <onePerBed>false</onePerBed>
             </li>
         </modExtensions>
     </ThingDef>
