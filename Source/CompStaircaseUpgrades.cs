@@ -144,5 +144,78 @@ namespace SecondFloor
             // Step 5: Return final temperature
             return temp;
         }
+
+        /// <summary>
+        /// Called every tick to handle fuel consumption based on active upgrades.
+        /// </summary>
+        public override void CompTick()
+        {
+            base.CompTick();
+            
+            // Only process fuel consumption periodically (every 60 ticks = 1 second)
+            if (parent.IsHashIntervalTick(60))
+            {
+                ConsumeFuel();
+            }
+        }
+
+        /// <summary>
+        /// Calculates and consumes fuel based on active upgrades and bed count.
+        /// Applies throttling when temperature is already outside the desired range.
+        /// </summary>
+        private void ConsumeFuel()
+        {
+            if (parent?.Map == null || upgrades == null || upgrades.Count == 0)
+                return;
+
+            // Get the CompRefuelable from parent
+            var refuelable = parent.GetComp<CompRefuelable>();
+            if (refuelable == null)
+                return;
+
+            // Get current bed count
+            var bedsComp = parent.GetComp<CompMultipleBeds>();
+            if (bedsComp == null)
+                return;
+            
+            int currentBedCount = bedsComp.bedCount;
+            if (currentBedCount <= 0)
+                return;
+
+            // Get current outdoor temperature
+            float currentOutdoorTemp = parent.Map.mapTemperature.OutdoorTemp;
+            
+            // Calculate total fuel to consume
+            float totalFuelToConsume = 0f;
+            
+            foreach (var upgrade in upgrades)
+            {
+                if (upgrade.fuelPerBed <= 0f)
+                    continue;
+                
+                float consumption = upgrade.fuelPerBed * currentBedCount;
+                
+                // Apply throttling based on temperature
+                // If it's already hot outside and we're heating, throttle to 50%
+                if (upgrade.heatOffset > 0f && currentOutdoorTemp > upgrade.maxHeatCap)
+                {
+                    consumption *= 0.5f;
+                }
+                
+                // If it's already cold outside and we're cooling, throttle to 50%
+                if (upgrade.coolOffset > 0f && currentOutdoorTemp < upgrade.minCoolCap)
+                {
+                    consumption *= 0.5f;
+                }
+                
+                totalFuelToConsume += consumption;
+            }
+            
+            // Consume the fuel
+            if (totalFuelToConsume > 0f)
+            {
+                refuelable.ConsumeFuel(totalFuelToConsume);
+            }
+        }
     }
 }

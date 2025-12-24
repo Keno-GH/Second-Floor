@@ -67,5 +67,6 @@ namespace SecondFloor
         public float minCoolCap = -273f; // The temperature this cooler cannot go below (e.g., 17)
         public float insulationAdjustment = 0f; // Power to normalize temp towards a target
         public float insulationTarget = 21f; // The target temp for insulation (default 21)
+        public float fuelPerBed = 0f; // Fuel consumed per bed count per tick
     }
 }
