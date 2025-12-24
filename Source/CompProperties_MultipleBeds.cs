@@ -33,11 +33,11 @@ namespace SecondFloor
                 var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
                 if (upgradesComp != null)
                 {
-                    foreach (var upgrade in upgradesComp.upgrades)
+                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                     {
                         count += upgrade.bedCountOffset;
                     }
-                    foreach (var upgrade in upgradesComp.upgrades)
+                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                     {
                         count *= upgrade.bedCountMultiplier;
                     }

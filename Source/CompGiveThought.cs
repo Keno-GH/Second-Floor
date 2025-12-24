@@ -51,7 +51,7 @@ namespace SecondFloor
                 if (upgradesComp != null)
                 {
                     // Check for legacy thoughtReplacement first (backwards compatibility)
-                    foreach (var upgrade in upgradesComp.upgrades)
+                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                     {
                         if (upgrade.thoughtReplacement != null)
                         {
@@ -62,7 +62,7 @@ namespace SecondFloor
                     
                     // Calculate impressiveness level from upgrades
                     int totalImpressivenessBonus = 0;
-                    foreach (var upgrade in upgradesComp.upgrades)
+                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                     {
                         totalImpressivenessBonus += upgrade.impressivenessLevel;
                     }
@@ -84,7 +84,7 @@ namespace SecondFloor
                     // Check if barracks upgrade is installed
                     if (upgradesComp != null)
                     {
-                        foreach (var upgrade in upgradesComp.upgrades)
+                        foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                         {
                             if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
                             {

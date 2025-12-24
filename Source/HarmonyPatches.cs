@@ -106,7 +106,7 @@ namespace SecondFloor
             // Check if barracks upgrade is installed
             if (upgradesComp != null)
             {
-                foreach (var upgrade in upgradesComp.upgrades)
+                foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                 {
                     if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
                     {
@@ -357,7 +357,7 @@ namespace SecondFloor
                 var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
                 if (upgradesComp != null)
                 {
-                    foreach (var upgrade in upgradesComp.upgrades)
+                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
                     {
                         if (upgrade.removeSleepDisturbed)
                         {

@@ -68,5 +68,13 @@ namespace SecondFloor
         public float insulationAdjustment = 0f; // Power to normalize temp towards a target
         public float insulationTarget = 21f; // The target temp for insulation (default 21)
         public float fuelPerBed = 0f; // Fuel consumed per bed count per tick
+        
+        // Stuff system - allows choosing materials for upgrades
+        public List<StuffCategoryDef> stuffCategories;
+        
+        /// <summary>
+        /// Returns true if this upgrade can be made from different materials
+        /// </summary>
+        public bool IsStuffable => !stuffCategories.NullOrEmpty();
     }
 }

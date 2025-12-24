@@ -12,19 +12,70 @@ namespace SecondFloor
             this.compClass = typeof(CompStaircaseUpgrades);
         }
     }
+    
+    /// <summary>
+    /// Wrapper class for storing an upgrade along with the stuff it was built from
+    /// </summary>
+    public class ActiveUpgrade : IExposable
+    {
+        public StaircaseUpgradeDef def;
+        public ThingDef stuff;
+        
+        public ActiveUpgrade()
+        {
+        }
+        
+        public ActiveUpgrade(StaircaseUpgradeDef def, ThingDef stuff)
+        {
+            this.def = def;
+            this.stuff = stuff;
+        }
+        
+        public void ExposeData()
+        {
+            Scribe_Defs.Look(ref def, "def");
+            Scribe_Defs.Look(ref stuff, "stuff");
+        }
+    }
 
     public class CompStaircaseUpgrades : ThingComp
     {
-        public List<StaircaseUpgradeDef> upgrades = new List<StaircaseUpgradeDef>();
+        public List<ActiveUpgrade> activeUpgrades = new List<ActiveUpgrade>();
         private float cachedFuelConsumptionRate = 0f;
+        
+        // Legacy field for backward compatibility
+        private List<StaircaseUpgradeDef> upgrades;
 
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Collections.Look(ref upgrades, "upgrades", LookMode.Def);
-            if (upgrades == null)
+            Scribe_Collections.Look(ref activeUpgrades, "activeUpgrades", LookMode.Deep);
+            
+            // Legacy support: load old "upgrades" list and convert to activeUpgrades
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
-                upgrades = new List<StaircaseUpgradeDef>();
+                Scribe_Collections.Look(ref upgrades, "upgrades", LookMode.Def);
+            }
+            
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (activeUpgrades == null)
+                {
+                    activeUpgrades = new List<ActiveUpgrade>();
+                }
+                
+                // Convert legacy upgrades to activeUpgrades
+                if (upgrades != null && upgrades.Count > 0)
+                {
+                    foreach (var upgradeDef in upgrades)
+                    {
+                        if (!activeUpgrades.Any(au => au.def == upgradeDef))
+                        {
+                            activeUpgrades.Add(new ActiveUpgrade(upgradeDef, null));
+                        }
+                    }
+                    upgrades = null; // Clear legacy data
+                }
             }
         }
         
@@ -40,11 +91,46 @@ namespace SecondFloor
         public float GetUsedSpace()
         {
             float used = 0;
-            foreach(var u in upgrades)
+            foreach(var activeUpgrade in activeUpgrades)
             {
-                used += u.spaceCost;
+                used += activeUpgrade.def.spaceCost;
             }
             return used;
+        }
+        
+        /// <summary>
+        /// Helper method to check if an upgrade is installed
+        /// </summary>
+        public bool HasUpgrade(StaircaseUpgradeDef def)
+        {
+            return activeUpgrades.Any(au => au.def == def);
+        }
+        
+        /// <summary>
+        /// Helper method to get all installed upgrade defs
+        /// </summary>
+        public List<StaircaseUpgradeDef> GetUpgradeDefs()
+        {
+            return activeUpgrades.Select(au => au.def).ToList();
+        }
+        
+        /// <summary>
+        /// Adds an upgrade with optional stuff
+        /// </summary>
+        public void AddUpgrade(StaircaseUpgradeDef def, ThingDef stuff)
+        {
+            if (!HasUpgrade(def))
+            {
+                activeUpgrades.Add(new ActiveUpgrade(def, stuff));
+            }
+        }
+        
+        /// <summary>
+        /// Removes an upgrade
+        /// </summary>
+        public void RemoveUpgrade(StaircaseUpgradeDef def)
+        {
+            activeUpgrades.RemoveAll(au => au.def == def);
         }
 
         /// <summary>
@@ -73,18 +159,18 @@ namespace SecondFloor
             float temp = parent.Map.mapTemperature.OutdoorTemp;
 
             // Step 2: Apply Insulation
-            float totalInsulation = upgrades.Sum(u => u.insulationAdjustment);
+            float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
             if (totalInsulation > 0)
             {
                 // Get the average insulation target (weighted by insulation strength)
                 float weightedTargetSum = 0f;
                 float weightSum = 0f;
-                foreach (var upgrade in upgrades)
+                foreach (var activeUpgrade in activeUpgrades)
                 {
-                    if (upgrade.insulationAdjustment > 0)
+                    if (activeUpgrade.def.insulationAdjustment > 0)
                     {
-                        weightedTargetSum += upgrade.insulationTarget * upgrade.insulationAdjustment;
-                        weightSum += upgrade.insulationAdjustment;
+                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
+                        weightSum += activeUpgrade.def.insulationAdjustment;
                     }
                 }
                 float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
@@ -101,15 +187,15 @@ namespace SecondFloor
             }
 
             // Step 3: Apply Heating
-            float totalHeat = upgrades.Sum(u => u.heatOffset);
+            float totalHeat = activeUpgrades.Sum(au => au.def.heatOffset);
             if (totalHeat > 0)
             {
                 // Find global max cap (highest maxHeatCap among heaters)
                 float globalMaxCap = 100f; // Default high value
-                var heatersWithCap = upgrades.Where(u => u.heatOffset > 0).ToList();
+                var heatersWithCap = activeUpgrades.Where(au => au.def.heatOffset > 0).ToList();
                 if (heatersWithCap.Any())
                 {
-                    globalMaxCap = heatersWithCap.Max(u => u.maxHeatCap);
+                    globalMaxCap = heatersWithCap.Max(au => au.def.maxHeatCap);
                 }
 
                 float heatedTemp = temp + totalHeat;
@@ -122,15 +208,15 @@ namespace SecondFloor
             }
 
             // Step 4: Apply Cooling
-            float totalCool = upgrades.Sum(u => u.coolOffset);
+            float totalCool = activeUpgrades.Sum(au => au.def.coolOffset);
             if (totalCool > 0)
             {
                 // Find global min cap (lowest minCoolCap among coolers)
                 float globalMinCap = -273f; // Default low value
-                var coolersWithCap = upgrades.Where(u => u.coolOffset > 0).ToList();
+                var coolersWithCap = activeUpgrades.Where(au => au.def.coolOffset > 0).ToList();
                 if (coolersWithCap.Any())
                 {
-                    globalMinCap = coolersWithCap.Min(u => u.minCoolCap);
+                    globalMinCap = coolersWithCap.Min(au => au.def.minCoolCap);
                 }
 
                 float cooledTemp = temp - totalCool;
@@ -160,7 +246,7 @@ namespace SecondFloor
         /// </summary>
         private void ConsumeFuel()
         {
-            if (parent?.Map == null || upgrades == null || upgrades.Count == 0)
+            if (parent?.Map == null || activeUpgrades == null || activeUpgrades.Count == 0)
             {
                 UpdateFuelConsumptionRate(0f);
                 return;
@@ -195,22 +281,22 @@ namespace SecondFloor
             // Calculate total fuel to consume
             float totalFuelToConsume = 0f;
             
-            foreach (var upgrade in upgrades)
+            foreach (var activeUpgrade in activeUpgrades)
             {
-                if (upgrade.fuelPerBed <= 0f)
+                if (activeUpgrade.def.fuelPerBed <= 0f)
                     continue;
                 
-                float consumption = upgrade.fuelPerBed * currentBedCount / 60000f; // Convert per tick
+                float consumption = activeUpgrade.def.fuelPerBed * currentBedCount / 60000f; // Convert per tick
                 
                 // Apply throttling based on temperature
                 // If it's already hot outside and we're heating, throttle to 50%
-                if (upgrade.heatOffset > 0f && currentOutdoorTemp > upgrade.maxHeatCap)
+                if (activeUpgrade.def.heatOffset > 0f && currentOutdoorTemp > activeUpgrade.def.maxHeatCap)
                 {
                     consumption *= 0.5f;
                 }
                 
                 // If it's already cold outside and we're cooling, throttle to 50%
-                if (upgrade.coolOffset > 0f && currentOutdoorTemp < upgrade.minCoolCap)
+                if (activeUpgrade.def.coolOffset > 0f && currentOutdoorTemp < activeUpgrade.def.minCoolCap)
                 {
                     consumption *= 0.5f;
                 }

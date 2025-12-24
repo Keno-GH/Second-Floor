@@ -113,7 +113,7 @@ namespace SecondFloor
             }
 
             int totalImpressivenessBonus = 0;
-            foreach (var upgrade in comp.upgrades)
+            foreach (var upgrade in comp.GetUpgradeDefs())
             {
                 totalImpressivenessBonus += upgrade.impressivenessLevel;
                 if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
@@ -192,7 +192,7 @@ namespace SecondFloor
             foreach (var def in allUpgrades)
             {
                 Rect rowRect = new Rect(0f, curY, viewRect.width, UpgradeRowHeight);
-                bool isInstalled = comp.upgrades.Contains(def);
+                bool isInstalled = comp.HasUpgrade(def);
                 bool isPending = pendingUpgrades.Contains(def);
                 bool isSelected = selectedUpgrade == def;
                 bool isLocked = IsUpgradeLocked(def, comp);
@@ -302,7 +302,7 @@ namespace SecondFloor
             Widgets.DrawMenuSection(rect);
             Rect innerRect = rect.ContractedBy(8f);
             
-            bool isInstalled = comp.upgrades.Contains(def);
+            bool isInstalled = comp.HasUpgrade(def);
             bool isPending = GetPendingUpgrades(SelThing).Contains(def);
             
             // Reserve space for buttons at bottom
@@ -381,7 +381,7 @@ namespace SecondFloor
                 curY += 24f;
                 foreach (var requiredUpgrade in def.requiredUpgrades)
                 {
-                    bool reqInstalled = comp.upgrades.Contains(requiredUpgrade);
+                    bool reqInstalled = comp.HasUpgrade(requiredUpgrade);
                     string colorTag = reqInstalled ? "<color=#00ff00>" : "<color=#ff6666>";
                     string colorEnd = "</color>";
                     string reqStatus = reqInstalled ? "✓" : "✗";
@@ -649,6 +649,98 @@ namespace SecondFloor
             CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
             int bedCountBefore = bedsComp?.bedCount ?? 0;
 
+            // Check if this upgrade is stuffable
+            if (def.IsStuffable)
+            {
+                // Show float menu to select stuff
+                ShowStuffSelectionMenu(def, comp, staircase, bedCountBefore);
+            }
+            else
+            {
+                // Non-stuffable upgrade - use existing logic
+                ApplyUpgrade(def, null, comp, staircase, bedCountBefore);
+            }
+        }
+        
+        private void ShowStuffSelectionMenu(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase, int bedCountBefore)
+        {
+            List<FloatMenuOption> options = new List<FloatMenuOption>();
+            
+            // Get the bed count to calculate material requirements
+            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            int bedCount = bedsComp?.bedCount ?? 1;
+            
+            // Find all valid stuff ThingDefs that match the stuff categories
+            List<ThingDef> validStuffs = new List<ThingDef>();
+            foreach (StuffCategoryDef category in def.stuffCategories)
+            {
+                foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs)
+                {
+                    if (thingDef.IsStuff && thingDef.stuffProps != null && 
+                        thingDef.stuffProps.categories != null && 
+                        thingDef.stuffProps.categories.Contains(category) &&
+                        !validStuffs.Contains(thingDef))
+                    {
+                        validStuffs.Add(thingDef);
+                    }
+                }
+            }
+            
+            // Calculate base cost - use the costList from the upgrade or building def
+            List<ThingDefCountClass> costs = null;
+            if (def.RequiresConstruction && def.upgradeBuildingDef != null)
+            {
+                costs = def.upgradeBuildingDef.costList;
+            }
+            else if (def.costList != null)
+            {
+                costs = def.costList;
+            }
+            
+            // Get base cost amount (use first item as reference, or default to 50)
+            int baseCost = 50;
+            if (costs != null && costs.Count > 0)
+            {
+                baseCost = costs[0].count;
+            }
+            
+            // Scale by bed count
+            int totalCost = baseCost * bedCount;
+            
+            // Create menu options for each valid stuff
+            foreach (ThingDef stuff in validStuffs)
+            {
+                int available = staircase.Map.resourceCounter.GetCount(stuff);
+                bool canAfford = available >= totalCost;
+                
+                string label = $"{stuff.LabelCap} (Cost: {totalCost}, Available: {available})";
+                
+                if (!canAfford)
+                {
+                    // Disabled option - not enough material
+                    options.Add(new FloatMenuOption(label + " (Not enough)", null));
+                }
+                else
+                {
+                    // Enabled option
+                    ThingDef stuffCopy = stuff; // Capture for closure
+                    options.Add(new FloatMenuOption(label, delegate()
+                    {
+                        ApplyUpgrade(def, stuffCopy, comp, staircase, bedCountBefore);
+                    }));
+                }
+            }
+            
+            if (options.Count == 0)
+            {
+                options.Add(new FloatMenuOption("No valid materials available", null));
+            }
+            
+            Find.WindowStack.Add(new FloatMenu(options));
+        }
+        
+        private void ApplyUpgrade(StaircaseUpgradeDef def, ThingDef stuff, CompStaircaseUpgrades comp, Thing staircase, int bedCountBefore)
+        {
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
                 PlaceUpgradeBlueprint(def, staircase);
@@ -656,23 +748,72 @@ namespace SecondFloor
             else
             {
                 // Instant upgrade (legacy behavior)
-                comp.upgrades.Add(def);
+                comp.AddUpgrade(def, stuff);
+                
+                // Deduct materials if stuffable
+                if (def.IsStuffable && stuff != null)
+                {
+                    CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+                    int bedCount = bedsComp?.bedCount ?? 1;
+                    
+                    List<ThingDefCountClass> costs = null;
+                    if (def.RequiresConstruction && def.upgradeBuildingDef != null)
+                    {
+                        costs = def.upgradeBuildingDef.costList;
+                    }
+                    else if (def.costList != null)
+                    {
+                        costs = def.costList;
+                    }
+                    
+                    int baseCost = 50;
+                    if (costs != null && costs.Count > 0)
+                    {
+                        baseCost = costs[0].count;
+                    }
+                    
+                    int totalCost = baseCost * bedCount;
+                    
+                    // Deduct materials from map
+                    List<Thing> toRemove = new List<Thing>();
+                    int remaining = totalCost;
+                    foreach (Thing thing in staircase.Map.listerThings.ThingsOfDef(stuff))
+                    {
+                        if (remaining <= 0) break;
+                        
+                        int toTake = Mathf.Min(thing.stackCount, remaining);
+                        thing.stackCount -= toTake;
+                        remaining -= toTake;
+                        
+                        if (thing.stackCount <= 0)
+                        {
+                            toRemove.Add(thing);
+                        }
+                    }
+                    
+                    foreach (Thing thing in toRemove)
+                    {
+                        thing.Destroy(DestroyMode.Vanish);
+                    }
+                }
                 
                 // Check bed count after upgrade
-                int bedCountAfter = bedsComp?.bedCount ?? 0;
+                CompMultipleBeds bedsComp2 = staircase.TryGetComp<CompMultipleBeds>();
+                int bedCountAfter = bedsComp2?.bedCount ?? 0;
                 if (bedCountAfter < bedCountBefore)
                 {
                     CheckAndResetBedAssignments(staircase, bedCountAfter, "upgrade installation");
                 }
                 
-                Messages.Message("SF_UpgradeInstalled".Translate(def.label, staircase.Label), 
+                string materialInfo = stuff != null ? $" ({stuff.LabelCap})" : "";
+                Messages.Message("SF_UpgradeInstalled".Translate(def.label + materialInfo, staircase.Label), 
                     staircase, MessageTypeDefOf.PositiveEvent, false);
             }
         }
 
         private void TryRemoveUpgrade(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
         {
-            if (!comp.upgrades.Contains(def))
+            if (!comp.HasUpgrade(def))
             {
                 return;
             }
@@ -691,7 +832,7 @@ namespace SecondFloor
             int bedCountBefore = bedsComp?.bedCount ?? 0;
 
             // Remove the upgrade
-            comp.upgrades.Remove(def);
+            comp.RemoveUpgrade(def);
 
             // Refund 75% of materials
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
@@ -902,7 +1043,7 @@ namespace SecondFloor
 
             foreach (var requiredUpgrade in def.requiredUpgrades)
             {
-                if (!comp.upgrades.Contains(requiredUpgrade))
+                if (!comp.HasUpgrade(requiredUpgrade))
                 {
                     return true;
                 }
@@ -930,7 +1071,7 @@ namespace SecondFloor
         {
             List<StaircaseUpgradeDef> dependentUpgrades = new List<StaircaseUpgradeDef>();
             
-            foreach (var installedUpgrade in comp.upgrades)
+            foreach (var installedUpgrade in comp.GetUpgradeDefs())
             {
                 if (installedUpgrade.requiredUpgrades != null && installedUpgrade.requiredUpgrades.Contains(def))
                 {
@@ -950,9 +1091,9 @@ namespace SecondFloor
             int bedCountBefore = bedsComp?.bedCount ?? 0;
 
             // Apply the upgrade directly
-            if (!comp.upgrades.Contains(def))
+            if (!comp.HasUpgrade(def))
             {
-                comp.upgrades.Add(def);
+                comp.AddUpgrade(def, null);
                 
                 // Check bed count after upgrade
                 int bedCountAfter = bedsComp?.bedCount ?? 0;

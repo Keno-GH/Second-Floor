@@ -51,9 +51,9 @@ namespace SecondFloor
                         int bedCountBefore = bedsComp?.bedCount ?? 0;
                         
                         // Apply the upgrade
-                        if (!upgradeComp.upgrades.Contains(UpgradeDef))
+                        if (!upgradeComp.HasUpgrade(UpgradeDef))
                         {
-                            upgradeComp.upgrades.Add(UpgradeDef);
+                            upgradeComp.AddUpgrade(UpgradeDef, null);
                             
                             // Check bed count after upgrade - may need to reset assignments
                             int bedCountAfter = bedsComp?.bedCount ?? 0;
@@ -181,7 +181,7 @@ namespace SecondFloor
                     var upgradeComp = staircase.TryGetComp<CompStaircaseUpgrades>();
                     
                     // Check if already has this upgrade
-                    if (upgradeComp.upgrades.Contains(ext.upgradeDef))
+                    if (upgradeComp.HasUpgrade(ext.upgradeDef))
                     {
                         return new AcceptanceReport("SF_AlreadyHasUpgrade".Translate(ext.upgradeDef.label));
                     }
