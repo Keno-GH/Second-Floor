@@ -1,6 +1,7 @@
 using Verse;
 using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SecondFloor
 {
@@ -54,19 +55,94 @@ namespace SecondFloor
         {
             get
             {
-                if (parent?.Map == null) return 21f; // Default temperature if not spawned
-                
-                // Base temperature is ALWAYS outdoor temperature
-                float temperature = parent.Map.mapTemperature.OutdoorTemp;
-                
-                // Future: Upgrades could add temperature offsets here
-                // foreach (var upgrade in upgrades)
-                // {
-                //     temperature += upgrade.temperatureOffset;
-                // }
-                
-                return temperature;
+                return CalculateVirtualTemperature();
             }
+        }
+
+        /// <summary>
+        /// Calculates the virtual temperature for the Second Floor based on active upgrades.
+        /// Applies insulation, heating, and cooling effects in sequence.
+        /// </summary>
+        /// <returns>The calculated virtual temperature</returns>
+        public float CalculateVirtualTemperature()
+        {
+            if (parent?.Map == null) return 21f; // Default temperature if not spawned
+
+            // Step 1: Start with outdoor temperature
+            float temp = parent.Map.mapTemperature.OutdoorTemp;
+
+            // Step 2: Apply Insulation
+            float totalInsulation = upgrades.Sum(u => u.insulationAdjustment);
+            if (totalInsulation > 0)
+            {
+                // Get the average insulation target (weighted by insulation strength)
+                float weightedTargetSum = 0f;
+                float weightSum = 0f;
+                foreach (var upgrade in upgrades)
+                {
+                    if (upgrade.insulationAdjustment > 0)
+                    {
+                        weightedTargetSum += upgrade.insulationTarget * upgrade.insulationAdjustment;
+                        weightSum += upgrade.insulationAdjustment;
+                    }
+                }
+                float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
+
+                // Calculate difference and apply correction
+                float diff = insulationTarget - temp;
+                float correction = diff;
+                if (correction > totalInsulation)
+                    correction = totalInsulation;
+                else if (correction < -totalInsulation)
+                    correction = -totalInsulation;
+                
+                temp += correction;
+            }
+
+            // Step 3: Apply Heating
+            float totalHeat = upgrades.Sum(u => u.heatOffset);
+            if (totalHeat > 0)
+            {
+                // Find global max cap (highest maxHeatCap among heaters)
+                float globalMaxCap = 100f; // Default high value
+                var heatersWithCap = upgrades.Where(u => u.heatOffset > 0).ToList();
+                if (heatersWithCap.Any())
+                {
+                    globalMaxCap = heatersWithCap.Max(u => u.maxHeatCap);
+                }
+
+                float heatedTemp = temp + totalHeat;
+                if (heatedTemp > globalMaxCap)
+                    heatedTemp = globalMaxCap;
+                
+                // Ensure we don't cool down a hot room with a heater
+                if (heatedTemp > temp)
+                    temp = heatedTemp;
+            }
+
+            // Step 4: Apply Cooling
+            float totalCool = upgrades.Sum(u => u.coolOffset);
+            if (totalCool > 0)
+            {
+                // Find global min cap (lowest minCoolCap among coolers)
+                float globalMinCap = -273f; // Default low value
+                var coolersWithCap = upgrades.Where(u => u.coolOffset > 0).ToList();
+                if (coolersWithCap.Any())
+                {
+                    globalMinCap = coolersWithCap.Min(u => u.minCoolCap);
+                }
+
+                float cooledTemp = temp - totalCool;
+                if (cooledTemp < globalMinCap)
+                    cooledTemp = globalMinCap;
+                
+                // Ensure we don't heat up a cold room with a cooler
+                if (cooledTemp < temp)
+                    temp = cooledTemp;
+            }
+
+            // Step 5: Return final temperature
+            return temp;
         }
     }
 }

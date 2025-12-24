@@ -59,5 +59,13 @@ namespace SecondFloor
         /// Returns true if this upgrade requires construction (1.6 behavior)
         /// </summary>
         public bool RequiresConstruction => upgradeBuildingDef != null;
+
+        // Virtual Climate Control fields
+        public float heatOffset = 0f; // Amount this upgrade warms the room (e.g., 15)
+        public float maxHeatCap = 100f; // The temperature this heater cannot exceed (e.g., 28)
+        public float coolOffset = 0f; // Amount this cools the room
+        public float minCoolCap = -273f; // The temperature this cooler cannot go below (e.g., 17)
+        public float insulationAdjustment = 0f; // Power to normalize temp towards a target
+        public float insulationTarget = 21f; // The target temp for insulation (default 21)
     }
 }
