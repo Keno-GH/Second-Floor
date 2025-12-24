@@ -420,4 +420,28 @@ namespace SecondFloor
         }
     }
 
+    // Override AmbientTemperature for pawns in Second Floor beds to use outdoor temperature
+    [HarmonyPatch(typeof(Thing), "AmbientTemperature", MethodType.Getter)]
+    public static class Thing_AmbientTemperature_Patch
+    {
+        public static bool Prefix(Thing __instance, ref float __result)
+        {
+            // Only apply to pawns
+            Pawn pawn = __instance as Pawn;
+            if (pawn == null) return true;
+
+            // Only override if pawn is in a Second Floor bed
+            Building_Bed bed = pawn.CurrentBed();
+            if (bed == null) return true;
+
+            // Check if this is a Second Floor staircase bed
+            var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null) return true;
+
+            // Use the virtual temperature from the staircase
+            __result = upgradesComp.CurrentVirtualTemperature;
+            return false; // Skip original method
+        }
+    }
+
 }

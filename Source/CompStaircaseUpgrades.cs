@@ -44,5 +44,29 @@ namespace SecondFloor
             }
             return used;
         }
+
+        /// <summary>
+        /// Gets the virtual temperature for the Second Floor.
+        /// By default, returns outdoor (map ambient) temperature.
+        /// Upgrades can modify this temperature in the future.
+        /// </summary>
+        public float CurrentVirtualTemperature
+        {
+            get
+            {
+                if (parent?.Map == null) return 21f; // Default temperature if not spawned
+                
+                // Base temperature is ALWAYS outdoor temperature
+                float temperature = parent.Map.mapTemperature.OutdoorTemp;
+                
+                // Future: Upgrades could add temperature offsets here
+                // foreach (var upgrade in upgrades)
+                // {
+                //     temperature += upgrade.temperatureOffset;
+                // }
+                
+                return temperature;
+            }
+        }
     }
 }

@@ -130,7 +130,6 @@
         <RemoveSleepDisturbed>false</RemoveSleepDisturbed>
         <RemoveSharedBed>false</RemoveSharedBed>
         <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
-        <customHediff>SF_RegularTemperature</customHediff>
       </li>
     </modExtensions>
     <statBases>
@@ -254,7 +253,7 @@
         <bedCount>2</bedCount>
       </li>
       <li Class="CompProperties_Refuelable">
-        <fuelConsumptionRate>25</fuelConsumptionRate>
+        <fuelConsumptionRate>0</fuelConsumptionRate>
         <fuelCapacity>50.0</fuelCapacity>
         <fuelFilter>
           <thingDefs>
@@ -262,7 +261,7 @@
             <li>Chemfuel</li>
           </thingDefs>
         </fuelFilter>
-        <initialFuelPercent>0.5</initialFuelPercent>
+        <initialFuelPercent>0</initialFuelPercent>
         <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
       </li>
     </comps>
@@ -282,7 +281,6 @@
         <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
         <RemoveSharedBed>true</RemoveSharedBed>
         <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
-        <customHediff>SF_ColdTemperature</customHediff>
       </li>
     </modExtensions>
     <statBases>
@@ -348,7 +346,7 @@
         <bedCount>2</bedCount>
       </li>
       <li Class="CompProperties_Refuelable">
-        <fuelConsumptionRate>20</fuelConsumptionRate>
+        <fuelConsumptionRate>0</fuelConsumptionRate>
         <fuelCapacity>60.0</fuelCapacity>
         <fuelFilter>
           <thingDefs>
@@ -356,7 +354,7 @@
             <li>Chemfuel</li>
           </thingDefs>
         </fuelFilter>
-        <initialFuelPercent>0.5</initialFuelPercent>
+        <initialFuelPercent>0</initialFuelPercent>
         <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
       </li>
     </comps>
