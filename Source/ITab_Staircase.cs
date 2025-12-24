@@ -69,7 +69,7 @@ namespace SecondFloor
             
             // Draw stats below header
             float statsY = headerRect.yMax + 5f;
-            Rect statsRect = new Rect(mainRect.x, statsY, mainRect.width, 80f);
+            Rect statsRect = new Rect(mainRect.x, statsY, mainRect.width, 120f);
             DrawStaircaseStats(statsRect, comp);
             
             // Main content area (below stats)
@@ -156,6 +156,9 @@ namespace SecondFloor
             float totalSpace = comp.GetTotalSpace();
             float usedSpace = comp.GetUsedSpace();
             listing.Label($"Space: {usedSpace}/{totalSpace} (Available: {totalSpace - usedSpace})");
+            
+            float currentTemp = comp.CurrentVirtualTemperature;
+            listing.Label($"Temperature: {currentTemp.ToStringTemperature("F0")}");
             
             listing.End();
         }
