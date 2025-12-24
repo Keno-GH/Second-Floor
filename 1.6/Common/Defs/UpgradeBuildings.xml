@@ -20,7 +20,7 @@
             <isEdifice>false</isEdifice>
             <artificialForMeditationPurposes>false</artificialForMeditationPurposes>
         </building>
-        <constructEffect>ConstructMetal</constructEffect>
+        <!-- <constructEffect>ConstructMetal</constructEffect> -->
         <placeWorkers>
             <li>SecondFloor.PlaceWorker_OnStaircase</li>
         </placeWorkers>
@@ -189,9 +189,10 @@
         <statBases>
             <WorkToBuild>2000</WorkToBuild>
         </statBases>
-        <costList>
-            <Steel>100</Steel>
-        </costList>
+        <stuffCategories>
+            <li>Metallic</li>
+        </stuffCategories>
+        <costStuffCount>100</costStuffCount>
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <graphicData>
             <texPath>Things/Building/Misc/Brazier</texPath>

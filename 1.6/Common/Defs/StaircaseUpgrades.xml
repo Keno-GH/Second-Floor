@@ -130,6 +130,9 @@
         <coolOffset>0</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
+        <stuffCategories>
+            <li>Metallic</li>
+        </stuffCategories>
     </SecondFloor.StaircaseUpgradeDef>
 
 </Defs>
