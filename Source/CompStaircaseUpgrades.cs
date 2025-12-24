@@ -1,7 +1,9 @@
 using Verse;
 using RimWorld;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+
 
 namespace SecondFloor
 {
@@ -131,6 +133,107 @@ namespace SecondFloor
         public void RemoveUpgrade(StaircaseUpgradeDef def)
         {
             activeUpgrades.RemoveAll(au => au.def == def);
+        }
+        
+        /// <summary>
+        /// Removes an upgrade and refunds materials based on the stuff used and bed count.
+        /// Returns the refunded material information for messaging.
+        /// </summary>
+        public string RemoveUpgradeWithRefund(StaircaseUpgradeDef def, float refundPercent = 0.75f)
+        {
+            // Find the active upgrade to get the stuff used
+            ActiveUpgrade activeUpgrade = activeUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade == null)
+            {
+                return null; // Upgrade not found
+            }
+
+            int bedCount = GetBedCount(def);
+
+            ThingDef stuff = activeUpgrade.stuff;
+            string refundInfo = "";
+
+            // Calculate refund if there's a cost and stuff was used
+            if (stuff != null)
+            {
+                // Get base cost from costStuffCount
+                int baseCost = 0;
+                if (def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
+                {
+                    baseCost = def.upgradeBuildingDef.costStuffCount;
+                }
+                else if (def.upgradeBuildingDef.costList != null && def.upgradeBuildingDef.costList.Count > 0)
+                {
+                    // Fallback to costList if available
+                    baseCost = def.upgradeBuildingDef.costList[0].count;
+                }
+
+                if (baseCost > 0)
+                {
+                    int totalCost = baseCost * bedCount;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+
+                    if (refundAmount > 0)
+                    {
+                        // Create and spawn the refund
+                        Thing refundThing = ThingMaker.MakeThing(stuff);
+                        refundThing.stackCount = refundAmount;
+
+                        // Try to spawn near the staircase
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+
+                        refundInfo = $" ({refundAmount} {stuff.label} refunded)";
+                    }
+                }
+            }
+
+            if (def.upgradeBuildingDef.costList != null)
+            {
+                foreach (var cost in def.upgradeBuildingDef.costList)
+                {
+
+                    int totalCost = cost.count;
+                    totalCost *= bedCount;
+
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+
+                    if (refundAmount > 0)
+                    {
+                        // Create and spawn the refund
+                        Thing refundThing = ThingMaker.MakeThing(cost.thingDef);
+                        refundThing.stackCount = refundAmount;
+
+                        // Try to spawn near the staircase
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+
+                        refundInfo += $" ({refundAmount} {cost.thingDef.label} refunded)";
+                    }
+                }
+            }
+
+            // Remove the upgrade
+            activeUpgrades.RemoveAll(au => au.def == def);
+
+            return refundInfo;
+        }
+
+        /// <summary>
+        /// Helper method to get bed count for an upgrade. Sets to 1 if not applicable to the upgrade.
+        /// </summary>
+        private int GetBedCount(StaircaseUpgradeDef def)
+        {
+            // Get bed count to calculate total cost if applicable
+            int bedCount = 1;
+            bool onePerBed = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed ?? true;
+            if (onePerBed)
+            {
+                CompMultipleBeds bedsComp = parent.GetComp<CompMultipleBeds>();
+                bedCount = bedsComp?.bedCount ?? 1;
+            }
+
+            return bedCount;
         }
 
         /// <summary>
