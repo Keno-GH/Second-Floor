@@ -181,4 +181,28 @@
         </modExtensions>
     </ThingDef>
     
+    <!-- Braziers Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Braziers</defName>
+        <label>braziers upgrade</label>
+        <description>Install braziers to provide heat to the second floor area. Consumes wood or chemfuel stored in the staircase.</description>
+        <statBases>
+            <WorkToBuild>2000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>100</Steel>
+        </costList>
+        <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/Brazier</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_Braziers</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
 </Defs>

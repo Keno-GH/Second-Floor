@@ -16,6 +16,7 @@ namespace SecondFloor
     public class CompStaircaseUpgrades : ThingComp
     {
         public List<StaircaseUpgradeDef> upgrades = new List<StaircaseUpgradeDef>();
+        private float cachedFuelConsumptionRate = 0f;
 
         public override void PostExposeData()
         {
@@ -150,13 +151,7 @@ namespace SecondFloor
         /// </summary>
         public override void CompTick()
         {
-            base.CompTick();
-            
-            // Only process fuel consumption periodically (every 60 ticks = 1 second)
-            if (parent.IsHashIntervalTick(60))
-            {
-                ConsumeFuel();
-            }
+            ConsumeFuel();
         }
 
         /// <summary>
@@ -166,21 +161,33 @@ namespace SecondFloor
         private void ConsumeFuel()
         {
             if (parent?.Map == null || upgrades == null || upgrades.Count == 0)
+            {
+                UpdateFuelConsumptionRate(0f);
                 return;
+            }
 
             // Get the CompRefuelable from parent
             var refuelable = parent.GetComp<CompRefuelable>();
             if (refuelable == null)
+            {
+                UpdateFuelConsumptionRate(0f);
                 return;
+            }
 
             // Get current bed count
             var bedsComp = parent.GetComp<CompMultipleBeds>();
             if (bedsComp == null)
+            {
+                UpdateFuelConsumptionRate(0f);
                 return;
+            }
             
             int currentBedCount = bedsComp.bedCount;
             if (currentBedCount <= 0)
+            {
+                UpdateFuelConsumptionRate(0f);
                 return;
+            }
 
             // Get current outdoor temperature
             float currentOutdoorTemp = parent.Map.mapTemperature.OutdoorTemp;
@@ -193,7 +200,7 @@ namespace SecondFloor
                 if (upgrade.fuelPerBed <= 0f)
                     continue;
                 
-                float consumption = upgrade.fuelPerBed * currentBedCount;
+                float consumption = upgrade.fuelPerBed * currentBedCount / 60000f; // Convert per tick
                 
                 // Apply throttling based on temperature
                 // If it's already hot outside and we're heating, throttle to 50%
@@ -211,10 +218,29 @@ namespace SecondFloor
                 totalFuelToConsume += consumption;
             }
             
+            // Update the display rate (per day, not per tick)
+            UpdateFuelConsumptionRate(totalFuelToConsume * 60000f);
+            
             // Consume the fuel
             if (totalFuelToConsume > 0f)
             {
                 refuelable.ConsumeFuel(totalFuelToConsume);
+            }
+        }
+
+        /// <summary>
+        /// Updates the fuel consumption rate in the Props so the inspect string shows correct time remaining.
+        /// </summary>
+        private void UpdateFuelConsumptionRate(float ratePerDay)
+        {
+            if (cachedFuelConsumptionRate != ratePerDay)
+            {
+                cachedFuelConsumptionRate = ratePerDay;
+                var refuelable = parent.GetComp<CompRefuelable>();
+                if (refuelable?.Props != null)
+                {
+                    refuelable.Props.fuelConsumptionRate = ratePerDay;
+                }
             }
         }
     }

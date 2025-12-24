@@ -118,5 +118,19 @@
         </requiredUpgrades>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Braziers upgrade - provides temperature control -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_Braziers</defName>
+        <label>braziers</label>
+        <description>Installs braziers in the second floor area to provide heat. Consumes wood or chemfuel stored in the staircase.</description>
+        <spaceCost>15</spaceCost>
+        <fuelPerBed>2.0</fuelPerBed>
+        <heatOffset>15</heatOffset>
+        <maxHeatCap>28</maxHeatCap>
+        <coolOffset>0</coolOffset>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
+        <minConstructionSkill>2</minConstructionSkill>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
 
