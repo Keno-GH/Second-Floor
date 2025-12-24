@@ -166,11 +166,12 @@ namespace SecondFloor
     }
 
     /// <summary>
-    /// ModExtension that links a staircase upgrade building ThingDef to its StaircaseUpgradeDef.
+    /// ModExtension that links a staircase upgrade building ThingDef to its StaircaseUpgradeDef and settings.
     /// </summary>
     public class StaircaseUpgradeExtension : DefModExtension
     {
         public StaircaseUpgradeDef upgradeDef;
+        public bool onePerBed = true; // By default, upgrades are one per bed
     }
 
     /// <summary>
