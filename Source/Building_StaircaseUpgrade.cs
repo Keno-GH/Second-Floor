@@ -49,11 +49,14 @@ namespace SecondFloor
                         // Store bed count before the upgrade
                         var bedsComp = staircase.TryGetComp<CompMultipleBeds>();
                         int bedCountBefore = bedsComp?.bedCount ?? 0;
+
+                        // Get the stuff this upgrade is made of (this building IS the upgrade being built)
+                        ThingDef stuff = this.Stuff;
                         
                         // Apply the upgrade
                         if (!upgradeComp.HasUpgrade(UpgradeDef))
                         {
-                            upgradeComp.AddUpgrade(UpgradeDef, null);
+                            upgradeComp.AddUpgrade(UpgradeDef, stuff);
                             
                             // Check bed count after upgrade - may need to reset assignments
                             int bedCountAfter = bedsComp?.bedCount ?? 0;
@@ -74,6 +77,12 @@ namespace SecondFloor
                 else
                 {
                     Log.Warning($"[SecondFloor] Building_StaircaseUpgrade spawned but no staircase found at position {Position}");
+                }
+
+                // Deselect the building before destroying it
+                if (Find.Selector.IsSelected(this))
+                {
+                    Find.Selector.Deselect(this);
                 }
 
                 // Despawn this building - it's just a construction vehicle
@@ -119,6 +128,23 @@ namespace SecondFloor
                 if (thing != this && thing.TryGetComp<CompStaircaseUpgrades>() != null)
                 {
                     return thing;
+                }
+            }
+            return null;
+        }
+
+        private Thing FindUpgradeBuildingAtPosition(Map map)
+        {
+            // Look for any thing at this position that has the StaircaseUpgradeExtension mod extension
+            foreach (Thing thing in Position.GetThingList(map).ToList())
+            {
+                if (thing != this)
+                {
+                    var ext = thing.def.GetModExtension<StaircaseUpgradeExtension>();
+                    if (ext != null && ext.upgradeDef == UpgradeDef)
+                    {
+                        return thing;
+                    }
                 }
             }
             return null;
