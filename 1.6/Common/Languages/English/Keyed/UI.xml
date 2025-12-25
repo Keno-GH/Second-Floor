@@ -4,6 +4,7 @@
   
   <!-- Upgrade system messages -->
   <SF_UpgradeInstalled>{0} upgrade installed on {1}!</SF_UpgradeInstalled>
+  <SF_UpgradeCountIncreased>{0} upgrade added to {1}!</SF_UpgradeCountIncreased>
   <SF_UpgradePlanned>{0} upgrade construction planned.</SF_UpgradePlanned>
   <SF_CannotPlaceBlueprint>Cannot place upgrade blueprint here.</SF_CannotPlaceBlueprint>
   <SF_NotEnoughSpaceMessage>Not enough space for this upgrade!</SF_NotEnoughSpaceMessage>

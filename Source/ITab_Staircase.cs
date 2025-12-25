@@ -113,7 +113,7 @@ namespace SecondFloor
             }
 
             int totalImpressivenessBonus = 0;
-            foreach (var upgrade in comp.GetUpgradeDefs())
+            foreach (var upgrade in comp.GetActiveUpgradeDefs())
             {
                 totalImpressivenessBonus += upgrade.impressivenessLevel;
                 if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
@@ -192,7 +192,7 @@ namespace SecondFloor
             foreach (var def in allUpgrades)
             {
                 Rect rowRect = new Rect(0f, curY, viewRect.width, UpgradeRowHeight);
-                bool isInstalled = comp.HasUpgrade(def);
+                bool isInstalled = comp.HasActiveUpgrade(def);
                 bool isPending = pendingUpgrades.Contains(def);
                 bool isSelected = selectedUpgrade == def;
                 bool isLocked = IsUpgradeLocked(def, comp);
@@ -302,7 +302,7 @@ namespace SecondFloor
             Widgets.DrawMenuSection(rect);
             Rect innerRect = rect.ContractedBy(8f);
             
-            bool isInstalled = comp.HasUpgrade(def);
+            bool isInstalled = comp.HasActiveUpgrade(def);
             bool isPending = GetPendingUpgrades(SelThing).Contains(def);
             
             // Reserve space for buttons at bottom
@@ -329,7 +329,7 @@ namespace SecondFloor
             // Add stuff material to status if upgrade is stuffable and installed
             if (isInstalled && def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
             {
-                ActiveUpgrade activeUpgrade = comp.activeUpgrades.FirstOrDefault(au => au.def == def);
+                ActiveUpgrade activeUpgrade = comp.constructedUpgrades.FirstOrDefault(au => au.def == def);
                 if (activeUpgrade != null && activeUpgrade.stuff != null)
                 {
                     status += $" ({activeUpgrade.stuff.LabelCap})";
@@ -395,7 +395,7 @@ namespace SecondFloor
                     // If installed, show the material used
                     if (isInstalled)
                     {
-                        ActiveUpgrade activeUpgrade = comp.activeUpgrades.FirstOrDefault(au => au.def == def);
+                        ActiveUpgrade activeUpgrade = comp.constructedUpgrades.FirstOrDefault(au => au.def == def);
                         if (activeUpgrade != null && activeUpgrade.stuff != null)
                         {
                             Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  <color=#00ff00>Material: {activeUpgrade.stuff.LabelCap}</color>");
@@ -433,7 +433,7 @@ namespace SecondFloor
                 curY += 24f;
                 foreach (var requiredUpgrade in def.requiredUpgrades)
                 {
-                    bool reqInstalled = comp.HasUpgrade(requiredUpgrade);
+                    bool reqInstalled = comp.HasActiveUpgrade(requiredUpgrade);
                     string colorTag = reqInstalled ? "<color=#00ff00>" : "<color=#ff6666>";
                     string colorEnd = "</color>";
                     string reqStatus = reqInstalled ? "✓" : "✗";
@@ -826,7 +826,22 @@ namespace SecondFloor
         {
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
-                PlaceUpgradeBlueprint(def, stuff, staircase);
+                // Place one blueprint per bed count
+                if (def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true)
+                {
+                    CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+                    int bedCount = bedsComp?.bedCount ?? 1;
+                    
+                    for (int i = 0; i < bedCount; i++)
+                    {
+                        PlaceUpgradeBlueprint(def, stuff, staircase);
+                    }
+                }
+                else
+                {
+                    // Single blueprint
+                    PlaceUpgradeBlueprint(def, stuff, staircase);
+                }
             }
             else
             {
@@ -1089,7 +1104,7 @@ namespace SecondFloor
 
             foreach (var requiredUpgrade in def.requiredUpgrades)
             {
-                if (!comp.HasUpgrade(requiredUpgrade))
+                if (!comp.HasActiveUpgrade(requiredUpgrade))
                 {
                     return true;
                 }
@@ -1117,7 +1132,7 @@ namespace SecondFloor
         {
             List<StaircaseUpgradeDef> dependentUpgrades = new List<StaircaseUpgradeDef>();
             
-            foreach (var installedUpgrade in comp.GetUpgradeDefs())
+            foreach (var installedUpgrade in comp.GetActiveUpgradeDefs())
             {
                 if (installedUpgrade.requiredUpgrades != null && installedUpgrade.requiredUpgrades.Contains(def))
                 {

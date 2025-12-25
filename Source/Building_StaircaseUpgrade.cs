@@ -36,58 +36,65 @@ namespace SecondFloor
         {
             base.SpawnSetup(map, respawningAfterLoad);
 
-            if (!respawningAfterLoad)
+            if (respawningAfterLoad)
             {
-                // Find the staircase at this position
-                Thing staircase = FindStaircaseAtPosition(map);
-
-                if (staircase != null)
-                {
-                    var upgradeComp = staircase.TryGetComp<CompStaircaseUpgrades>();
-                    if (upgradeComp != null && UpgradeDef != null)
-                    {
-                        // Store bed count before the upgrade
-                        var bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-                        int bedCountBefore = bedsComp?.bedCount ?? 0;
-
-                        // Get the stuff this upgrade is made of (this building IS the upgrade being built)
-                        ThingDef stuff = this.Stuff;
-                        
-                        // Apply the upgrade
-                        if (!upgradeComp.HasUpgrade(UpgradeDef))
-                        {
-                            upgradeComp.AddUpgrade(UpgradeDef, stuff);
-                            
-                            // Check bed count after upgrade - may need to reset assignments
-                            int bedCountAfter = bedsComp?.bedCount ?? 0;
-                            if (bedCountAfter < bedCountBefore)
-                            {
-                                CheckAndResetBedAssignments(staircase, bedCountAfter);
-                            }
-                            
-                            Messages.Message("SF_UpgradeInstalled".Translate(UpgradeDef.label, staircase.Label), 
-                                staircase, MessageTypeDefOf.PositiveEvent, false);
-                        }
-                    }
-                    else if (UpgradeDef == null)
-                    {
-                        Log.Error($"[SecondFloor] Building_StaircaseUpgrade spawned but has no UpgradeDef configured! ThingDef: {def.defName}");
-                    }
-                }
-                else
-                {
-                    Log.Warning($"[SecondFloor] Building_StaircaseUpgrade spawned but no staircase found at position {Position}");
-                }
-
-                // Deselect the building before destroying it
-                if (Find.Selector.IsSelected(this))
-                {
-                    Find.Selector.Deselect(this);
-                }
-
-                // Despawn this building - it's just a construction vehicle
-                this.Destroy(DestroyMode.Vanish);
+                return;
             }
+
+            // Find the staircase at this position
+            Thing staircase = FindStaircaseAtPosition(map);
+
+            if (staircase == null)
+            {
+                Log.Warning($"[SecondFloor] Building_StaircaseUpgrade spawned but no staircase found at position {Position}");
+            }
+
+            var upgradeComp = staircase.TryGetComp<CompStaircaseUpgrades>();
+            if (upgradeComp == null || UpgradeDef == null)
+            {
+                Log.Error($"[SecondFloor] Building_StaircaseUpgrade spawned but has no UpgradeDef configured! ThingDef: {def.defName}");
+            }
+
+            // Store bed count before the upgrade
+            var bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            int bedCountBefore = bedsComp?.bedCount ?? 0;
+
+            // Get the stuff this upgrade is made of
+            ThingDef stuff = this.Stuff;
+
+            // Apply the upgrade
+            if (!upgradeComp.HasUpgrade(UpgradeDef))
+            {
+                upgradeComp.AddUpgrade(UpgradeDef, stuff);
+
+                // Check bed count after upgrade - may need to reset assignments
+                int bedCountAfter = bedsComp?.bedCount ?? 0;
+                if (bedCountAfter < bedCountBefore)
+                {
+                    CheckAndResetBedAssignments(staircase, bedCountAfter);
+                }
+
+                Messages.Message("SF_UpgradeInstalled".Translate(UpgradeDef.label, staircase.Label),
+                    staircase, MessageTypeDefOf.PositiveEvent, false);
+            }
+            else
+            {
+                // Increase the count of this upgrade (e.g. for multiple beds)
+                upgradeComp.IncreaseUpgradeCount(UpgradeDef);
+                Messages.Message("SF_UpgradeCountIncreased".Translate(UpgradeDef.label, staircase.Label),
+                    staircase, MessageTypeDefOf.PositiveEvent, false);
+            }
+
+
+
+            // Deselect the building before destroying it
+            if (Find.Selector.IsSelected(this))
+            {
+                Find.Selector.Deselect(this);
+            }
+
+            // Despawn this building - it's just a construction vehicle
+            this.Destroy(DestroyMode.Vanish);
         }
 
         private void CheckAndResetBedAssignments(Thing staircase, int newBedCount)

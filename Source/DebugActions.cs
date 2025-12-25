@@ -39,16 +39,16 @@ namespace SecondFloor
             foreach (Thing thing in staircasesWithUpgrades)
             {
                 CompStaircaseUpgrades comp = thing.TryGetComp<CompStaircaseUpgrades>();
-                if (comp == null || comp.activeUpgrades == null || comp.activeUpgrades.Count == 0)
+                if (comp == null || comp.constructedUpgrades == null || comp.constructedUpgrades.Count == 0)
                 {
                     continue;
                 }
 
                 sb.AppendLine($"--- {thing.def.label} at {thing.Position} ---");
                 sb.AppendLine($"  Space: {comp.GetUsedSpace()}/{comp.GetTotalSpace()}");
-                sb.AppendLine($"  Upgrades ({comp.activeUpgrades.Count}):");
+                sb.AppendLine($"  Upgrades ({comp.constructedUpgrades.Count}):");
                 
-                foreach (var activeUpgrade in comp.activeUpgrades)
+                foreach (var activeUpgrade in comp.constructedUpgrades)
                 {
                     totalUpgrades++;
                     string stuffInfo = activeUpgrade.stuff != null ? $" (Stuff: {activeUpgrade.stuff.label})" : "";
@@ -115,7 +115,7 @@ namespace SecondFloor
                 sb.AppendLine();
             }
 
-            sb.AppendLine($"Total staircases with upgrades: {staircasesWithUpgrades.Count(t => t.TryGetComp<CompStaircaseUpgrades>()?.activeUpgrades?.Count > 0)}");
+            sb.AppendLine($"Total staircases with upgrades: {staircasesWithUpgrades.Count(t => t.TryGetComp<CompStaircaseUpgrades>()?.constructedUpgrades?.Count > 0)}");
             sb.AppendLine($"Total upgrades installed: {totalUpgrades}");
 
             Log.Message(sb.ToString());
@@ -142,12 +142,12 @@ namespace SecondFloor
             foreach (Thing thing in staircasesWithUpgrades)
             {
                 CompStaircaseUpgrades comp = thing.TryGetComp<CompStaircaseUpgrades>();
-                if (comp == null || comp.activeUpgrades == null)
+                if (comp == null || comp.constructedUpgrades == null)
                 {
                     continue;
                 }
 
-                foreach (var activeUpgrade in comp.activeUpgrades)
+                foreach (var activeUpgrade in comp.constructedUpgrades)
                 {
                     if (!upgradeCount.ContainsKey(activeUpgrade.def))
                     {
@@ -226,12 +226,12 @@ namespace SecondFloor
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"=== {staircase.def.label} at {cell} ===");
             sb.AppendLine($"Space: {comp.GetUsedSpace()}/{comp.GetTotalSpace()}");
-            sb.AppendLine($"Active Upgrades: {comp.activeUpgrades?.Count ?? 0}");
+            sb.AppendLine($"Active Upgrades: {comp.constructedUpgrades?.Count ?? 0}");
             sb.AppendLine();
 
-            if (comp.activeUpgrades != null && comp.activeUpgrades.Count > 0)
+            if (comp.constructedUpgrades != null && comp.constructedUpgrades.Count > 0)
             {
-                foreach (var activeUpgrade in comp.activeUpgrades)
+                foreach (var activeUpgrade in comp.constructedUpgrades)
                 {
                     string stuffInfo = activeUpgrade.stuff != null ? $" ({activeUpgrade.stuff.label})" : "";
                     sb.AppendLine($"- {activeUpgrade.def.label}{stuffInfo}");

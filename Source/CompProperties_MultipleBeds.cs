@@ -33,11 +33,13 @@ namespace SecondFloor
                 var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
                 if (upgradesComp != null)
                 {
-                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
+                    // Use GetConstructedUpgradeDefs to avoid circular dependency
+                    // Bed count modifiers apply regardless of onePerBed validation
+                    foreach (var upgrade in upgradesComp.GetConstructedUpgradeDefs())
                     {
                         count += upgrade.bedCountOffset;
                     }
-                    foreach (var upgrade in upgradesComp.GetUpgradeDefs())
+                    foreach (var upgrade in upgradesComp.GetConstructedUpgradeDefs())
                     {
                         count *= upgrade.bedCountMultiplier;
                     }

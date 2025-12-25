@@ -22,6 +22,7 @@ namespace SecondFloor
     {
         public StaircaseUpgradeDef def;
         public ThingDef stuff;
+        public int count;
         
         public ActiveUpgrade()
         {
@@ -31,18 +32,20 @@ namespace SecondFloor
         {
             this.def = def;
             this.stuff = stuff;
+            this.count = 1;
         }
         
         public void ExposeData()
         {
             Scribe_Defs.Look(ref def, "def");
             Scribe_Defs.Look(ref stuff, "stuff");
+            Scribe_Values.Look(ref count, "count", 1);
         }
     }
 
     public class CompStaircaseUpgrades : ThingComp
     {
-        public List<ActiveUpgrade> activeUpgrades = new List<ActiveUpgrade>();
+        public List<ActiveUpgrade> constructedUpgrades = new List<ActiveUpgrade>();
         private float cachedFuelConsumptionRate = 0f;
         
         // Legacy field for backward compatibility
@@ -51,29 +54,40 @@ namespace SecondFloor
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Collections.Look(ref activeUpgrades, "activeUpgrades", LookMode.Deep);
+            Scribe_Collections.Look(ref constructedUpgrades, "constructedUpgrades", LookMode.Deep);
             
-            // Legacy support: load old "upgrades" list and convert to activeUpgrades
+            // Legacy support: load old "upgrades" and "activeUpgrades" lists and convert to constructedUpgrades
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 Scribe_Collections.Look(ref upgrades, "upgrades", LookMode.Def);
+                
+                // Support old "activeUpgrades" field name
+                List<ActiveUpgrade> oldActiveUpgrades = null;
+                Scribe_Collections.Look(ref oldActiveUpgrades, "activeUpgrades", LookMode.Deep);
+                if (oldActiveUpgrades != null && oldActiveUpgrades.Count > 0)
+                {
+                    if (constructedUpgrades == null)
+                    {
+                        constructedUpgrades = oldActiveUpgrades;
+                    }
+                }
             }
             
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
-                if (activeUpgrades == null)
+                if (constructedUpgrades == null)
                 {
-                    activeUpgrades = new List<ActiveUpgrade>();
+                    constructedUpgrades = new List<ActiveUpgrade>();
                 }
                 
-                // Convert legacy upgrades to activeUpgrades
+                // Convert legacy upgrades to constructedUpgrades
                 if (upgrades != null && upgrades.Count > 0)
                 {
                     foreach (var upgradeDef in upgrades)
                     {
-                        if (!activeUpgrades.Any(au => au.def == upgradeDef))
+                        if (!constructedUpgrades.Any(au => au.def == upgradeDef))
                         {
-                            activeUpgrades.Add(new ActiveUpgrade(upgradeDef, null));
+                            constructedUpgrades.Add(new ActiveUpgrade(upgradeDef, null));
                         }
                     }
                     upgrades = null; // Clear legacy data
@@ -93,7 +107,7 @@ namespace SecondFloor
         public float GetUsedSpace()
         {
             float used = 0;
-            foreach(var activeUpgrade in activeUpgrades)
+            foreach(var activeUpgrade in constructedUpgrades)
             {
                 used += activeUpgrade.def.spaceCost;
             }
@@ -101,19 +115,70 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Helper method to check if an upgrade is installed
+        /// Helper method to check if an upgrade is constructed
         /// </summary>
         public bool HasUpgrade(StaircaseUpgradeDef def)
         {
-            return activeUpgrades.Any(au => au.def == def);
+            return constructedUpgrades.Any(au => au.def == def);
+        }
+
+        /// <summary>
+        /// Helper method to check if an upgrade is active (valid)
+        /// </summary>
+        public bool HasActiveUpgrade(StaircaseUpgradeDef def)
+        {
+            return GetActiveUpgradeDefs().Contains(def);
         }
         
         /// <summary>
-        /// Helper method to get all installed upgrade defs
+        /// Helper method to get all constructed upgrade defs (no validation).
+        /// Used for bed count calculations to avoid circular dependency.
         /// </summary>
-        public List<StaircaseUpgradeDef> GetUpgradeDefs()
+        public List<StaircaseUpgradeDef> GetConstructedUpgradeDefs()
         {
-            return activeUpgrades.Select(au => au.def).ToList();
+            return constructedUpgrades.Select(au => au.def).ToList();
+        }
+        
+        /// <summary>
+        /// Helper method to get all active upgrade defs (valid upgrades only).
+        /// For upgrades with onePerBed=true, they must have count >= bedCount to be valid.
+        /// Used for all non-bed-count effects (thoughts, temperature, etc.).
+        /// </summary>
+        public List<StaircaseUpgradeDef> GetActiveUpgradeDefs()
+        {
+
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+                return new List<StaircaseUpgradeDef>();
+
+            var bedsComp = parent.GetComp<CompMultipleBeds>();
+            int bedCount = bedsComp?.bedCount ?? 1;
+            
+            List<StaircaseUpgradeDef> activeDefs = new List<StaircaseUpgradeDef>();
+            
+            foreach (var constructedUpgrade in constructedUpgrades)
+            {
+                bool isValid = true;
+                
+                // Check if this upgrade requires one per bed
+                if (constructedUpgrade.def.upgradeBuildingDef != null)
+                {
+                    var ext = constructedUpgrade.def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
+                    if (ext?.onePerBed == true)
+                    {
+                        if (constructedUpgrade.count < bedCount)
+                        {
+                            isValid = false;
+                        }
+                    }
+                }
+                
+                if (isValid)
+                {
+                    activeDefs.Add(constructedUpgrade.def);
+                }
+            }
+            
+            return activeDefs;
         }
         
         /// <summary>
@@ -123,7 +188,19 @@ namespace SecondFloor
         {
             if (!HasUpgrade(def))
             {
-                activeUpgrades.Add(new ActiveUpgrade(def, stuff));
+                constructedUpgrades.Add(new ActiveUpgrade(def, stuff));
+            }
+        }
+
+        /// <summary>
+        /// Increases the count of an existing upgrade
+        /// </summary>
+        public void IncreaseUpgradeCount(StaircaseUpgradeDef def)
+        {
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade != null)
+            {
+                activeUpgrade.count++;
             }
         }
         
@@ -132,7 +209,7 @@ namespace SecondFloor
         /// </summary>
         public void RemoveUpgrade(StaircaseUpgradeDef def)
         {
-            activeUpgrades.RemoveAll(au => au.def == def);
+            constructedUpgrades.RemoveAll(au => au.def == def);
         }
         
         /// <summary>
@@ -141,8 +218,8 @@ namespace SecondFloor
         /// </summary>
         public string RemoveUpgradeWithRefund(StaircaseUpgradeDef def, float refundPercent = 0.75f)
         {
-            // Find the active upgrade to get the stuff used
-            ActiveUpgrade activeUpgrade = activeUpgrades.FirstOrDefault(au => au.def == def);
+            // Find the constructed upgrade to get the stuff used
+            ActiveUpgrade activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
             if (activeUpgrade == null)
             {
                 return null; // Upgrade not found
@@ -214,7 +291,7 @@ namespace SecondFloor
             }
 
             // Remove the upgrade
-            activeUpgrades.RemoveAll(au => au.def == def);
+            constructedUpgrades.RemoveAll(au => au.def == def);
 
             return refundInfo;
         }
@@ -262,6 +339,7 @@ namespace SecondFloor
             float temp = parent.Map.mapTemperature.OutdoorTemp;
 
             // Step 2: Apply Insulation
+            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs().Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
             float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
             if (totalInsulation > 0)
             {
@@ -349,9 +427,9 @@ namespace SecondFloor
         /// </summary>
         private void ConsumeFuel()
         {
-            if (parent?.Map == null || activeUpgrades == null || activeUpgrades.Count == 0)
+            if (parent?.Map == null || constructedUpgrades == null || constructedUpgrades.Count == 0)
             {
-                UpdateFuelConsumptionRate(0f);
+                UpdateFuelConsumptionRate(1f);
                 return;
             }
 
@@ -359,7 +437,7 @@ namespace SecondFloor
             var refuelable = parent.GetComp<CompRefuelable>();
             if (refuelable == null)
             {
-                UpdateFuelConsumptionRate(0f);
+                UpdateFuelConsumptionRate(1f);
                 return;
             }
 
@@ -367,14 +445,14 @@ namespace SecondFloor
             var bedsComp = parent.GetComp<CompMultipleBeds>();
             if (bedsComp == null)
             {
-                UpdateFuelConsumptionRate(0f);
+                UpdateFuelConsumptionRate(1f);
                 return;
             }
             
             int currentBedCount = bedsComp.bedCount;
             if (currentBedCount <= 0)
             {
-                UpdateFuelConsumptionRate(0f);
+                UpdateFuelConsumptionRate(1f);
                 return;
             }
 
@@ -384,6 +462,7 @@ namespace SecondFloor
             // Calculate total fuel to consume
             float totalFuelToConsume = 0f;
             
+            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs().Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
             foreach (var activeUpgrade in activeUpgrades)
             {
                 if (activeUpgrade.def.fuelPerBed <= 0f)
