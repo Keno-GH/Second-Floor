@@ -358,7 +358,9 @@ namespace SecondFloor
             // Costs section
             Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "<b>Costs:</b>");
             curY += 24f;
-            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Space: {def.spaceCost}");
+            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Base space: {def.spaceCost}");
+            curY += 24f;
+            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Space per bed: {def.spaceCostPerBed}");
             curY += 24f;
             
             // Get bed count for cost calculations
@@ -540,7 +542,8 @@ namespace SecondFloor
                 {
                     // Show Build button
                     float availableSpace = comp.GetTotalSpace() - comp.GetUsedSpace();
-                    bool canAffordSpace = availableSpace >= def.spaceCost;
+                    float requiredSpace = def.spaceCost + (def.spaceCostPerBed * (bedComp?.bedCount ?? 1));
+                    bool canAffordSpace = availableSpace >= requiredSpace;
                     bool isLocked = IsUpgradeLocked(def, comp);
                     bool canBuild = canAffordSpace && !isLocked;
                     
@@ -573,7 +576,7 @@ namespace SecondFloor
                         }
                         else if (!canAffordSpace)
                         {
-                            TooltipHandler.TipRegion(buildButtonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                            TooltipHandler.TipRegion(buildButtonRect, $"Not enough space! Need {requiredSpace}, have {availableSpace}");
                         }
                         
                         // Dev mode instant button
@@ -609,7 +612,7 @@ namespace SecondFloor
                         }
                         else if (!canAffordSpace)
                         {
-                            TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                            TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {requiredSpace}, have {availableSpace}");
                         }
                     }
                 }
@@ -772,8 +775,9 @@ namespace SecondFloor
             
             float totalSpace = comp.GetTotalSpace();
             float usedSpace = comp.GetUsedSpace();
+            float requiredSpace = def.spaceCost + (def.spaceCostPerBed * (staircase.TryGetComp<CompMultipleBeds>()?.bedCount ?? 1));
 
-            if (totalSpace - usedSpace < def.spaceCost)
+            if (totalSpace - usedSpace < requiredSpace)
             {
                 Messages.Message("SF_NotEnoughSpaceMessage".Translate(), MessageTypeDefOf.RejectInput, false);
                 return;

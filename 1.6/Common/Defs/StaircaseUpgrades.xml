@@ -65,7 +65,7 @@
         <defName>SF_StaircaseUpgrade_Soundproofing</defName>
         <label>Soundproofing</label>
         <description>Prevents sleep disturbed thoughts.</description>
-        <spaceCost>10</spaceCost>
+        <spaceCostPerBed>5</spaceCostPerBed>
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
         <minConstructionSkill>3</minConstructionSkill>
@@ -76,7 +76,7 @@
         <defName>SF_StaircaseUpgrade_BasicDecoration</defName>
         <label>Basic Decoration</label>
         <description>Adds simple decorations to improve the room's impressiveness slightly.</description>
-        <spaceCost>15</spaceCost>
+        <spaceCostPerBed>2</spaceCostPerBed>
         <impressivenessLevel>1</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
@@ -86,7 +86,7 @@
         <defName>SF_StaircaseUpgrade_ComfortableUpgrade</defName>
         <label>Comfortable Upgrade</label>
         <description>Upgrades furniture and amenities to make the room more comfortable.</description>
-        <spaceCost>25</spaceCost>
+        <spaceCostPerBed>4</spaceCostPerBed>
         <impressivenessLevel>2</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
@@ -96,7 +96,7 @@
         <defName>SF_StaircaseUpgrade_FineDecoration</defName>
         <label>Fine Decoration</label>
         <description>Adds fine art and decorations to make the room impressive.</description>
-        <spaceCost>35</spaceCost>
+        <spaceCostPerBed>5</spaceCostPerBed>
         <impressivenessLevel>3</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_FineDecoration</upgradeBuildingDef>
         <minArtisticSkill>7</minArtisticSkill>
@@ -109,7 +109,7 @@
         <defName>SF_StaircaseUpgrade_LuxuryFinishing</defName>
         <label>Luxury Finishing</label>
         <description>High-end materials and luxury amenities make this room extremely impressive.</description>
-        <spaceCost>50</spaceCost>
+        <spaceCostPerBed>6</spaceCostPerBed>
         <impressivenessLevel>4</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_LuxuryFinishing</upgradeBuildingDef>
         <minArtisticSkill>10</minArtisticSkill>
@@ -123,9 +123,9 @@
         <defName>SF_Braziers</defName>
         <label>braziers</label>
         <description>Installs braziers in the second floor area to provide heat. Consumes wood or chemfuel stored in the staircase.</description>
-        <spaceCost>15</spaceCost>
+        <spaceCostPerBed>2</spaceCostPerBed>
         <fuelPerBed>2.0</fuelPerBed>
-        <heatOffset>15</heatOffset>
+        <heatOffset>10</heatOffset>
         <maxHeatCap>28</maxHeatCap>
         <coolOffset>0</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>

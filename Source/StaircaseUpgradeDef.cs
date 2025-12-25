@@ -7,7 +7,7 @@ namespace SecondFloor
 {
     public class StaircaseUpgradeDef : Def
     {
-        public float spaceCost;
+        public float spaceCost = 0f; // Space cost this upgrade uses in the staircase
         public List<ThingDef> applyToStairs;
         public int bedCountOffset;
         public float bedCountMultiplier = 1f;
@@ -68,6 +68,7 @@ namespace SecondFloor
         public float insulationAdjustment = 0f; // Power to normalize temp towards a target
         public float insulationTarget = 21f; // The target temp for insulation (default 21)
         public float fuelPerBed = 0f; // Fuel consumed per bed count per tick
+        public float spaceCostPerBed = 0f; // Additional space cost per bed count
         
         // Stuff system - allows choosing materials for upgrades
         public List<StuffCategoryDef> stuffCategories;

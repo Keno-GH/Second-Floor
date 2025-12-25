@@ -91,8 +91,8 @@
             <WorkToBuild>5000</WorkToBuild>
         </statBases>
         <costList>
-            <Cloth>200</Cloth>
-            <WoodLog>200</WoodLog>
+            <Cloth>50</Cloth>
+            <WoodLog>20</WoodLog>
         </costList>
         <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
         <modExtensions>
@@ -111,7 +111,7 @@
             <WorkToBuild>1500</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>150</WoodLog>
+            <WoodLog>20</WoodLog>
         </costList>
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <modExtensions>
@@ -130,8 +130,8 @@
             <WorkToBuild>3500</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>400</WoodLog>
-            <Cloth>200</Cloth>
+            <WoodLog>40</WoodLog>
+            <Cloth>20</Cloth>
             <Steel>20</Steel>
         </costList>
         <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
@@ -151,7 +151,7 @@
             <WorkToBuild>5000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>200</WoodLog>
+            <WoodLog>60</WoodLog>
             <Steel>50</Steel>
         </costList>
         <artisticSkillPrerequisite>2</artisticSkillPrerequisite>
@@ -171,9 +171,9 @@
             <WorkToBuild>12000</WorkToBuild>
         </statBases>
         <costList>
-            <WoodLog>400</WoodLog>
-            <Gold>150</Gold>
-            <Jade>100</Jade>
+            <WoodLog>100</WoodLog>
+            <Gold>15</Gold>
+            <Jade>20</Jade>
         </costList>
         <artisticSkillPrerequisite>10</artisticSkillPrerequisite>
         <modExtensions>
@@ -194,7 +194,7 @@
         <stuffCategories>
             <li>Metallic</li>
         </stuffCategories>
-        <costStuffCount>100</costStuffCount>
+        <costStuffCount>50</costStuffCount>
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <graphicData>
             <texPath>Things/Building/Misc/Brazier</texPath>

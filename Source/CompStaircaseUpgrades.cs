@@ -110,6 +110,7 @@ namespace SecondFloor
             foreach(var activeUpgrade in constructedUpgrades)
             {
                 used += activeUpgrade.def.spaceCost;
+                used += activeUpgrade.def.spaceCostPerBed * (parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1);
             }
             return used;
         }
