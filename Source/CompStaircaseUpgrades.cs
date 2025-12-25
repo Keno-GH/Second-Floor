@@ -205,11 +205,115 @@ namespace SecondFloor
         }
         
         /// <summary>
+        /// Gets the constructed count for a specific upgrade.
+        /// Returns 0 if the upgrade is not constructed.
+        /// </summary>
+        public int GetConstructedCount(StaircaseUpgradeDef def)
+        {
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            return activeUpgrade?.count ?? 0;
+        }
+        
+        /// <summary>
         /// Removes an upgrade
         /// </summary>
         public void RemoveUpgrade(StaircaseUpgradeDef def)
         {
             constructedUpgrades.RemoveAll(au => au.def == def);
+        }
+        
+        /// <summary>
+        /// Removes all constructed instances of an upgrade and refunds materials.
+        /// Returns the refunded material information for messaging.
+        /// </summary>
+        public string RemoveConstructedUpgradesWithRefund(StaircaseUpgradeDef def, float refundPercent = 0.75f)
+        {
+            // Find the constructed upgrade to get the stuff used
+            ActiveUpgrade activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade == null || activeUpgrade.count == 0)
+            {
+                return null; // Upgrade not found or no constructed instances
+            }
+
+            int constructedCount = activeUpgrade.count;
+            ThingDef stuff = activeUpgrade.stuff;
+            string refundInfo = "";
+
+            // Calculate refund if there's a cost and stuff was used
+            if (stuff != null)
+            {
+                // Get base cost from costStuffCount
+                int baseCost = 0;
+                if (def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
+                {
+                    baseCost = def.upgradeBuildingDef.costStuffCount;
+                }
+                else if (def.upgradeBuildingDef?.costList != null && def.upgradeBuildingDef.costList.Count > 0)
+                {
+                    // Fallback to costList if available
+                    baseCost = def.upgradeBuildingDef.costList[0].count;
+                }
+
+                if (baseCost > 0)
+                {
+                    int totalCost = baseCost * constructedCount;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+
+                    if (refundAmount > 0)
+                    {
+                        // Create and spawn the refund
+                        Thing refundThing = ThingMaker.MakeThing(stuff);
+                        refundThing.stackCount = refundAmount;
+
+                        // Try to spawn near the staircase
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+
+                        refundInfo = $" ({refundAmount} {stuff.label} refunded)";
+                    }
+                }
+            }
+
+            // Handle costList items
+            if (def.upgradeBuildingDef?.costList != null)
+            {
+                foreach (var cost in def.upgradeBuildingDef.costList)
+                {
+                    int totalCost = cost.count * constructedCount;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+
+                    if (refundAmount > 0)
+                    {
+                        // Create and spawn the refund
+                        Thing refundThing = ThingMaker.MakeThing(cost.thingDef);
+                        refundThing.stackCount = refundAmount;
+
+                        // Try to spawn near the staircase
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+
+                        if (!string.IsNullOrEmpty(refundInfo))
+                        {
+                            refundInfo += ", ";
+                        }
+                        else
+                        {
+                            refundInfo = " (";
+                        }
+                        refundInfo += $"{refundAmount} {cost.thingDef.label}";
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(refundInfo) && !refundInfo.EndsWith(")"))
+                {
+                    refundInfo += " refunded)";
+                }
+            }
+
+            // Remove the upgrade completely
+            constructedUpgrades.RemoveAll(au => au.def == def);
+
+            return refundInfo;
         }
         
         /// <summary>

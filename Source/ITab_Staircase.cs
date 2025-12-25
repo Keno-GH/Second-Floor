@@ -500,78 +500,117 @@ namespace SecondFloor
             }
             else if (!isPending)
             {
-                // Show Build button
-                float availableSpace = comp.GetTotalSpace() - comp.GetUsedSpace();
-                bool canAffordSpace = availableSpace >= def.spaceCost;
-                bool isLocked = IsUpgradeLocked(def, comp);
-                bool canBuild = canAffordSpace && !isLocked;
+                // Check if this is a onePerBed upgrade with some but not enough constructed
+                bool isOnePerBed = def.RequiresConstruction && 
+                                   def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
+                int constructedCount = comp.GetConstructedCount(def);
+                CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
+                int currentBedCount = bedComp?.bedCount ?? 1;
+                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < currentBedCount;
                 
-                // Dev mode: show two buttons side by side
-                if (Prefs.DevMode)
+                if (needsMoreBlueprints)
                 {
+                    // Show two buttons side by side: "Add More Blueprints" and "Remove Constructed"
+                    int needed = currentBedCount - constructedCount;
                     float buttonWidth = (buttonRect.width - 5f) / 2f;
-                    Rect buildButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
-                    Rect devButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
                     
-                    // Regular build button
-                    Color oldColor = GUI.color;
-                    if (!canBuild)
+                    // "Add More Blueprints" button
+                    string addButtonLabel = $"Add {needed} More";
+                    if (Widgets.ButtonText(addButtonRect, addButtonLabel))
                     {
-                        GUI.color = Color.red;
+                        FillMissingBlueprints(def, comp, SelThing);
                     }
+                    TooltipHandler.TipRegion(addButtonRect, 
+                        $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
+                        $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
                     
-                    if (Widgets.ButtonText(buildButtonRect, "Build Upgrade", active: canBuild))
+                    // "Remove Constructed" button
+                    GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
+                    if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
                     {
-                        if (canBuild)
-                        {
-                            TryAddUpgrade(def, comp, SelThing);
-                        }
-                    }
-                    GUI.color = oldColor;
-                    
-                    if (isLocked)
-                    {
-                        TooltipHandler.TipRegion(buildButtonRect, "This upgrade is locked. Install the required upgrades first.");
-                    }
-                    else if (!canAffordSpace)
-                    {
-                        TooltipHandler.TipRegion(buildButtonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
-                    }
-                    
-                    // Dev mode instant button
-                    GUI.color = new Color(0.8f, 0.5f, 1f); // Purple-ish color for dev button
-                    if (Widgets.ButtonText(devButtonRect, "DEV: Instant"))
-                    {
-                        DevModeInstantUpgrade(def, comp, SelThing);
+                        TryRemoveConstructedUpgrades(def, comp, SelThing);
                     }
                     GUI.color = Color.white;
-                    TooltipHandler.TipRegion(devButtonRect, "[Dev Mode] Instantly apply this upgrade without materials or construction.");
+                    TooltipHandler.TipRegion(removeButtonRect, 
+                        $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
                 }
                 else
                 {
-                    // Normal mode: single build button
-                    Color oldColor = GUI.color;
-                    if (!canBuild)
-                    {
-                        GUI.color = Color.red;
-                    }
+                    // Show Build button
+                    float availableSpace = comp.GetTotalSpace() - comp.GetUsedSpace();
+                    bool canAffordSpace = availableSpace >= def.spaceCost;
+                    bool isLocked = IsUpgradeLocked(def, comp);
+                    bool canBuild = canAffordSpace && !isLocked;
                     
-                    if (Widgets.ButtonText(buttonRect, "Build Upgrade", active: canBuild))
+                    // Dev mode: show two buttons side by side
+                    if (Prefs.DevMode)
                     {
-                        if (canBuild)
+                        float buttonWidth = (buttonRect.width - 5f) / 2f;
+                        Rect buildButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect devButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                        
+                        // Regular build button
+                        Color oldColor = GUI.color;
+                        if (!canBuild)
                         {
-                            TryAddUpgrade(def, comp, SelThing);
+                            GUI.color = Color.red;
                         }
+                        
+                        if (Widgets.ButtonText(buildButtonRect, "Build Upgrade", active: canBuild))
+                        {
+                            if (canBuild)
+                            {
+                                TryAddUpgrade(def, comp, SelThing);
+                            }
+                        }
+                        GUI.color = oldColor;
+                        
+                        if (isLocked)
+                        {
+                            TooltipHandler.TipRegion(buildButtonRect, "This upgrade is locked. Install the required upgrades first.");
+                        }
+                        else if (!canAffordSpace)
+                        {
+                            TooltipHandler.TipRegion(buildButtonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                        }
+                        
+                        // Dev mode instant button
+                        GUI.color = new Color(0.8f, 0.5f, 1f); // Purple-ish color for dev button
+                        if (Widgets.ButtonText(devButtonRect, "DEV: Instant"))
+                        {
+                            DevModeInstantUpgrade(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(devButtonRect, "[Dev Mode] Instantly apply this upgrade without materials or construction.");
                     }
-                    GUI.color = oldColor;
-                    
-                    if (isLocked)
+                    else
                     {
-                        TooltipHandler.TipRegion(buttonRect, "This upgrade is locked. Install the required upgrades first.");
-                    }
-                    else if (!canAffordSpace)
-                    {
-                        TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                        // Normal mode: single build button
+                        Color oldColor = GUI.color;
+                        if (!canBuild)
+                        {
+                            GUI.color = Color.red;
+                        }
+                        
+                        if (Widgets.ButtonText(buttonRect, "Build Upgrade", active: canBuild))
+                        {
+                            if (canBuild)
+                            {
+                                TryAddUpgrade(def, comp, SelThing);
+                            }
+                        }
+                        GUI.color = oldColor;
+                        
+                        if (isLocked)
+                        {
+                            TooltipHandler.TipRegion(buttonRect, "This upgrade is locked. Install the required upgrades first.");
+                        }
+                        else if (!canAffordSpace)
+                        {
+                            TooltipHandler.TipRegion(buttonRect, $"Not enough space! Need {def.spaceCost}, have {availableSpace}");
+                        }
                     }
                 }
             }
@@ -935,6 +974,32 @@ namespace SecondFloor
             // Clear selection since the upgrade is gone
             selectedUpgrade = null;
         }
+        
+        private void TryRemoveConstructedUpgrades(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
+        {
+            int constructedCount = comp.GetConstructedCount(def);
+            if (constructedCount == 0)
+            {
+                return;
+            }
+
+            // Store bed count before removal (won't change since upgrade isn't active yet)
+            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            int bedCountBefore = bedsComp?.bedCount ?? 0;
+
+            // Remove the constructed upgrades with refund
+            string refundInfo = comp.RemoveConstructedUpgradesWithRefund(def, 0.75f);
+
+            // Check bed count after removal (shouldn't change for partial upgrades)
+            int bedCountAfter = bedsComp?.bedCount ?? 0;
+            if (bedCountAfter < bedCountBefore)
+            {
+                CheckAndResetBedAssignments(staircase, bedCountAfter, "constructed upgrade removal");
+            }
+
+            Messages.Message($"Removed {constructedCount} constructed {def.label} upgrade{(constructedCount > 1 ? "s" : "")}" + (refundInfo ?? ""), 
+                staircase, MessageTypeDefOf.NeutralEvent, false);
+        }
 
         private void CheckAndResetBedAssignments(Thing staircase, int newBedCount, string reason)
         {
@@ -1050,6 +1115,32 @@ namespace SecondFloor
             {
                 Messages.Message("SF_CannotPlaceBlueprint".Translate(), MessageTypeDefOf.RejectInput, false);
             }
+        }
+        
+        private void FillMissingBlueprints(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
+        {
+            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            int bedCount = bedsComp?.bedCount ?? 1;
+            int constructedCount = comp.GetConstructedCount(def);
+            int needed = bedCount - constructedCount;
+            
+            if (needed <= 0)
+            {
+                return;
+            }
+            
+            // Get the stuff from the already-constructed upgrade(s)
+            ActiveUpgrade activeUpgrade = comp.constructedUpgrades.FirstOrDefault(au => au.def == def);
+            ThingDef stuff = activeUpgrade?.stuff;
+            
+            // Place the needed blueprints
+            for (int i = 0; i < needed; i++)
+            {
+                PlaceUpgradeBlueprint(def, stuff, staircase);
+            }
+            
+            Messages.Message($"Placed {needed} blueprints to complete {def.label}", 
+                staircase, MessageTypeDefOf.PositiveEvent, false);
         }
 
         private List<StaircaseUpgradeDef> GetPendingUpgrades(Thing staircase)
