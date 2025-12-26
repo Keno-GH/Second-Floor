@@ -46,6 +46,7 @@
         <bedCountOffset>2</bedCountOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
+        <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- Barracks upgrade - requires construction -->
@@ -58,6 +59,7 @@
         <thoughtReplacement>SF_Barracks_Room</thoughtReplacement>
         <upgradeBuildingDef>SF_UpgradeBuilding_Barracks</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
+        <iconPath>Things/Building/Furniture/Bed/Bedroll_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- Soundproofing upgrade - requires construction -->
@@ -69,6 +71,7 @@
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
         <minConstructionSkill>3</minConstructionSkill>
+        <iconPath>Things/Item/Resource/Cloth/Cloth_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- Impressiveness upgrades - all require construction -->
@@ -80,6 +83,7 @@
         <impressivenessLevel>1</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
+        <iconPath>Things/Building/Furniture/PlantPot</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -90,6 +94,7 @@
         <impressivenessLevel>2</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
+        <iconPath>Things/Building/Furniture/EndTable_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -103,6 +108,7 @@
         <requiredUpgrades>
             <li>SF_StaircaseUpgrade_BasicDecoration</li>
         </requiredUpgrades>
+        <iconPath>Things/Building/Art/SculptureLarge/SculptureLargeAbstractA</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -116,13 +122,14 @@
         <requiredUpgrades>
             <li>SF_StaircaseUpgrade_FineDecoration</li>
         </requiredUpgrades>
+        <iconPath>Things/Building/Art/SculptureGrand/SculptureGrandAbstractA</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- Braziers upgrade - provides temperature control -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_Braziers</defName>
-        <label>braziers</label>
-        <description>Installs braziers in the second floor area to provide heat. Consumes wood or chemfuel stored in the staircase.</description>
+        <label>Braziers</label>
+        <description>Installs braziers in the second floor area to provide heat. Consumes fuel.</description>
         <spaceCostPerBed>2</spaceCostPerBed>
         <fuelPerBed>2.0</fuelPerBed>
         <heatOffset>10</heatOffset>
@@ -133,6 +140,68 @@
         <stuffCategories>
             <li>Metallic</li>
         </stuffCategories>
+        <iconPath>Things/Building/Misc/Brazier</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- Campfire upgrade - provides temperature control -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_Campfires</defName>
+        <label>Campfires</label>
+        <description>Installs campfires in the second floor area to provide heat. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
+        <spaceCostPerBed>4</spaceCostPerBed>
+        <fuelPerBed>10.0</fuelPerBed>
+        <heatOffset>40</heatOffset>
+        <maxHeatCap>30</maxHeatCap>
+        <coolOffset>0</coolOffset>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Campfires</upgradeBuildingDef>
+        <minConstructionSkill>0</minConstructionSkill>
+        <iconPath>Things/Building/Misc/Campfire</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- Passive cooler upgrade -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_PassiveCooler</defName>
+        <label>Passive Coolers</label>
+        <description>Installs passive coolers in the second floor area to provide cooling. They consume fuel.</description>
+        <spaceCostPerBed>2</spaceCostPerBed>
+        <fuelPerBed>10.0</fuelPerBed>
+        <minCoolCap>17</minCoolCap>
+        <coolOffset>20</coolOffset>
+        <upgradeBuildingDef>SF_UpgradeBuilding_PassiveCooler</upgradeBuildingDef>
+        <minConstructionSkill>0</minConstructionSkill>
+        <iconPath>Things/Building/Misc/PassiveCooler</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- Textile Insulation Upgrade -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_TextileInsulation</defName>
+        <label>Textile Insulation</label>
+        <description>Installs textile insulation to help moderate temperatures in the floor area. Very space efficient.</description>
+        <spaceCostPerBed>0</spaceCostPerBed>
+        <insulationAdjustment>3</insulationAdjustment>
+        <upgradeBuildingDef>SF_UpgradeBuilding_TextileInsulation</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
+        <stuffCategories>
+            <li>Fabric</li>
+        </stuffCategories>
+        <iconPath>Things/Item/Resource/Cloth/Cloth_b</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- Thick Insulation Upgrade -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_ThickInsulation</defName>
+        <label>Thick Insulation</label>
+        <description>Installs extra walls as insulation to help moderate temperatures in the floor area. Very space inefficient.</description>
+        <spaceCostPerBed>5</spaceCostPerBed>
+        <insulationAdjustment>3</insulationAdjustment>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ThickInsulation</upgradeBuildingDef>
+        <minConstructionSkill>0</minConstructionSkill>
+        <stuffCategories>
+            <li>Stony</li>
+            <li>Metallic</li>
+            <li>Woody</li>
+        </stuffCategories>
+        <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
 </Defs>

@@ -187,7 +187,7 @@
     <ThingDef ParentName="SF_UpgradeBuildingBase">
         <defName>SF_UpgradeBuilding_Braziers</defName>
         <label>braziers upgrade</label>
-        <description>Install braziers to provide heat to the second floor area. Consumes wood or chemfuel stored in the staircase.</description>
+        <description>Install braziers to provide heat to the second floor area. Consumes fuel.</description>
         <statBases>
             <WorkToBuild>2000</WorkToBuild>
         </statBases>
@@ -207,5 +207,105 @@
             </li>
         </modExtensions>
     </ThingDef>
-    
+
+    <!-- Campfires Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Campfires</defName>
+        <label>campfires upgrade</label>
+        <description>Install campfires to provide heat to the second floor area. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
+        <statBases>
+            <WorkToBuild>4000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>25</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>0</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/Campfire</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_Campfires</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
+    <!-- Passive Cooler Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_PassiveCooler</defName>
+        <label>passive cooler upgrade</label>
+        <description>Install passive coolers to provide cooling to the second floor area. They consume fuel.</description>
+        <statBases>
+            <WorkToBuild>3000</WorkToBuild>
+        </statBases>
+        <costList>
+            <WoodLog>50</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>0</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/PassiveCooler</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_PassiveCooler</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
+    <!-- Textile Insulation Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_TextileInsulation</defName>
+        <label>textile insulation upgrade</label>
+        <description>Install textile insulation to help moderate temperatures in the floor area.</description>
+        <statBases>
+            <WorkToBuild>2500</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Fabric</li>
+        </stuffCategories>
+        <graphicData>
+            <texPath>Things/Building/Linked/Sandbags_MenuIcon</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <costStuffCount>75</costStuffCount>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_TextileInsulation</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
+    <!-- Thick Insulation Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ThickInsulation</defName>
+        <label>thick insulation upgrade</label>
+        <description>Install thick insulation to moderate temperatures in the floor area.</description>
+        <statBases>
+            <WorkToBuild>5000</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Stony</li>
+            <li>Metallic</li>
+            <li>Woody</li>
+        </stuffCategories>
+        <costStuffCount>100</costStuffCount>
+        <constructionSkillPrerequisite>0</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Linked/Barricade_MenuIcon</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_ThickInsulation</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
 </Defs>
