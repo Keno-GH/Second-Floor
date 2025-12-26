@@ -196,15 +196,21 @@ namespace SecondFloor
                 bool isPending = pendingUpgrades.Contains(def);
                 bool isSelected = selectedUpgrade == def;
                 bool isLocked = IsUpgradeLocked(def, comp);
+                bool isConstructed = comp.HasUpgrade(def);
+                UpgradeDisableReason disableReason = UpgradeDisableReason.None;
+                if (isConstructed && !isInstalled)
+                {
+                    disableReason = comp.GetUpgradeDisableReason(def);
+                }
                 
-                DrawUpgradeRow(rowRect, def, isInstalled, isPending, isSelected, isLocked);
+                DrawUpgradeRow(rowRect, def, isInstalled, isPending, isSelected, isLocked, disableReason);
                 curY += UpgradeRowHeight;
             }
             
             Widgets.EndScrollView();
         }
 
-        private void DrawUpgradeRow(Rect rect, StaircaseUpgradeDef def, bool isInstalled, bool isPending, bool isSelected, bool isLocked)
+        private void DrawUpgradeRow(Rect rect, StaircaseUpgradeDef def, bool isInstalled, bool isPending, bool isSelected, bool isLocked, UpgradeDisableReason disableReason)
         {
             // Highlight if selected
             if (isSelected)
@@ -232,20 +238,29 @@ namespace SecondFloor
             // Get icon for upgrade (use default if none available)
             Texture2D icon = GetUpgradeIcon(def);
             
-            // Gray out locked upgrades
-            if (isLocked)
+            // Gray out locked or disabled upgrades
+            bool isDisabled = disableReason != UpgradeDisableReason.None;
+            if (isLocked || isDisabled)
             {
                 GUI.color = new Color(0.5f, 0.5f, 0.5f, 0.7f);
             }
             
             GUI.DrawTexture(iconRect, icon);
             
-            // Draw installed checkmark overlay
+            // Draw installed checkmark overlay (only if truly active)
             if (isInstalled)
             {
                 Rect checkRect = new Rect(iconRect.xMax - 12f, iconRect.y, 14f, 14f);
                 GUI.color = Color.green;
                 GUI.DrawTexture(checkRect, installedCheckmark);
+                GUI.color = Color.white;
+            }
+            // Draw warning icon for disabled upgrades
+            else if (isDisabled)
+            {
+                Rect warningRect = new Rect(iconRect.xMax - 12f, iconRect.y, 14f, 14f);
+                GUI.color = new Color(1f, 0.5f, 0f); // Orange
+                GUI.DrawTexture(warningRect, ContentFinder<Texture2D>.Get("UI/Icons/Warning", false) ?? BaseContent.BadTex);
                 GUI.color = Color.white;
             }
             
@@ -257,6 +272,10 @@ namespace SecondFloor
             if (isLocked)
             {
                 GUI.color = Color.gray;
+            }
+            else if (isDisabled)
+            {
+                GUI.color = new Color(1f, 0.5f, 0f); // Orange for disabled
             }
             else if (isInstalled)
             {
@@ -271,6 +290,10 @@ namespace SecondFloor
             if (isPending)
             {
                 label += " (pending)";
+            }
+            else if (isDisabled)
+            {
+                label += " (disabled)";
             }
             else if (isLocked)
             {
@@ -293,6 +316,22 @@ namespace SecondFloor
             {
                 tooltip += "\n\n<color=#ff6666>This upgrade requires other upgrades to be installed first.</color>";
             }
+            else if (isDisabled)
+            {
+                tooltip += "\n\n<color=#ffaa00>This upgrade is constructed but disabled: ";
+                switch (disableReason)
+                {
+                    case UpgradeDisableReason.OutOfFuel:
+                        tooltip += "Out of fuel</color>";
+                        break;
+                    case UpgradeDisableReason.InsufficientCount:
+                        tooltip += "Not enough constructed (requires one per bed)</color>";
+                        break;
+                    default:
+                        tooltip += "Unknown reason</color>";
+                        break;
+                }
+            }
             TooltipHandler.TipRegion(rect, tooltip);
         }
 
@@ -304,6 +343,12 @@ namespace SecondFloor
             
             bool isInstalled = comp.HasActiveUpgrade(def);
             bool isPending = GetPendingUpgrades(SelThing).Contains(def);
+            bool isConstructed = comp.HasUpgrade(def);
+            UpgradeDisableReason disableReason = UpgradeDisableReason.None;
+            if (isConstructed && !isInstalled)
+            {
+                disableReason = comp.GetUpgradeDisableReason(def);
+            }
             
             // Reserve space for buttons at bottom
             float buttonHeight = 35f;
@@ -324,10 +369,43 @@ namespace SecondFloor
             curY += 28f + 6f;
             
             // Status indicator
-            string status = isInstalled ? "INSTALLED" : (isPending ? "UNDER CONSTRUCTION" : "NOT INSTALLED");
+            string status = "";
+            Color statusColor = Color.white;
             
+            if (disableReason != UpgradeDisableReason.None)
+            {
+                status = "DISABLED: ";
+                switch (disableReason)
+                {
+                    case UpgradeDisableReason.OutOfFuel:
+                        status += "Out of Fuel";
+                        break;
+                    case UpgradeDisableReason.InsufficientCount:
+                        status += "Not Enough Constructed";
+                        break;
+                    default:
+                        status += "Unknown Reason";
+                        break;
+                }
+                statusColor = new Color(1f, 0.5f, 0f); // Orange
+            }
+            else if (isInstalled)
+            {
+                status = "INSTALLED";
+                statusColor = Color.green;
+            }
+            else if (isPending)
+            {
+                status = "UNDER CONSTRUCTION";
+                statusColor = Color.yellow;
+            }
+            else
+            {
+                status = "NOT INSTALLED";
+                statusColor = Color.gray;
+            }
             // Add stuff material to status if upgrade is stuffable and installed
-            if (isInstalled && def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
+            if ((isInstalled || disableReason != UpgradeDisableReason.None) && def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
             {
                 ActiveUpgrade activeUpgrade = comp.constructedUpgrades.FirstOrDefault(au => au.def == def);
                 if (activeUpgrade != null && activeUpgrade.stuff != null)
@@ -336,7 +414,6 @@ namespace SecondFloor
                 }
             }
             
-            Color statusColor = isInstalled ? Color.green : (isPending ? Color.yellow : Color.gray);
             GUI.color = statusColor;
             Rect statusRect = new Rect(0f, curY, viewRect.width, 24f);
             Widgets.Label(statusRect, $"Status: {status}");
@@ -492,9 +569,9 @@ namespace SecondFloor
             Widgets.EndScrollView();
             
             // Buttons at the bottom - outside scroll view
-            if (isInstalled)
+            if (isInstalled || disableReason != UpgradeDisableReason.None)
             {
-                // Show Remove button
+                // Show Remove button (for both active and disabled upgrades)
                 if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
                 {
                     TryRemoveUpgrade(def, comp, SelThing);

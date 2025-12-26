@@ -7,6 +7,16 @@ using System.Linq;
 
 namespace SecondFloor
 {
+    /// <summary>
+    /// Reasons why an upgrade might be disabled
+    /// </summary>
+    public enum UpgradeDisableReason
+    {
+        None,
+        OutOfFuel,
+        InsufficientCount // For onePerBed upgrades
+        // Future: Add more reasons here as needed
+    }
     public class CompProperties_StaircaseUpgrades : CompProperties
     {
         public CompProperties_StaircaseUpgrades()
@@ -141,6 +151,50 @@ namespace SecondFloor
         }
         
         /// <summary>
+        /// Gets the reason why an upgrade is disabled, or None if it's active.
+        /// </summary>
+        public UpgradeDisableReason GetUpgradeDisableReason(StaircaseUpgradeDef def)
+        {
+            if (!HasUpgrade(def))
+            {
+                return UpgradeDisableReason.None; // Not constructed at all
+            }
+
+            var constructedUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (constructedUpgrade == null)
+            {
+                return UpgradeDisableReason.None;
+            }
+
+            // Check if upgrade requires fuel
+            if (def.fuelPerBed > 0f)
+            {
+                var refuelable = parent.GetComp<CompRefuelable>();
+                if (refuelable != null && !refuelable.HasFuel)
+                {
+                    return UpgradeDisableReason.OutOfFuel;
+                }
+            }
+
+            // Check if this upgrade requires one per bed
+            if (def.upgradeBuildingDef != null)
+            {
+                var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
+                if (ext?.onePerBed == true)
+                {
+                    var bedsComp = parent.GetComp<CompMultipleBeds>();
+                    int bedCount = bedsComp?.bedCount ?? 1;
+                    if (constructedUpgrade.count < bedCount)
+                    {
+                        return UpgradeDisableReason.InsufficientCount;
+                    }
+                }
+            }
+
+            return UpgradeDisableReason.None;
+        }
+
+        /// <summary>
         /// Helper method to get all active upgrade defs (valid upgrades only).
         /// For upgrades with onePerBed=true, they must have count >= bedCount to be valid.
         /// Used for all non-bed-count effects (thoughts, temperature, etc.).
@@ -151,29 +205,12 @@ namespace SecondFloor
             if (constructedUpgrades == null || constructedUpgrades.Count == 0)
                 return new List<StaircaseUpgradeDef>();
 
-            var bedsComp = parent.GetComp<CompMultipleBeds>();
-            int bedCount = bedsComp?.bedCount ?? 1;
-            
             List<StaircaseUpgradeDef> activeDefs = new List<StaircaseUpgradeDef>();
             
             foreach (var constructedUpgrade in constructedUpgrades)
             {
-                bool isValid = true;
-                
-                // Check if this upgrade requires one per bed
-                if (constructedUpgrade.def.upgradeBuildingDef != null)
-                {
-                    var ext = constructedUpgrade.def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
-                    if (ext?.onePerBed == true)
-                    {
-                        if (constructedUpgrade.count < bedCount)
-                        {
-                            isValid = false;
-                        }
-                    }
-                }
-                
-                if (isValid)
+                // Use the new GetUpgradeDisableReason method to determine if upgrade is active
+                if (GetUpgradeDisableReason(constructedUpgrade.def) == UpgradeDisableReason.None)
                 {
                     activeDefs.Add(constructedUpgrade.def);
                 }
