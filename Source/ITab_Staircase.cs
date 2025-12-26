@@ -679,7 +679,7 @@ namespace SecondFloor
             
             if (def.maxHeatCap < 100f)
             {
-                Widgets.Label(new Rect(x, curY, width, 24f), $"  Max Temperature Cap: {def.maxHeatCap.ToStringTemperature("F0")}");
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Heats up to: {def.maxHeatCap.ToStringTemperature("F0")}");
                 curY += 24f;
                 hasEffects = true;
             }
@@ -693,7 +693,7 @@ namespace SecondFloor
             
             if (def.minCoolCap > -273f)
             {
-                Widgets.Label(new Rect(x, curY, width, 24f), $"  Min Temperature Cap: {def.minCoolCap.ToStringTemperature("F0")}");
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Cools down to: {def.minCoolCap.ToStringTemperature("F0")}");
                 curY += 24f;
                 hasEffects = true;
             }
