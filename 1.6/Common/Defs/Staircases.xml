@@ -266,7 +266,7 @@
       </li>
     </comps>
     <placeWorkers>
-      <li>SecondFloor.PlaceWorkerInBigRoom</li>
+      <li>SecondFloor.PlaceWorkerInSmallRoom</li>
     </placeWorkers>
   </ThingDef>
 
