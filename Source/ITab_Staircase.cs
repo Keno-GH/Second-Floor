@@ -569,9 +569,49 @@ namespace SecondFloor
             Widgets.EndScrollView();
             
             // Buttons at the bottom - outside scroll view
-            if (isInstalled || disableReason != UpgradeDisableReason.None)
+            if (isInstalled)
             {
-                // Show Remove button (for both active and disabled upgrades)
+                // Show Remove button for active upgrades
+                if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                {
+                    TryRemoveUpgrade(def, comp, SelThing);
+                }
+            }
+            else if (disableReason == UpgradeDisableReason.InsufficientCount)
+            {
+                // Disabled due to not enough constructed - show Add/Remove buttons
+                int constructedCount = comp.GetConstructedCount(def);
+                CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
+                int currentBedCount = bedComp?.bedCount ?? 1;
+                int needed = currentBedCount - constructedCount;
+                
+                float buttonWidth = (buttonRect.width - 5f) / 2f;
+                Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                
+                // "Add More Blueprints" button
+                string addButtonLabel = $"Add {needed} More";
+                if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                {
+                    FillMissingBlueprints(def, comp, SelThing);
+                }
+                TooltipHandler.TipRegion(addButtonRect, 
+                    $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
+                    $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                
+                // "Remove Constructed" button
+                GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
+                if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
+                {
+                    TryRemoveConstructedUpgrades(def, comp, SelThing);
+                }
+                GUI.color = Color.white;
+                TooltipHandler.TipRegion(removeButtonRect, 
+                    $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
+            }
+            else if (disableReason != UpgradeDisableReason.None)
+            {
+                // Disabled for other reasons (e.g. OutOfFuel) - show only Remove button
                 if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
                 {
                     TryRemoveUpgrade(def, comp, SelThing);
