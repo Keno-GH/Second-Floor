@@ -1132,7 +1132,15 @@ namespace SecondFloor
             
             if (def.requiresPower && def.basePowerConsumption > 0)
             {
-                Widgets.Label(new Rect(x, curY, width, 24f), $"  Power Usage: {def.basePowerConsumption:F0}W");
+                bool isOnePerBed = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
+                if (isOnePerBed)
+                {
+                    Widgets.Label(new Rect(x, curY, width, 24f), $"  Power Usage: {def.basePowerConsumption:F0}W per bed");
+                }
+                else
+                {
+                    Widgets.Label(new Rect(x, curY, width, 24f), $"  Power Usage: {def.basePowerConsumption:F0}W");
+                }
                 curY += 24f;
                 hasEffects = true;
             }

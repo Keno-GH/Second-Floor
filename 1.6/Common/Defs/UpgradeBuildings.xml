@@ -345,7 +345,7 @@
         </costList>
         <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
         <graphicData>
-            <texPath>Things/Building/Misc/TempControl/Heater_south</texPath>
+            <texPath>Things/Building/Misc/TempControl/Heater</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>

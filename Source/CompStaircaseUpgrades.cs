@@ -759,21 +759,20 @@ namespace SecondFloor
             
             foreach (var mod in smartTempModifiers)
             {
-                int upgradeCount = constructedUpgrades.First(au => au.def == mod.def).count;
                 
                 // Heating capacity
                 if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
                     mod.def.smartTempModifierType == TempModifierType.DualMode)
                 {
                     // Degrees per 100W * (power / 100) * count
-                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f) * upgradeCount;
+                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
                 }
                 
                 // Cooling capacity
                 if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
                     mod.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f) * upgradeCount;
+                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
                 }
             }
             
