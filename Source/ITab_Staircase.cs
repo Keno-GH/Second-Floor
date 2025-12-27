@@ -69,7 +69,8 @@ namespace SecondFloor
             
             // Draw stats below header
             float statsY = headerRect.yMax + 5f;
-            Rect statsRect = new Rect(mainRect.x, statsY, mainRect.width, 120f);
+            float statsHeight = CalculateStatsHeight(comp);
+            Rect statsRect = new Rect(mainRect.x, statsY, mainRect.width, statsHeight);
             DrawStaircaseStats(statsRect, comp);
             
             // Main content area (below stats)
@@ -215,6 +216,26 @@ namespace SecondFloor
             }
             
             listing.End();
+        }
+
+        private float CalculateStatsHeight(CompStaircaseUpgrades comp)
+        {
+            // Base height for standard stats (bed spaces, room type, impressiveness, space, temperature)
+            float height = 24f * 5f; // 5 lines of basic info
+            
+            // Add height for target temperature slider if there are smart temp modifiers
+            if (comp.HasAnySmartTempModifier())
+            {
+                height += 28f; // Slider height
+            }
+            
+            // Add height for power display if there are power-requiring upgrades
+            if (comp.HasAnyPowerRequiringUpgrade())
+            {
+                height += 30f; // Power line
+            }
+            
+            return height;
         }
 
         private void DrawUpgradeList(Rect rect, CompStaircaseUpgrades comp)
