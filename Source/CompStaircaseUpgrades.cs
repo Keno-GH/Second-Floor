@@ -14,6 +14,7 @@ namespace SecondFloor
     {
         None,
         OutOfFuel,
+        NoPower,
         InsufficientCount // For onePerBed upgrades
         // Future: Add more reasons here as needed
     }
@@ -58,6 +59,21 @@ namespace SecondFloor
         public List<ActiveUpgrade> constructedUpgrades = new List<ActiveUpgrade>();
         private float cachedFuelConsumptionRate = 0f;
         
+        // =====================================================
+        // Smart Temperature Control System
+        // =====================================================
+        /// <summary>
+        /// The target temperature for smart temperature modifiers (heaters, coolers, ACs).
+        /// This is shared by all smart temp modifiers on this staircase.
+        /// Default is 21°C (comfortable room temperature).
+        /// </summary>
+        public float targetTemperature = 21f;
+        
+        /// <summary>
+        /// Cached power consumption value for display
+        /// </summary>
+        private float cachedTotalPowerConsumption = 0f;
+        
         // Legacy field for backward compatibility
         private List<StaircaseUpgradeDef> upgrades;
 
@@ -65,6 +81,7 @@ namespace SecondFloor
         {
             base.PostExposeData();
             Scribe_Collections.Look(ref constructedUpgrades, "constructedUpgrades", LookMode.Deep);
+            Scribe_Values.Look(ref targetTemperature, "targetTemperature", 21f);
             
             // Legacy support: load old "upgrades" and "activeUpgrades" lists and convert to constructedUpgrades
             if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -166,6 +183,15 @@ namespace SecondFloor
                 return UpgradeDisableReason.None;
             }
 
+            // Check if upgrade requires power
+            if (def.requiresPower)
+            {
+                if (!HasPower())
+                {
+                    return UpgradeDisableReason.NoPower;
+                }
+            }
+
             // Check if upgrade requires fuel
             if (def.fuelPerBed > 0f)
             {
@@ -192,6 +218,46 @@ namespace SecondFloor
             }
 
             return UpgradeDisableReason.None;
+        }
+        
+        /// <summary>
+        /// Returns true if the staircase has power.
+        /// </summary>
+        public bool HasPower()
+        {
+            var powerComp = parent.GetComp<CompPowerTrader>();
+            if (powerComp == null)
+            {
+                // If no power comp exists, assume powered (for backwards compatibility)
+                return true;
+            }
+            return powerComp.PowerOn;
+        }
+        
+        /// <summary>
+        /// Returns true if any constructed upgrade requires power.
+        /// </summary>
+        public bool HasAnyPowerRequiringUpgrade()
+        {
+            return constructedUpgrades.Any(au => au.def.requiresPower);
+        }
+        
+        /// <summary>
+        /// Returns true if any constructed upgrade is a smart temperature modifier.
+        /// </summary>
+        public bool HasAnySmartTempModifier()
+        {
+            return constructedUpgrades.Any(au => au.def.IsSmartTempModifier);
+        }
+
+        public bool HasAnyDumbTempModifier()
+        {
+            return constructedUpgrades.Any(au => au.def.IsDumbTempModifier);
+        }
+
+        public bool HasAnyInsulatingModifier()
+        {
+            return constructedUpgrades.Any(au => au.def.insulationAdjustment > 0f);
         }
 
         /// <summary>
@@ -467,25 +533,23 @@ namespace SecondFloor
                 return CalculateVirtualTemperature();
             }
         }
-
+        
         /// <summary>
-        /// Calculates the virtual temperature for the Second Floor based on active upgrades.
-        /// Applies insulation, heating, and cooling effects in sequence.
+        /// Gets the current total power consumption for display purposes.
         /// </summary>
-        /// <returns>The calculated virtual temperature</returns>
-        public float CalculateVirtualTemperature()
+        public float CurrentPowerConsumption => cachedTotalPowerConsumption;
+        
+        public float GetInsulatedTemperature()
         {
-            if (parent?.Map == null) return 21f; // Default temperature if not spawned
-
-            // Step 1: Start with outdoor temperature
+            if (parent?.Map == null) return 21f;
+            
             float temp = parent.Map.mapTemperature.OutdoorTemp;
-
-            // Step 2: Apply Insulation
-            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs().Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
+                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            
             float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
             if (totalInsulation > 0)
             {
-                // Get the average insulation target (weighted by insulation strength)
                 float weightedTargetSum = 0f;
                 float weightSum = 0f;
                 foreach (var activeUpgrade in activeUpgrades)
@@ -497,62 +561,284 @@ namespace SecondFloor
                     }
                 }
                 float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
-
-                // Calculate difference and apply correction
                 float diff = insulationTarget - temp;
-                float correction = diff;
-                if (correction > totalInsulation)
-                    correction = totalInsulation;
-                else if (correction < -totalInsulation)
-                    correction = -totalInsulation;
-                
+                float correction = Mathf.Clamp(diff, -totalInsulation, totalInsulation);
                 temp += correction;
             }
-
-            // Step 3: Apply Heating
-            float totalHeat = activeUpgrades.Sum(au => au.def.heatOffset);
-            if (totalHeat > 0)
-            {
-                // Find global max cap (highest maxHeatCap among heaters)
-                float globalMaxCap = 100f; // Default high value
-                var heatersWithCap = activeUpgrades.Where(au => au.def.heatOffset > 0).ToList();
-                if (heatersWithCap.Any())
-                {
-                    globalMaxCap = heatersWithCap.Max(au => au.def.maxHeatCap);
-                }
-
-                float heatedTemp = temp + totalHeat;
-                if (heatedTemp > globalMaxCap)
-                    heatedTemp = globalMaxCap;
-                
-                // Ensure we don't cool down a hot room with a heater
-                if (heatedTemp > temp)
-                    temp = heatedTemp;
-            }
-
-            // Step 4: Apply Cooling
-            float totalCool = activeUpgrades.Sum(au => au.def.coolOffset);
-            if (totalCool > 0)
-            {
-                // Find global min cap (lowest minCoolCap among coolers)
-                float globalMinCap = -273f; // Default low value
-                var coolersWithCap = activeUpgrades.Where(au => au.def.coolOffset > 0).ToList();
-                if (coolersWithCap.Any())
-                {
-                    globalMinCap = coolersWithCap.Min(au => au.def.minCoolCap);
-                }
-
-                float cooledTemp = temp - totalCool;
-                if (cooledTemp < globalMinCap)
-                    cooledTemp = globalMinCap;
-                
-                // Ensure we don't heat up a cold room with a cooler
-                if (cooledTemp < temp)
-                    temp = cooledTemp;
-            }
-
-            // Step 5: Return final temperature
+            
             return temp;
+        }
+
+        /// <summary>
+        /// Gets the base temperature before smart temp modifiers are applied.
+        /// This includes outdoor temp, insulation, and dumb heaters/coolers.
+        /// </summary>
+        public float GetBaseTemperature()
+        {
+            if (parent?.Map == null) return 21f;
+            
+            float temp = parent.Map.mapTemperature.OutdoorTemp;
+            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
+                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            
+            // Step 1: Apply Insulation
+            float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
+            if (totalInsulation > 0)
+            {
+                float weightedTargetSum = 0f;
+                float weightSum = 0f;
+                foreach (var activeUpgrade in activeUpgrades)
+                {
+                    if (activeUpgrade.def.insulationAdjustment > 0)
+                    {
+                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
+                        weightSum += activeUpgrade.def.insulationAdjustment;
+                    }
+                }
+                float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
+                float diff = insulationTarget - temp;
+                float correction = Mathf.Clamp(diff, -totalInsulation, totalInsulation);
+                temp += correction;
+            }
+            
+            // Step 2: Apply Dumb Heaters (clamped to their max caps)
+            var dumbHeaters = activeUpgrades.Where(au => au.def.IsDumbTempModifier && au.def.heatOffset > 0).ToList();
+            foreach (var heater in dumbHeaters)
+            {
+                // Calculate clamped heat offset
+                float potentialTemp = temp + heater.def.heatOffset;
+                float actualHeat = heater.def.heatOffset;
+                
+                // Clamp: heater cannot push temp above its maxHeatCap
+                if (potentialTemp > heater.def.maxHeatCap)
+                {
+                    actualHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                }
+                
+                temp += actualHeat;
+            }
+            
+            // Step 3: Apply Dumb Coolers (clamped to their min caps)
+            var dumbCoolers = activeUpgrades.Where(au => au.def.IsDumbTempModifier && au.def.coolOffset > 0).ToList();
+            foreach (var cooler in dumbCoolers)
+            {
+                // Calculate clamped cool offset
+                float potentialTemp = temp - cooler.def.coolOffset;
+                float actualCool = cooler.def.coolOffset;
+                
+                // Clamp: cooler cannot push temp below its minCoolCap
+                if (potentialTemp < cooler.def.minCoolCap)
+                {
+                    actualCool = Mathf.Max(0f, temp - cooler.def.minCoolCap);
+                }
+                
+                temp -= actualCool;
+            }
+            
+            return temp;
+        }
+
+        
+
+        /// <summary>
+        /// Calculates the virtual temperature for the Second Floor based on active upgrades.
+        /// Applies insulation, dumb heaters/coolers, then smart temp modifiers.
+        /// </summary>
+        /// <returns>The calculated virtual temperature</returns>
+        public float CalculateVirtualTemperature()
+        {
+            if (parent?.Map == null) return 21f; // Default temperature if not spawned
+
+            // Get base temperature (outdoor + insulation + dumb heaters/coolers)
+            float temp = GetBaseTemperature();
+            
+            // Now apply smart temperature modifiers
+            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
+                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            
+            var smartTempModifiers = activeUpgrades.Where(au => au.def.IsSmartTempModifier).ToList();
+            
+            if (!smartTempModifiers.Any() || !HasPower())
+            {
+                return temp;
+            }
+            
+            // Smart temp modifiers try to reach the target temperature
+            float tempDiff = targetTemperature - temp;
+            
+            if (Mathf.Abs(tempDiff) < 0.1f)
+            {
+                // Already at target, no adjustment needed
+                return temp;
+            }
+            
+            // Calculate total heating and cooling capacity
+            float totalHeatingCapacity = 0f;
+            float totalCoolingCapacity = 0f;
+            
+            foreach (var mod in smartTempModifiers)
+            {
+                int upgradeCount = constructedUpgrades.First(au => au.def == mod.def).count;
+                
+                // Heating capacity
+                if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                {
+                    // Degrees per 100W * (power / 100) * count
+                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f) * upgradeCount;
+                }
+                
+                // Cooling capacity
+                if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                {
+                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f) * upgradeCount;
+                }
+            }
+            
+            // Apply heating or cooling based on need
+            if (tempDiff > 0f && totalHeatingCapacity > 0f)
+            {
+                // Need to heat
+                float heatToAdd = Mathf.Min(tempDiff, totalHeatingCapacity);
+                temp += heatToAdd;
+            }
+            else if (tempDiff < 0f && totalCoolingCapacity > 0f)
+            {
+                // Need to cool
+                float coolToAdd = Mathf.Min(-tempDiff, totalCoolingCapacity);
+                temp -= coolToAdd;
+            }
+
+            return temp;
+        }
+        
+        // =====================================================
+        // Power Consumption Calculation
+        // =====================================================
+        
+        /// <summary>
+        /// Calculates the total power consumption for all power-requiring upgrades.
+        /// Smart temperature modifiers have their power throttled based on temperature differential.
+        /// </summary>
+        /// <returns>Total power consumption in watts</returns>
+        public float CalculateTotalPowerConsumption()
+        {
+            if (parent?.Map == null || constructedUpgrades == null || constructedUpgrades.Count == 0)
+            {
+                return 0f;
+            }
+            
+            float totalPower = 0f;
+            
+            // Get base temperature for smart temp modifier calculations
+            float baseTemp = GetBaseTemperature();
+            
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (!activeUpgrade.def.requiresPower)
+                    continue;
+                
+                // Check if this upgrade is disabled for non-power reasons
+                var disableReason = GetUpgradeDisableReason(activeUpgrade.def);
+                if (disableReason != UpgradeDisableReason.None && disableReason != UpgradeDisableReason.NoPower)
+                    continue;
+                
+                float upgradePower = activeUpgrade.def.basePowerConsumption * activeUpgrade.count;
+                
+                // Apply throttling for smart temperature modifiers
+                if (activeUpgrade.def.IsSmartTempModifier)
+                {
+                    float throttle = CalculateSmartTempThrottle(activeUpgrade.def, baseTemp);
+                    upgradePower *= throttle;
+                }
+                
+                totalPower += upgradePower;
+            }
+            
+            cachedTotalPowerConsumption = totalPower;
+            return totalPower;
+        }
+        
+        /// <summary>
+        /// Calculates the throttle factor (0.0 to 1.0) for a smart temperature modifier.
+        /// Based on the difference between base temperature and target temperature.
+        /// </summary>
+        /// <param name="def">The upgrade definition</param>
+        /// <param name="baseTemp">The base temperature before smart modifiers</param>
+        /// <returns>Throttle factor from 0.0 (off) to 1.0 (full power)</returns>
+        private float CalculateSmartTempThrottle(StaircaseUpgradeDef def, float baseTemp)
+        {
+            float tempDiff = targetTemperature - baseTemp;
+            
+            // Determine if this modifier should be active based on temperature difference
+            bool shouldHeat = tempDiff > 0f;
+            bool shouldCool = tempDiff < 0f;
+            
+            bool canHeat = def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                          def.smartTempModifierType == TempModifierType.DualMode;
+            bool canCool = def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                          def.smartTempModifierType == TempModifierType.DualMode;
+            
+            // If we need heating but can't heat, or need cooling but can't cool, throttle to 0
+            if (shouldHeat && !canHeat)
+                return 0f;
+            if (shouldCool && !canCool)
+                return 0f;
+            
+            // If we're at target temperature (within tolerance), minimal power
+            if (Mathf.Abs(tempDiff) < 0.5f)
+                return 0.05f; // 5% for standby/maintenance
+            
+            // Calculate throttle based on how far from target
+            // Full power at 10°C difference or more, linear scale below that
+            float absDiff = Mathf.Abs(tempDiff);
+            float maxDiff = 10f; // Full power at 10°C difference
+            
+            float throttle = Mathf.Clamp01(absDiff / maxDiff);
+            
+            // Minimum 10% when active to prevent rapid on/off cycling
+            throttle = Mathf.Max(0.1f, throttle);
+            
+            return throttle;
+        }
+        
+        /// <summary>
+        /// Gets detailed power breakdown for UI display.
+        /// </summary>
+        public string GetPowerBreakdownString()
+        {
+            if (!HasAnyPowerRequiringUpgrade())
+                return null;
+            
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            float baseTemp = GetBaseTemperature();
+            float totalPower = 0f;
+            
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (!activeUpgrade.def.requiresPower)
+                    continue;
+                
+                float basePower = activeUpgrade.def.basePowerConsumption * activeUpgrade.count;
+                float actualPower = basePower;
+                
+                if (activeUpgrade.def.IsSmartTempModifier)
+                {
+                    float throttle = CalculateSmartTempThrottle(activeUpgrade.def, baseTemp);
+                    actualPower = basePower * throttle;
+                    sb.AppendLine($"  {activeUpgrade.def.label} x{activeUpgrade.count}: {actualPower:F0}W ({throttle * 100:F0}% of {basePower:F0}W)");
+                }
+                else
+                {
+                    sb.AppendLine($"  {activeUpgrade.def.label} x{activeUpgrade.count}: {actualPower:F0}W");
+                }
+                
+                totalPower += actualPower;
+            }
+            
+            sb.Insert(0, $"Power Usage: {totalPower:F0}W\n");
+            return sb.ToString();
         }
 
         /// <summary>
@@ -561,6 +847,25 @@ namespace SecondFloor
         public override void CompTick()
         {
             ConsumeFuel();
+            UpdatePowerConsumption();
+        }
+        
+        /// <summary>
+        /// Updates the power consumption for the staircase based on active upgrades.
+        /// </summary>
+        private void UpdatePowerConsumption()
+        {
+            var powerComp = parent.GetComp<CompPowerTrader>();
+            if (powerComp == null)
+            {
+                Log.ErrorOnce($"CompStaircaseUpgrades on {parent?.LabelCap ?? "unknown"} requires CompPowerTrader but none was found.", parent?.thingIDNumber ?? 0);
+                return;
+            }
+            
+            float totalPower = CalculateTotalPowerConsumption();
+            
+            // CompPowerTrader expects negative values for power consumption
+            powerComp.PowerOutput = -totalPower;
         }
 
         /// <summary>

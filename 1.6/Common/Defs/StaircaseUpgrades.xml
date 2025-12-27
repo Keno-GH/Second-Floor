@@ -204,5 +204,61 @@
         <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- =====================================================
+         Smart Temperature Modifiers (Power-based)
+         =====================================================
+         These upgrades require power and have their power consumption
+         throttled based on the temperature differential between the
+         base temperature and the target temperature.
+    -->
+    
+    <!-- Electric Heater upgrade - smart heating with power -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_ElectricHeater</defName>
+        <label>Electric Heater</label>
+        <description>Installs an electric heater in the second floor area. Uses power to provide heat, with consumption automatically throttled based on how much heating is needed. Combines well with dumb heaters like braziers to reduce power usage.</description>
+        <spaceCostPerBed>2</spaceCostPerBed>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>200</basePowerConsumption>
+        <smartTempModifierType>HeaterOnly</smartTempModifierType>
+        <smartHeatEfficiency>3</smartHeatEfficiency>
+        <smartCoolEfficiency>0</smartCoolEfficiency>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ElectricHeater</upgradeBuildingDef>
+        <minConstructionSkill>4</minConstructionSkill>
+        <iconPath>Things/Building/Misc/TempControl/Heater_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Electric Cooler upgrade - smart cooling with power -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_ElectricCooler</defName>
+        <label>Electric Cooler</label>
+        <description>Installs an electric cooler in the second floor area. Uses power to provide cooling, with consumption automatically throttled based on how much cooling is needed. Combines well with dumb coolers like passive coolers to reduce power usage.</description>
+        <spaceCostPerBed>2</spaceCostPerBed>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>200</basePowerConsumption>
+        <smartTempModifierType>CoolerOnly</smartTempModifierType>
+        <smartHeatEfficiency>0</smartHeatEfficiency>
+        <smartCoolEfficiency>3</smartCoolEfficiency>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ElectricCooler</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
+        <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Air Conditioning upgrade - smart heating AND cooling with power -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_AirConditioning</defName>
+        <label>Air Conditioning</label>
+        <description>Installs a modern air conditioning unit in the second floor area. Can both heat and cool as needed, automatically switching modes. Uses more power than dedicated units but provides complete climate control. Power consumption is throttled based on temperature differential.</description>
+        <spaceCostPerBed>3</spaceCostPerBed>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>350</basePowerConsumption>
+        <smartTempModifierType>DualMode</smartTempModifierType>
+        <smartHeatEfficiency>2.5</smartHeatEfficiency>
+        <smartCoolEfficiency>2.5</smartCoolEfficiency>
+        <upgradeBuildingDef>SF_UpgradeBuilding_AirConditioning</upgradeBuildingDef>
+        <minConstructionSkill>6</minConstructionSkill>
+        <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
 

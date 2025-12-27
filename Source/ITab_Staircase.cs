@@ -157,8 +157,62 @@ namespace SecondFloor
             float usedSpace = comp.GetUsedSpace();
             listing.Label($"Space: {usedSpace}/{totalSpace} (Available: {totalSpace - usedSpace})");
             
+            // Temperature display with base temp breakdown
             float currentTemp = comp.CurrentVirtualTemperature;
-            listing.Label($"Temperature: {currentTemp.ToStringTemperature("F0")}");
+            float baseTemp = comp.GetBaseTemperature();
+            float insulatedTemp = comp.GetInsulatedTemperature();
+            float outdoorTemp = SelThing.Map?.mapTemperature.OutdoorTemp ?? 21f;
+            
+            string tempLabel = $"Temperature: {currentTemp.ToStringTemperature("F0")}";
+            tempLabel += $" (Outdoor: {outdoorTemp.ToStringTemperature("F0")}";
+            if (comp.HasAnyInsulatingModifier())
+            {
+                tempLabel += $", Insulated: {insulatedTemp.ToStringTemperature("F0")}";
+            }
+            if (comp.HasAnyDumbTempModifier())
+            {
+                tempLabel += $", Passive: {baseTemp.ToStringTemperature("F0")}";
+            }
+            if (comp.HasAnySmartTempModifier())
+            {
+                tempLabel += $", Active: {currentTemp.ToStringTemperature("F0")}";
+            }
+            tempLabel += ")";
+            listing.Label(tempLabel);
+            
+            // Target temperature slider for smart temp modifiers
+            if (comp.HasAnySmartTempModifier())
+            {
+                Rect sliderRect = listing.GetRect(28f);
+                Rect labelRect = new Rect(sliderRect.x, sliderRect.y, 120f, sliderRect.height);
+                Rect actualSliderRect = new Rect(labelRect.xMax, sliderRect.y, sliderRect.width - 120f, sliderRect.height);
+                
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Widgets.Label(labelRect, "SF_TargetTemp".Translate() + ": " + comp.targetTemperature.ToStringTemperature("F0"));
+                Text.Anchor = TextAnchor.UpperLeft;
+                
+                // Temperature slider from -10°C to 40°C
+                float newTarget = Widgets.HorizontalSlider(actualSliderRect, comp.targetTemperature, -10f, 40f, true, null, "SF_TempMin".Translate(), "SF_TempMax".Translate(), 1f);
+                if (newTarget != comp.targetTemperature)
+                {
+                    comp.targetTemperature = newTarget;
+                }
+            }
+            
+            // Power display for power-requiring upgrades
+            if (comp.HasAnyPowerRequiringUpgrade())
+            {
+                float powerUsage = comp.CurrentPowerConsumption;
+                bool hasPower = comp.HasPower();
+                string powerLabel = $"Power: {powerUsage:F0}W";
+                if (!hasPower)
+                {
+                    powerLabel += " (NO POWER)";
+                    GUI.color = Color.red;
+                }
+                listing.Label(powerLabel);
+                GUI.color = Color.white;
+            }
             
             listing.End();
         }
@@ -324,6 +378,9 @@ namespace SecondFloor
                     case UpgradeDisableReason.OutOfFuel:
                         tooltip += "Out of fuel</color>";
                         break;
+                    case UpgradeDisableReason.NoPower:
+                        tooltip += "No power</color>";
+                        break;
                     case UpgradeDisableReason.InsufficientCount:
                         tooltip += "Not enough constructed (requires one per bed)</color>";
                         break;
@@ -379,6 +436,9 @@ namespace SecondFloor
                 {
                     case UpgradeDisableReason.OutOfFuel:
                         status += "Out of Fuel";
+                        break;
+                    case UpgradeDisableReason.NoPower:
+                        status += "No Power";
                         break;
                     case UpgradeDisableReason.InsufficientCount:
                         status += "Not Enough Constructed";
@@ -585,52 +645,45 @@ namespace SecondFloor
                 int currentBedCount = bedComp?.bedCount ?? 1;
                 int needed = currentBedCount - constructedCount;
                 
-                float buttonWidth = (buttonRect.width - 5f) / 2f;
-                Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
-                Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
-                
-                // "Add More Blueprints" button
-                string addButtonLabel = $"Add {needed} More";
-                if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                if (Prefs.DevMode)
                 {
-                    FillMissingBlueprints(def, comp, SelThing);
+                    // Dev mode: show three buttons
+                    float buttonWidth = (buttonRect.width - 10f) / 3f;
+                    Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect devButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // "Add More Blueprints" button
+                    string addButtonLabel = $"Add {needed} More";
+                    if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                    {
+                        FillMissingBlueprints(def, comp, SelThing);
+                    }
+                    TooltipHandler.TipRegion(addButtonRect, 
+                        $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
+                        $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                    
+                    // "Remove Constructed" button
+                    GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
+                    if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
+                    {
+                        TryRemoveConstructedUpgrades(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(removeButtonRect, 
+                        $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
+                    
+                    // Dev mode instant button
+                    GUI.color = new Color(0.8f, 0.5f, 1f); // Purple-ish color for dev button
+                    if (Widgets.ButtonText(devButtonRect, "DEV: Instant"))
+                    {
+                        DevModeInstantUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(devButtonRect, "[Dev Mode] Instantly apply this upgrade without materials or construction.");
                 }
-                TooltipHandler.TipRegion(addButtonRect, 
-                    $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
-                    $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
-                
-                // "Remove Constructed" button
-                GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
-                if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
+                else
                 {
-                    TryRemoveConstructedUpgrades(def, comp, SelThing);
-                }
-                GUI.color = Color.white;
-                TooltipHandler.TipRegion(removeButtonRect, 
-                    $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
-            }
-            else if (disableReason != UpgradeDisableReason.None)
-            {
-                // Disabled for other reasons (e.g. OutOfFuel) - show only Remove button
-                if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
-                {
-                    TryRemoveUpgrade(def, comp, SelThing);
-                }
-            }
-            else if (!isPending)
-            {
-                // Check if this is a onePerBed upgrade with some but not enough constructed
-                bool isOnePerBed = def.RequiresConstruction && 
-                                   def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
-                int constructedCount = comp.GetConstructedCount(def);
-                CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
-                int currentBedCount = bedComp?.bedCount ?? 1;
-                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < currentBedCount;
-                
-                if (needsMoreBlueprints)
-                {
-                    // Show two buttons side by side: "Add More Blueprints" and "Remove Constructed"
-                    int needed = currentBedCount - constructedCount;
                     float buttonWidth = (buttonRect.width - 5f) / 2f;
                     Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
                     Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
@@ -654,6 +707,95 @@ namespace SecondFloor
                     GUI.color = Color.white;
                     TooltipHandler.TipRegion(removeButtonRect, 
                         $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
+                }
+            }
+            else if (disableReason != UpgradeDisableReason.None)
+            {
+                // Disabled for other reasons (e.g. OutOfFuel) - show only Remove button
+                if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                {
+                    TryRemoveUpgrade(def, comp, SelThing);
+                }
+            }
+            else if (!isPending)
+            {
+                // Check if this is a onePerBed upgrade with some but not enough constructed
+                bool isOnePerBed = def.RequiresConstruction && 
+                                   def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
+                int constructedCount = comp.GetConstructedCount(def);
+                CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
+                int currentBedCount = bedComp?.bedCount ?? 1;
+                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < currentBedCount;
+                
+                if (needsMoreBlueprints)
+                {
+                    // Show two buttons side by side: "Add More Blueprints" and "Remove Constructed"
+                    int needed = currentBedCount - constructedCount;
+                    
+                    if (Prefs.DevMode)
+                    {
+                        // Dev mode: show three buttons
+                        float buttonWidth = (buttonRect.width - 10f) / 3f;
+                        Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect devButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
+                        
+                        // "Add More Blueprints" button
+                        string addButtonLabel = $"Add {needed} More";
+                        if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                        {
+                            FillMissingBlueprints(def, comp, SelThing);
+                        }
+                        TooltipHandler.TipRegion(addButtonRect, 
+                            $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
+                            $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                        
+                        // "Remove Constructed" button
+                        GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
+                        if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
+                        {
+                            TryRemoveConstructedUpgrades(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(removeButtonRect, 
+                            $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
+                        
+                        // Dev mode instant button
+                        GUI.color = new Color(0.8f, 0.5f, 1f); // Purple-ish color for dev button
+                        if (Widgets.ButtonText(devButtonRect, "DEV: Instant"))
+                        {
+                            DevModeInstantUpgrade(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(devButtonRect, "[Dev Mode] Instantly apply this upgrade without materials or construction.");
+                    }
+                    else
+                    {
+                        // Normal mode: show two buttons
+                        float buttonWidth = (buttonRect.width - 5f) / 2f;
+                        Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                        
+                        // "Add More Blueprints" button
+                        string addButtonLabel = $"Add {needed} More";
+                        if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                        {
+                            FillMissingBlueprints(def, comp, SelThing);
+                        }
+                        TooltipHandler.TipRegion(addButtonRect, 
+                            $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
+                            $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                        
+                        // "Remove Constructed" button
+                        GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
+                        if (Widgets.ButtonText(removeButtonRect, $"Remove {constructedCount}"))
+                        {
+                            TryRemoveConstructedUpgrades(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(removeButtonRect, 
+                            $"Remove the {constructedCount} constructed upgrade{(constructedCount > 1 ? "s" : "")} and receive a 75% refund of materials.");
+                    }
                 }
                 else
                 {
@@ -1376,6 +1518,13 @@ namespace SecondFloor
                 }
                 
                 Messages.Message($"[DEV] {def.label} instantly applied to {staircase.Label}", 
+                    staircase, MessageTypeDefOf.PositiveEvent, false);
+            }
+            // Increase the upgrade count
+            else
+            {
+                comp.IncreaseUpgradeCount(def);
+                Messages.Message($"[DEV] Increased {def.label} upgrade count on {staircase.Label}", 
                     staircase, MessageTypeDefOf.PositiveEvent, false);
             }
         }

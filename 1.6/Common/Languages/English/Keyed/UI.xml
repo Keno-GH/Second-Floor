@@ -24,4 +24,11 @@
   
   <!-- Building inspection -->
   <SF_UpgradeType>Upgrade: {0}</SF_UpgradeType>
+  
+  <!-- Temperature control UI -->
+  <SF_TargetTemp>Target Temp</SF_TargetTemp>
+  <SF_TempMin>-10°C</SF_TempMin>
+  <SF_TempMax>40°C</SF_TempMax>
+  <SF_NoPower>NO POWER</SF_NoPower>
+  <SF_PowerUsage>Power Usage: {0}W</SF_PowerUsage>
 </LanguageData>

@@ -5,6 +5,17 @@ using UnityEngine;
 
 namespace SecondFloor
 {
+    /// <summary>
+    /// Defines the type of temperature modifier for smart climate control upgrades.
+    /// </summary>
+    public enum TempModifierType
+    {
+        None = 0,      // Not a temperature modifier
+        HeaterOnly,    // Can only heat (like a heater)
+        CoolerOnly,    // Can only cool (like a cooler) 
+        DualMode       // Can both heat and cool (like an AC unit)
+    }
+
     public class StaircaseUpgradeDef : Def
     {
         public float spaceCost = 0f; // Space cost this upgrade uses in the staircase
@@ -60,7 +71,9 @@ namespace SecondFloor
         /// </summary>
         public bool RequiresConstruction => upgradeBuildingDef != null;
 
-        // Virtual Climate Control fields
+        // =====================================================
+        // Virtual Climate Control fields (Dumb temperature modifiers - fuel-based)
+        // =====================================================
         public float heatOffset = 0f; // Amount this upgrade warms the room (e.g., 15)
         public float maxHeatCap = 100f; // The temperature this heater cannot exceed (e.g., 28)
         public float coolOffset = 0f; // Amount this cools the room
@@ -69,6 +82,57 @@ namespace SecondFloor
         public float insulationTarget = 21f; // The target temp for insulation (default 21)
         public float fuelPerBed = 0f; // Fuel consumed per bed count per tick
         public float spaceCostPerBed = 0f; // Additional space cost per bed count
+        
+        // =====================================================
+        // Power system fields
+        // =====================================================
+        /// <summary>
+        /// Whether this upgrade requires power to operate.
+        /// Power-requiring upgrades will be enabled/disabled based on staircase power status.
+        /// </summary>
+        public bool requiresPower = false;
+        
+        /// <summary>
+        /// Base power consumption in watts (W) for this upgrade.
+        /// This is added to the staircase's total power draw.
+        /// For smart temperature modifiers, this is the maximum power draw.
+        /// </summary>
+        public float basePowerConsumption = 0f;
+        
+        // =====================================================
+        // Smart Temperature Modifier fields (power-based with throttling)
+        // =====================================================
+        /// <summary>
+        /// The type of smart temperature modifier.
+        /// None = not a smart temp modifier (use dumb heat/cool offsets instead)
+        /// HeaterOnly = can only add heat
+        /// CoolerOnly = can only remove heat
+        /// DualMode = can both heat and cool (like an AC)
+        /// </summary>
+        public TempModifierType smartTempModifierType = TempModifierType.None;
+        
+        /// <summary>
+        /// The heating efficiency of this smart temperature modifier.
+        /// Degrees Celsius added per 100W at full power.
+        /// </summary>
+        public float smartHeatEfficiency = 0f;
+        
+        /// <summary>
+        /// The cooling efficiency of this smart temperature modifier.
+        /// Degrees Celsius removed per 100W at full power.
+        /// </summary>
+        public float smartCoolEfficiency = 0f;
+        
+        /// <summary>
+        /// Returns true if this is a smart temperature modifier that uses power.
+        /// </summary>
+        public bool IsSmartTempModifier => smartTempModifierType != TempModifierType.None && requiresPower;
+        
+        /// <summary>
+        /// Returns true if this upgrade is a "dumb" temperature modifier (fuel-based).
+        /// These contribute to the base temperature calculation before smart modifiers.
+        /// </summary>
+        public bool IsDumbTempModifier => (heatOffset > 0f || coolOffset > 0f) && !IsSmartTempModifier;
         
         // Stuff system - allows choosing materials for upgrades
         public List<StuffCategoryDef> stuffCategories;

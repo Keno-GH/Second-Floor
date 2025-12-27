@@ -444,4 +444,42 @@ namespace SecondFloor
         }
     }
 
+    // Hide power overlay when staircase has 0 W power consumption
+    [HarmonyPatch(typeof(CompPowerTrader))]
+    [HarmonyPatch("UpdateOverlays")]
+    public static class CompPowerTrader_UpdateOverlays_Patch
+    {
+        public static void Postfix(CompPowerTrader __instance)
+        {
+            var upgradesComp = __instance.parent?.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null) return;
+
+            float totalPower = upgradesComp.CalculateTotalPowerConsumption();
+            if (totalPower > 0f || __instance.parent?.Map == null) return;
+
+            var overlayNeedsPowerField = AccessTools.Field(typeof(CompPowerTrader), "overlayNeedsPower");
+            var overlayPowerOffField = AccessTools.Field(typeof(CompPowerTrader), "overlayPowerOff");
+            if (overlayNeedsPowerField == null || overlayPowerOffField == null) return;
+
+            var disableMethod = AccessTools.Method(typeof(OverlayDrawer), "Disable", new[] { typeof(Thing), typeof(OverlayHandle?).MakeByRefType() });
+            if (disableMethod == null) return;
+
+            object overlayNeedsPowerValue = overlayNeedsPowerField.GetValue(__instance);
+            if (overlayNeedsPowerValue != null)
+            {
+                object[] args = new object[] { __instance.parent, overlayNeedsPowerValue };
+                disableMethod.Invoke(__instance.parent.Map.overlayDrawer, args);
+                overlayNeedsPowerField.SetValue(__instance, args[1]);
+            }
+
+            object overlayPowerOffValue = overlayPowerOffField.GetValue(__instance);
+            if (overlayPowerOffValue != null)
+            {
+                object[] args = new object[] { __instance.parent, overlayPowerOffValue };
+                disableMethod.Invoke(__instance.parent.Map.overlayDrawer, args);
+                overlayPowerOffField.SetValue(__instance, args[1]);
+            }
+        }
+    }
+
 }

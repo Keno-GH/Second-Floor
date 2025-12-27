@@ -308,4 +308,84 @@
         </modExtensions>
     </ThingDef>
 
+    <!-- =====================================================
+         Smart Temperature Modifier Buildings (Power-based)
+         =====================================================
+    -->
+    
+    <!-- Electric Heater Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ElectricHeater</defName>
+        <label>electric heater upgrade</label>
+        <description>Install an electric heater to provide smart heating to the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <statBases>
+            <WorkToBuild>4000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>80</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/TempControl/Heater_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_ElectricHeater</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Electric Cooler Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ElectricCooler</defName>
+        <label>electric cooler upgrade</label>
+        <description>Install an electric cooler to provide smart cooling to the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <statBases>
+            <WorkToBuild>4500</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>3</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/TempControl/Cooler_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_ElectricCooler</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Air Conditioning Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_AirConditioning</defName>
+        <label>air conditioning upgrade</label>
+        <description>Install an air conditioning unit that can both heat and cool the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <statBases>
+            <WorkToBuild>6000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>5</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/TempControl/Cooler_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_AirConditioning</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
 </Defs>
