@@ -1,124 +1,48 @@
 <Defs>
-  <!--Staircase for bedrooms base-->
-  <ThingDef Abstract="True" Name="StaircaseBedBase" ParentName="BedWithQualityBase">
+  <!-- Base staircase definition -->
+  <ThingDef Abstract="True" Name="StaircaseBase" ParentName="BedWithQualityBase">
     <tickerType>Normal</tickerType>
+    <uiIconScale>1</uiIconScale>
+    <uiOrder>2405</uiOrder>
+    <building>
+      <ai_neverTrashThis>true</ai_neverTrashThis>
+      <paintable>true</paintable>
+      <bed_showSleeperBody>False</bed_showSleeperBody>
+      <bed_healPerDay>4</bed_healPerDay>
+      <bed_caravansCanUse>false</bed_caravansCanUse>
+    </building>
+    <fillPercent>0.8</fillPercent>
+    <pathCost>70</pathCost>
+    <castEdgeShadows>False</castEdgeShadows>
+    <interactionCellOffset>(2,2,2)</interactionCellOffset>
+    <staticSunShadowHeight>0</staticSunShadowHeight>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <drawGUIOverlay>True</drawGUIOverlay>
+    <defaultPlacingRot>South</defaultPlacingRot>
+    <blockLight>false</blockLight>
+    <scatterableOnMapGen>false</scatterableOnMapGen>
+    <leaveResourcesWhenKilled>True</leaveResourcesWhenKilled>
+    <inspectorTabs>
+      <li>SecondFloor.ITab_Staircase</li>
+    </inspectorTabs>
+  </ThingDef>
+
+  <!-- Upstairs staircase -->
+  <ThingDef ParentName="StaircaseBase">
+    <defName>SF_Upstairs</defName>
+    <label>Upstairs</label>
+    <description>A staircase leading to an upper floor with a single bedroom (2 bedspaces). It can be updated with better accommodations and more rooms.</description>
+    <graphicData>
+      <texPath>Things/Building/22staircase/22staircase</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(4,4)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
+    <size>(2,2)</size>
     <holdsRoof>true</holdsRoof>
-    <uiIconScale>1</uiIconScale>
-    <uiOrder>2405</uiOrder>
-    <building>
-      <ai_neverTrashThis>true</ai_neverTrashThis>
-      <paintable>true</paintable>
-      <bed_showSleeperBody>False</bed_showSleeperBody>
-      <bed_healPerDay>4</bed_healPerDay>
-      <bed_caravansCanUse>false</bed_caravansCanUse>
-    </building>
-    <fillPercent>0.8</fillPercent>
-    <pathCost>70</pathCost>
-    <castEdgeShadows>False</castEdgeShadows>
-    <interactionCellOffset>(2,2,2)</interactionCellOffset>
-    <staticSunShadowHeight>0</staticSunShadowHeight>
-    <minifiedDef>MinifiedThing</minifiedDef>
-    <drawGUIOverlay>True</drawGUIOverlay>
-    <defaultPlacingRot>South</defaultPlacingRot>
     <blockWind>true</blockWind>
-    <blockLight>false</blockLight>
-    <scatterableOnMapGen>false</scatterableOnMapGen>
-    <leaveResourcesWhenKilled>True</leaveResourcesWhenKilled>
-    <inspectorTabs>
-      <li>SecondFloor.ITab_Staircase</li>
-    </inspectorTabs>
-    <placeWorkers>
-      <li>SecondFloor.PlaceWorkerIndoors</li>
-      <li>SecondFloor.PlaceWorkerUnderRoof</li>
-      <li>SecondFloor.PlaceWorkerOnlyOneSFPerRoom</li>
-    </placeWorkers>
-  </ThingDef>
-
-  <!--Staircase to basement base-->
-  <ThingDef Abstract="True" Name="StaircaseBedBaseDown" ParentName="BedWithQualityBase">
-    <tickerType>Normal</tickerType>
-    <holdsRoof>false</holdsRoof>
-    <uiIconScale>1</uiIconScale>
-    <uiOrder>2405</uiOrder>
-    <building>
-      <ai_neverTrashThis>true</ai_neverTrashThis>
-      <paintable>true</paintable>
-      <bed_showSleeperBody>False</bed_showSleeperBody>
-      <bed_healPerDay>4</bed_healPerDay>
-      <bed_caravansCanUse>false</bed_caravansCanUse>
-    </building>
-    <fillPercent>0.8</fillPercent>
-    <pathCost>70</pathCost>
-    <castEdgeShadows>False</castEdgeShadows>
-    <interactionCellOffset>(2,2,2)</interactionCellOffset>
-    <staticSunShadowHeight>0</staticSunShadowHeight>
-    <minifiedDef>MinifiedThing</minifiedDef>
-    <drawGUIOverlay>True</drawGUIOverlay>
-    <defaultPlacingRot>South</defaultPlacingRot>
-    <blockWind>false</blockWind>
-    <blockLight>false</blockLight>
-    <scatterableOnMapGen>false</scatterableOnMapGen>
-    <leaveResourcesWhenKilled>True</leaveResourcesWhenKilled>
-    <inspectorTabs>
-      <li>SecondFloor.ITab_Staircase</li>
-    </inspectorTabs>
-  </ThingDef>
-
-  <!-- Low quality upstairs -->
-<!--   <ThingDef Abstract="True" Name="StaircaseBedLowQualityBase" ParentName="StaircaseBedBase">
-    <modExtensions>
-      <li Class="SecondFloor.SecondFloorModExtension">
-        <RemoveSoakingWet>true</RemoveSoakingWet>
-        <RemoveSleptOutside>true</RemoveSleptOutside>
-        <RemoveSleptInCold>true</RemoveSleptInCold>
-        <RemoveSleptInBarracks>true</RemoveSleptInBarracks>
-        <RemoveSleepDisturbed>false</RemoveSleepDisturbed>
-        <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
-        <RemoveSharedBed>true</RemoveSharedBed>
-        <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
-        <customHediff>SF_WarmTemperature</customHediff>
-      </li>
-    </modExtensions>
-    <statBases>
-      <MaxHitPoints>450</MaxHitPoints>
-      <Flammability>1.0</Flammability>
-      <Beauty>0</Beauty>
-      <BeautyOutdoors>0</BeautyOutdoors>
-      <WorkToBuild>80000</WorkToBuild>
-      <Mass>400</Mass>
-      <BedRestEffectiveness>0.85</BedRestEffectiveness>
-      <Comfort>.6</Comfort>
-      <ImmunityGainSpeedFactor>1.05</ImmunityGainSpeedFactor>
-      <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
-      <MedicalTendQualityOffset>0.00</MedicalTendQualityOffset>
-      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
-    </statBases>
-    <techLevel>Neolithic</techLevel>
-    <researchPrerequisites>
-      <li>PassiveCooler</li>
-    </researchPrerequisites>
-    <stuffCategories>
-      <li>Woody</li>
-      <li>Metallic</li>
-    </stuffCategories>
-    <comps>
-      <li Class="SecondFloor.CompProperties_GiveThoughtStairs">
-        <thoughtDef>SF_Low_Quality_Room</thoughtDef>
-      </li>
-      <li Class="CompProperties_AffectedByFacilities">
-        <linkableFacilities>
-          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
-        </linkableFacilities>
-      </li>
-      <li>
-        <compClass>SecondFloor.CompAssignBedHediff</compClass>
-      </li>
-    </comps>
-    <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
-  </ThingDef> -->
-
-  <!-- Mid quality upstairs -->
-  <ThingDef Abstract="True" Name="StaircaseBedMidQualityBase" ParentName="StaircaseBedBase">
+    <techLevel>Medieval</techLevel>
     <modExtensions>
       <li Class="SecondFloor.SecondFloorModExtension">
         <RemoveSoakingWet>true</RemoveSoakingWet>
@@ -150,12 +74,12 @@
       <li>PassiveCooler</li>
       <li>ComplexFurniture</li>
     </researchPrerequisites>
-    <techLevel>Medieval</techLevel>
+    <costStuffCount>200</costStuffCount>
     <stuffCategories>
-      <li>Stony</li>
       <li>Woody</li>
       <li>Metallic</li>
     </stuffCategories>
+    <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
     <comps>
       <li Class="SecondFloor.CompProperties_GiveThoughtStairs">
         <thoughtDef>SF_Decent_Quality_Room</thoughtDef>
@@ -168,86 +92,6 @@
       <li>
         <compClass>SecondFloor.CompAssignBedHediff</compClass>
       </li>
-    </comps>
-    <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
-  </ThingDef>
-
-  <!--High quality upstairs-->
-<!--   <ThingDef Abstract="True" Name="StaircaseBedHighQualityBase" ParentName="StaircaseBedBase">
-    <modExtensions>
-      <li Class="SecondFloor.SecondFloorModExtension">
-        <RemoveSoakingWet>true</RemoveSoakingWet>
-        <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
-        <RemoveSleptOutside>true</RemoveSleptOutside>
-        <RemoveSleptInCold>true</RemoveSleptInCold>
-        <RemoveSleptInHeat>true</RemoveSleptInHeat>
-        <RemoveSleptInBarracks>true</RemoveSleptInBarracks>
-        <RemoveSleepDisturbed>true</RemoveSleepDisturbed>
-        <RemoveSharedBed>true</RemoveSharedBed>
-        <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
-        <RemoveGreedyWant>true</RemoveGreedyWant>
-        <customHediff>SF_RegularTemperature</customHediff>
-      </li>
-    </modExtensions>
-    <statBases>
-      <MaxHitPoints>1000</MaxHitPoints>
-      <Flammability>1.0</Flammability>
-      <Beauty>10</Beauty>
-      <BeautyOutdoors>6</BeautyOutdoors>
-      <WorkToBuild>120000</WorkToBuild>
-      <Mass>400</Mass>
-      <BedRestEffectiveness>1</BedRestEffectiveness>
-      <Comfort>.8</Comfort>
-      <ImmunityGainSpeedFactor>1.07</ImmunityGainSpeedFactor>
-      <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
-      <MedicalTendQualityOffset>0.10</MedicalTendQualityOffset>
-      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
-    </statBases>
-    <researchPrerequisites>
-      <li>PassiveCooler</li>
-      <li>ComplexFurniture</li>
-      <li>CarpetMaking</li>
-    </researchPrerequisites>
-    <techLevel>Medieval</techLevel>
-    <stuffCategories>
-      <li>Stony</li>
-      <li>Woody</li>
-      <li>Metallic</li>
-    </stuffCategories>
-    <comps>
-      <li Class="SecondFloor.CompProperties_GiveThoughtStairs">
-        <thoughtDef>SF_Good_Quality_Room</thoughtDef>
-      </li>
-      <li Class="CompProperties_AffectedByFacilities">
-        <linkableFacilities>
-          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
-        </linkableFacilities>
-      </li>
-      <li>
-        <compClass>SecondFloor.CompAssignBedHediff</compClass>
-      </li>
-    </comps>
-    <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
-  </ThingDef> -->
-
-  <ThingDef ParentName="StaircaseBedMidQualityBase">
-    <defName>SF_Upstairs</defName>
-    <label>Upstairs</label>
-    <description>A staircase leading to an upper floor with a single bedroom (2 bedspaces). It can be updated with better accommodations and more rooms.</description>
-    <graphicData>
-      <texPath>Things/Building/22staircase/22staircase</texPath>
-      <graphicClass>Graphic_Multi</graphicClass>
-      <drawSize>(4,4)</drawSize>
-      <drawRotated>false</drawRotated>
-    </graphicData>
-    <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
-    <size>(2,2)</size>
-    <costStuffCount>200</costStuffCount>
-    <stuffCategories>
-      <li>Woody</li>
-      <li>Metallic</li>
-    </stuffCategories>
-    <comps>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
         <bedCount>2</bedCount>
@@ -264,13 +108,36 @@
         <initialFuelPercent>0</initialFuelPercent>
         <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
       </li>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <shortCircuitInRain>false</shortCircuitInRain>
+        <basePowerConsumption>0</basePowerConsumption>
+      </li>
     </comps>
     <placeWorkers>
+      <li>SecondFloor.PlaceWorkerIndoors</li>
+      <li>SecondFloor.PlaceWorkerUnderRoof</li>
+      <li>SecondFloor.PlaceWorkerOnlyOneSFPerRoom</li>
       <li>SecondFloor.PlaceWorkerInSmallRoom</li>
     </placeWorkers>
   </ThingDef>
 
-  <ThingDef Abstract="True" Name="StaircaseBedLowQualityBaseDown" ParentName="StaircaseBedBaseDown">
+  <!-- Basement staircase -->
+  <ThingDef ParentName="StaircaseBase">
+    <defName>SF_Basement</defName>
+    <label>Basement</label>
+    <description>A small staircase leading to a basement floor</description>
+    <graphicData>
+      <texPath>Things/Building/22staircase_down/22staircase_down</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(4,4)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <uiIconPath>Icons/Bedrooms/CheapBasementTwo</uiIconPath>
+    <size>(2,2)</size>
+    <holdsRoof>false</holdsRoof>
+    <blockWind>false</blockWind>
+    <techLevel>Neolithic</techLevel>
     <modExtensions>
       <li Class="SecondFloor.SecondFloorModExtension">
         <RemoveSoakingWet>true</RemoveSoakingWet>
@@ -297,13 +164,14 @@
       <MedicalTendQualityOffset>0.00</MedicalTendQualityOffset>
       <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
     </statBases>
-    <techLevel>Neolithic</techLevel>
     <researchPrerequisites>
       <li>Stonecutting</li>
     </researchPrerequisites>
+    <costStuffCount>200</costStuffCount>
     <stuffCategories>
       <li>Stony</li>
     </stuffCategories>
+    <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
     <comps>
       <li Class="SecondFloor.CompProperties_GiveThoughtStairs">
         <thoughtDef>SF_Low_Quality_Basement</thoughtDef>
@@ -316,31 +184,6 @@
       <li>
         <compClass>SecondFloor.CompAssignBedHediff</compClass>
       </li>
-    </comps>
-    <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
-    <placeWorkers>
-      <li>SecondFloor.PlaceWorkerIndoors</li>
-      <li>SecondFloor.PlaceWorkerOnlyOneBSPerRoom</li>
-    </placeWorkers>
-  </ThingDef>
-
-  <ThingDef ParentName="StaircaseBedLowQualityBaseDown">
-    <defName>SF_Basement</defName>
-    <label>Basement</label>
-    <description>A small staircase leading to a basement floor</description>
-    <graphicData>
-      <texPath>Things/Building/22staircase_down/22staircase_down</texPath>
-      <graphicClass>Graphic_Multi</graphicClass>
-      <drawSize>(4,4)</drawSize>
-      <drawRotated>false</drawRotated>
-    </graphicData>
-    <uiIconPath>Icons/Bedrooms/CheapBasementTwo</uiIconPath>
-    <statBases>
-      <WorkToBuild>20000</WorkToBuild>      <!-- Stony materials have a 6x multiplier in worktobuild, this would be equivalent to 120K worktobuild -->
-    </statBases>
-    <size>(2,2)</size>
-    <costStuffCount>200</costStuffCount>
-    <comps>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
         <bedCount>2</bedCount>
@@ -359,6 +202,8 @@
       </li>
     </comps>
     <placeWorkers>
+      <li>SecondFloor.PlaceWorkerIndoors</li>
+      <li>SecondFloor.PlaceWorkerOnlyOneBSPerRoom</li>
       <li>SecondFloor.PlaceWorkerInSmallRoom</li>
     </placeWorkers>
   </ThingDef>
