@@ -1114,6 +1114,13 @@ namespace SecondFloor
                 {
                     continue;
                 }
+                
+                // Skip if research prerequisite is not completed
+                if (def.researchPrerequisite != null && !def.researchPrerequisite.IsFinished)
+                {
+                    continue;
+                }
+                
                 result.Add(def);
             }
             

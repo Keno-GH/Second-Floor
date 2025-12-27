@@ -71,6 +71,7 @@
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
         <minConstructionSkill>3</minConstructionSkill>
+        <researchPrerequisite>SF_Soundproofing</researchPrerequisite>
         <iconPath>Things/Item/Resource/Cloth/Cloth_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -137,6 +138,7 @@
         <coolOffset>0</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
+        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
         <stuffCategories>
             <li>Metallic</li>
         </stuffCategories>
@@ -155,6 +157,7 @@
         <coolOffset>0</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_Campfires</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
+        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
         <iconPath>Things/Building/Misc/Campfire</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -169,6 +172,7 @@
         <coolOffset>20</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_PassiveCooler</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
+        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
         <iconPath>Things/Building/Misc/PassiveCooler</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -181,6 +185,7 @@
         <insulationAdjustment>3</insulationAdjustment>
         <upgradeBuildingDef>SF_UpgradeBuilding_TextileInsulation</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
+        <researchPrerequisite>SF_TextileInsulation</researchPrerequisite>
         <stuffCategories>
             <li>Fabric</li>
         </stuffCategories>
@@ -225,6 +230,7 @@
         <smartCoolEfficiency>0</smartCoolEfficiency>
         <upgradeBuildingDef>SF_UpgradeBuilding_ElectricHeater</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
+        <researchPrerequisite>SF_Heaters</researchPrerequisite>
         <iconPath>Things/Building/Misc/TempControl/Heater_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
     
@@ -241,6 +247,7 @@
         <smartCoolEfficiency>3</smartCoolEfficiency>
         <upgradeBuildingDef>SF_UpgradeBuilding_ElectricCooler</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
+        <researchPrerequisite>SF_AirConditioners</researchPrerequisite>
         <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
     
@@ -257,6 +264,7 @@
         <smartCoolEfficiency>2.5</smartCoolEfficiency>
         <upgradeBuildingDef>SF_UpgradeBuilding_AirConditioning</upgradeBuildingDef>
         <minConstructionSkill>6</minConstructionSkill>
+        <researchPrerequisite>SF_AirConditioners</researchPrerequisite>
         <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 

@@ -33,6 +33,9 @@ namespace SecondFloor
         // Required upgrades that must be installed before this one
         public List<StaircaseUpgradeDef> requiredUpgrades;
         
+        // Research prerequisite - upgrade won't appear until this research is completed
+        public ResearchProjectDef researchPrerequisite;
+        
         // Cached texture
         private Texture2D cachedIcon;
         
