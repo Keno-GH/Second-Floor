@@ -1094,6 +1094,49 @@ namespace SecondFloor
                 hasEffects = true;
             }
             
+            // Smart temperature modifiers (power-based)
+            if (def.IsSmartTempModifier)
+            {
+                if (def.smartTempModifierType == TempModifierType.HeaterOnly && def.smartHeatEfficiency > 0)
+                {
+                    float maxHeat = (def.basePowerConsumption / 100f) * def.smartHeatEfficiency;
+                    Widgets.Label(new Rect(x, curY, width, 24f), $"  Smart Heating: up to +{maxHeat.ToStringTemperature("F1")}");
+                    curY += 24f;
+                    hasEffects = true;
+                }
+                else if (def.smartTempModifierType == TempModifierType.CoolerOnly && def.smartCoolEfficiency > 0)
+                {
+                    float maxCool = (def.basePowerConsumption / 100f) * def.smartCoolEfficiency;
+                    Widgets.Label(new Rect(x, curY, width, 24f), $"  Smart Cooling: up to -{maxCool.ToStringTemperature("F1")}");
+                    curY += 24f;
+                    hasEffects = true;
+                }
+                else if (def.smartTempModifierType == TempModifierType.DualMode)
+                {
+                    if (def.smartHeatEfficiency > 0)
+                    {
+                        float maxHeat = (def.basePowerConsumption / 100f) * def.smartHeatEfficiency;
+                        Widgets.Label(new Rect(x, curY, width, 24f), $"  Smart Heating: up to +{maxHeat.ToStringTemperature("F1")}");
+                        curY += 24f;
+                        hasEffects = true;
+                    }
+                    if (def.smartCoolEfficiency > 0)
+                    {
+                        float maxCool = (def.basePowerConsumption / 100f) * def.smartCoolEfficiency;
+                        Widgets.Label(new Rect(x, curY, width, 24f), $"  Smart Cooling: up to -{maxCool.ToStringTemperature("F1")}");
+                        curY += 24f;
+                        hasEffects = true;
+                    }
+                }
+            }
+            
+            if (def.requiresPower && def.basePowerConsumption > 0)
+            {
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Power Usage: {def.basePowerConsumption:F0}W");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
             if (!hasEffects)
             {
                 Widgets.Label(new Rect(x, curY, width, 24f), "  No gameplay effects");
