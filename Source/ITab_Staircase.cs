@@ -548,6 +548,31 @@ namespace SecondFloor
             Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Space per bed: {def.spaceCostPerBed}");
             curY += 24f;
             
+            // Show additional space cost from bed increase (if this upgrade adds beds)
+            if (def.bedCountOffset > 0 || def.bedCountMultiplier > 1f)
+            {
+                var additionalSpaceBreakdown = comp.GetAdditionalSpaceCostBreakdown(def);
+                if (additionalSpaceBreakdown.Count > 0)
+                {
+                    float totalAdditionalSpace = additionalSpaceBreakdown.Sum(x => x.additionalSpace);
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  <color=#ffcc00>Additional space from installed upgrades: +{totalAdditionalSpace}</color>");
+                    curY += 24f;
+                    foreach (var (upgradeLabel, additionalSpace) in additionalSpaceBreakdown)
+                    {
+                        Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"    • {upgradeLabel}: +{additionalSpace}");
+                        curY += 24f;
+                    }
+                }
+            }
+            
+            // Show total space cost
+            float totalSpaceCost = comp.GetRequiredSpaceForUpgrade(def);
+            float spaceAvailable = comp.GetTotalSpace() - comp.GetUsedSpace();
+            string spaceColorTag = spaceAvailable >= totalSpaceCost ? "" : "<color=#ff6666>";
+            string spaceColorEnd = spaceAvailable >= totalSpaceCost ? "" : "</color>";
+            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {spaceColorTag}Total space required: {totalSpaceCost} (available: {spaceAvailable}){spaceColorEnd}");
+            curY += 24f;
+            
             // Get bed count for cost calculations
             CompMultipleBeds bedsComp = SelThing.TryGetComp<CompMultipleBeds>();
             int bedCount = bedsComp?.bedCount ?? 1;
@@ -740,7 +765,13 @@ namespace SecondFloor
                 int constructedCount = comp.GetConstructedCount(def);
                 CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
                 int currentBedCount = bedComp?.bedCount ?? 1;
-                int needed = currentBedCount - constructedCount;
+                int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
+                int needed = requiredCount - constructedCount;
+                
+                // Determine if this is an ambient (shared) upgrade in barracks for tooltip clarity
+                var extDisabled = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+                bool isDirectlyToBedDisabled = extDisabled?.directlyToBed ?? false;
+                bool isBarracksWithAmbientDisabled = comp.IsBarracks && (extDisabled?.onePerBed == true) && !isDirectlyToBedDisabled;
                 
                 if (Prefs.DevMode)
                 {
@@ -756,9 +787,10 @@ namespace SecondFloor
                     {
                         FillMissingBlueprints(def, comp, SelThing);
                     }
-                    TooltipHandler.TipRegion(addButtonRect, 
-                        $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
-                        $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                    string tooltipTextDisabledDev = isBarracksWithAmbientDisabled
+                        ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
+                        : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                    TooltipHandler.TipRegion(addButtonRect, tooltipTextDisabledDev);
                     
                     // "Remove Constructed" button
                     GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
@@ -791,9 +823,10 @@ namespace SecondFloor
                     {
                         FillMissingBlueprints(def, comp, SelThing);
                     }
-                    TooltipHandler.TipRegion(addButtonRect, 
-                        $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
-                        $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                    string tooltipTextDisabled = isBarracksWithAmbientDisabled
+                        ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
+                        : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                    TooltipHandler.TipRegion(addButtonRect, tooltipTextDisabled);
                     
                     // "Remove Constructed" button
                     GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
@@ -843,17 +876,22 @@ namespace SecondFloor
             else if (!isPending)
             {
                 // Check if this is a onePerBed upgrade with some but not enough constructed
-                bool isOnePerBed = def.RequiresConstruction && 
-                                   def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
+                var ext = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+                bool isOnePerBed = def.RequiresConstruction && (ext?.onePerBed == true);
                 int constructedCount = comp.GetConstructedCount(def);
                 CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
                 int currentBedCount = bedComp?.bedCount ?? 1;
-                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < currentBedCount;
+                int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
+                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < requiredCount;
+                
+                // Determine if this is an ambient (shared) upgrade in barracks for tooltip clarity
+                bool isDirectlyToBed = ext?.directlyToBed ?? false;
+                bool isBarracksWithAmbient = comp.IsBarracks && isOnePerBed && !isDirectlyToBed;
                 
                 if (needsMoreBlueprints)
                 {
                     // Show two buttons side by side: "Add More Blueprints" and "Remove Constructed"
-                    int needed = currentBedCount - constructedCount;
+                    int needed = requiredCount - constructedCount;
                     
                     if (Prefs.DevMode)
                     {
@@ -869,9 +907,10 @@ namespace SecondFloor
                         {
                             FillMissingBlueprints(def, comp, SelThing);
                         }
-                        TooltipHandler.TipRegion(addButtonRect, 
-                            $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
-                            $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                        string tooltipText = isBarracksWithAmbient
+                            ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
+                            : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                        TooltipHandler.TipRegion(addButtonRect, tooltipText);
                         
                         // "Remove Constructed" button
                         GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
@@ -905,9 +944,10 @@ namespace SecondFloor
                         {
                             FillMissingBlueprints(def, comp, SelThing);
                         }
-                        TooltipHandler.TipRegion(addButtonRect, 
-                            $"This upgrade requires one per bed ({currentBedCount} total). You have {constructedCount} constructed. " +
-                            $"Click to place {needed} more blueprint{(needed > 1 ? "s" : "")} to reach the required amount.");
+                        string tooltipText2 = isBarracksWithAmbient
+                            ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
+                            : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                        TooltipHandler.TipRegion(addButtonRect, tooltipText2);
                         
                         // "Remove Constructed" button
                         GUI.color = new Color(1f, 0.5f, 0.5f); // Light red color for remove button
@@ -924,7 +964,7 @@ namespace SecondFloor
                 {
                     // Show Build button
                     float availableSpace = comp.GetTotalSpace() - comp.GetUsedSpace();
-                    float requiredSpace = def.spaceCost + (def.spaceCostPerBed * (bedComp?.bedCount ?? 1));
+                    float requiredSpace = comp.GetRequiredSpaceForUpgrade(def);
                     bool canAffordSpace = availableSpace >= requiredSpace;
                     bool isLocked = IsUpgradeLocked(def, comp);
                     bool canBuild = canAffordSpace && !isLocked;
@@ -1149,10 +1189,19 @@ namespace SecondFloor
             
             if (def.requiresPower && def.basePowerConsumption > 0)
             {
-                bool isOnePerBed = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true;
+                var ext = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+                bool isOnePerBed = ext?.onePerBed == true;
+                bool directlyToBed = ext?.directlyToBed ?? false;
                 if (isOnePerBed)
                 {
-                    Widgets.Label(new Rect(x, curY, width, 24f), $"  Power Usage: {def.basePowerConsumption:F0}W per bed");
+                    if (directlyToBed)
+                    {
+                        Widgets.Label(new Rect(x, curY, width, 24f), "SF_PowerUsagePerBed".Translate(def.basePowerConsumption.ToString("F0")));
+                    }
+                    else
+                    {
+                        Widgets.Label(new Rect(x, curY, width, 24f), "SF_PowerUsagePerBedAmbient".Translate(def.basePowerConsumption.ToString("F0")));
+                    }
                 }
                 else
                 {
@@ -1232,7 +1281,7 @@ namespace SecondFloor
             
             float totalSpace = comp.GetTotalSpace();
             float usedSpace = comp.GetUsedSpace();
-            float requiredSpace = def.spaceCost + (def.spaceCostPerBed * (staircase.TryGetComp<CompMultipleBeds>()?.bedCount ?? 1));
+            float requiredSpace = comp.GetRequiredSpaceForUpgrade(def);
 
             if (totalSpace - usedSpace < requiredSpace)
             {
@@ -1326,13 +1375,12 @@ namespace SecondFloor
         {
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
-                // Place one blueprint per bed count
+                // Place one blueprint per required bed count
                 if (def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed == true)
                 {
-                    CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-                    int bedCount = bedsComp?.bedCount ?? 1;
+                    int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
                     
-                    for (int i = 0; i < bedCount; i++)
+                    for (int i = 0; i < requiredCount; i++)
                     {
                         PlaceUpgradeBlueprint(def, stuff, staircase);
                     }
@@ -1580,10 +1628,9 @@ namespace SecondFloor
         
         private void FillMissingBlueprints(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
         {
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCount = bedsComp?.bedCount ?? 1;
+            int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
             int constructedCount = comp.GetConstructedCount(def);
-            int needed = bedCount - constructedCount;
+            int needed = requiredCount - constructedCount;
             
             if (needed <= 0)
             {

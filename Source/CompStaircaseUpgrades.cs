@@ -142,12 +142,192 @@ namespace SecondFloor
         public float GetUsedSpace()
         {
             float used = 0;
+            int rawBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            
             foreach(var activeUpgrade in constructedUpgrades)
             {
                 used += activeUpgrade.def.spaceCost;
-                used += activeUpgrade.def.spaceCostPerBed * (parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1);
+                
+                // For spaceCostPerBed, apply barracks halving logic for ambient upgrades
+                if (activeUpgrade.def.spaceCostPerBed > 0)
+                {
+                    int effectiveBedCount = GetEffectiveBedCountForUpgrade(activeUpgrade.def, rawBedCount);
+                    used += activeUpgrade.def.spaceCostPerBed * effectiveBedCount;
+                }
             }
             return used;
+        }
+        
+        /// <summary>
+        /// Gets the effective bed count for an upgrade, accounting for barracks halving of ambient upgrades.
+        /// </summary>
+        private int GetEffectiveBedCountForUpgrade(StaircaseUpgradeDef def, int rawBedCount)
+        {
+            if (def.upgradeBuildingDef == null)
+            {
+                return rawBedCount;
+            }
+            
+            var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
+            bool onePerBed = ext?.onePerBed ?? true;
+            
+            if (!onePerBed)
+            {
+                return 1; // Not a per-bed upgrade
+            }
+            
+            bool directlyToBed = ext?.directlyToBed ?? false;
+            if (!directlyToBed && IsBarracks && rawBedCount > 1)
+            {
+                return Mathf.CeilToInt(rawBedCount / 2f);
+            }
+            
+            return rawBedCount;
+        }
+        
+        /// <summary>
+        /// Gets the required space for a new upgrade, accounting for barracks halving of ambient upgrades.
+        /// Also includes additional space cost from existing per-bed upgrades when this upgrade increases bed count.
+        /// </summary>
+        public float GetRequiredSpaceForUpgrade(StaircaseUpgradeDef def)
+        {
+            int rawBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            int effectiveBedCount = GetEffectiveBedCountForUpgrade(def, rawBedCount);
+            float baseSpaceCost = def.spaceCost + (def.spaceCostPerBed * effectiveBedCount);
+            
+            // If this upgrade increases bed count, add space cost from existing per-bed upgrades
+            float additionalSpaceCost = GetAdditionalSpaceCostFromBedIncrease(def);
+            
+            return baseSpaceCost + additionalSpaceCost;
+        }
+        
+        /// <summary>
+        /// Calculates the additional space cost from existing per-bed upgrades when a bed-increasing upgrade is added.
+        /// </summary>
+        public float GetAdditionalSpaceCostFromBedIncrease(StaircaseUpgradeDef def)
+        {
+            // Check if this upgrade increases bed count
+            if (def.bedCountOffset <= 0 && def.bedCountMultiplier <= 1f)
+            {
+                return 0f;
+            }
+            
+            int currentBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            
+            // Calculate what the new bed count would be after this upgrade
+            int newBedCount = currentBedCount;
+            newBedCount += def.bedCountOffset;
+            newBedCount = (int)(newBedCount * def.bedCountMultiplier);
+            
+            if (newBedCount <= currentBedCount)
+            {
+                return 0f;
+            }
+            
+            // Determine if this upgrade would make it a barracks (for future barracks halving logic)
+            bool willBeBarracks = IsBarracks || def.defName == "SF_StaircaseUpgrade_Barracks";
+            
+            float additionalCost = 0f;
+            
+            // For each existing per-bed upgrade, calculate the additional space needed
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (activeUpgrade.def.spaceCostPerBed <= 0)
+                {
+                    continue;
+                }
+                
+                // Get the effective bed count for this upgrade before and after
+                int effectiveBefore = GetEffectiveBedCountForUpgradeWithBarracksOverride(activeUpgrade.def, currentBedCount, IsBarracks);
+                int effectiveAfter = GetEffectiveBedCountForUpgradeWithBarracksOverride(activeUpgrade.def, newBedCount, willBeBarracks);
+                
+                int additionalBeds = effectiveAfter - effectiveBefore;
+                if (additionalBeds > 0)
+                {
+                    additionalCost += activeUpgrade.def.spaceCostPerBed * additionalBeds;
+                }
+            }
+            
+            return additionalCost;
+        }
+        
+        /// <summary>
+        /// Gets a breakdown of additional space costs from bed increase for UI display.
+        /// Returns a list of (upgrade label, additional space) tuples.
+        /// </summary>
+        public List<(string upgradeLabel, float additionalSpace)> GetAdditionalSpaceCostBreakdown(StaircaseUpgradeDef def)
+        {
+            var breakdown = new List<(string, float)>();
+            
+            // Check if this upgrade increases bed count
+            if (def.bedCountOffset <= 0 && def.bedCountMultiplier <= 1f)
+            {
+                return breakdown;
+            }
+            
+            int currentBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            
+            // Calculate what the new bed count would be after this upgrade
+            int newBedCount = currentBedCount;
+            newBedCount += def.bedCountOffset;
+            newBedCount = (int)(newBedCount * def.bedCountMultiplier);
+            
+            if (newBedCount <= currentBedCount)
+            {
+                return breakdown;
+            }
+            
+            // Determine if this upgrade would make it a barracks
+            bool willBeBarracks = IsBarracks || def.defName == "SF_StaircaseUpgrade_Barracks";
+            
+            // For each existing per-bed upgrade, calculate the additional space needed
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (activeUpgrade.def.spaceCostPerBed <= 0)
+                {
+                    continue;
+                }
+                
+                int effectiveBefore = GetEffectiveBedCountForUpgradeWithBarracksOverride(activeUpgrade.def, currentBedCount, IsBarracks);
+                int effectiveAfter = GetEffectiveBedCountForUpgradeWithBarracksOverride(activeUpgrade.def, newBedCount, willBeBarracks);
+                
+                int additionalBeds = effectiveAfter - effectiveBefore;
+                if (additionalBeds > 0)
+                {
+                    float additionalSpace = activeUpgrade.def.spaceCostPerBed * additionalBeds;
+                    breakdown.Add((activeUpgrade.def.label, additionalSpace));
+                }
+            }
+            
+            return breakdown;
+        }
+        
+        /// <summary>
+        /// Gets the effective bed count for an upgrade with explicit barracks override.
+        /// Used for calculating future states when an upgrade would change barracks status.
+        /// </summary>
+        private int GetEffectiveBedCountForUpgradeWithBarracksOverride(StaircaseUpgradeDef def, int rawBedCount, bool isBarracksOverride)
+        {
+            if (def.upgradeBuildingDef == null)
+            {
+                return rawBedCount;
+            }
+            
+            var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
+            bool onePerBed = ext?.onePerBed ?? true;
+            
+            if (!onePerBed)
+            {
+                return 1; // Not a per-bed upgrade
+            }
+            
+            bool directlyToBed = ext?.directlyToBed ?? false;
+            if (!directlyToBed && isBarracksOverride && rawBedCount > 1)
+            {
+                return Mathf.CeilToInt(rawBedCount / 2f);
+            }
+            
+            return rawBedCount;
         }
         
         /// <summary>
@@ -173,6 +353,17 @@ namespace SecondFloor
         public List<StaircaseUpgradeDef> GetConstructedUpgradeDefs()
         {
             return constructedUpgrades.Select(au => au.def).ToList();
+        }
+        
+        /// <summary>
+        /// Returns true if the staircase has the Barracks upgrade active.
+        /// </summary>
+        public bool IsBarracks
+        {
+            get
+            {
+                return constructedUpgrades.Any(au => au.def.defName == "SF_StaircaseUpgrade_Barracks");
+            }
         }
         
         /// <summary>
@@ -224,6 +415,14 @@ namespace SecondFloor
                 {
                     var bedsComp = parent.GetComp<CompMultipleBeds>();
                     int bedCount = bedsComp?.bedCount ?? 1;
+                    
+                    // For barracks with ambient upgrades (not directly to bed), halve the required count
+                    bool directlyToBed = ext?.directlyToBed ?? false;
+                    if (!directlyToBed && IsBarracks && bedCount > 1)
+                    {
+                        bedCount = Mathf.CeilToInt(bedCount / 2f);
+                    }
+                    
                     if (constructedUpgrade.count < bedCount)
                     {
                         return UpgradeDisableReason.InsufficientCount;
@@ -582,19 +781,38 @@ namespace SecondFloor
 
         /// <summary>
         /// Helper method to get bed count for an upgrade. Sets to 1 if not applicable to the upgrade.
+        /// For onePerBed upgrades that are not directlyToBed, the count is halved in barracks
+        /// (rounded up) since barracks share ambient upgrades between beds.
         /// </summary>
         private int GetBedCount(StaircaseUpgradeDef def)
         {
             // Get bed count to calculate total cost if applicable
             int bedCount = 1;
-            bool onePerBed = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>()?.onePerBed ?? true;
+            var ext = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+            bool onePerBed = ext?.onePerBed ?? true;
             if (onePerBed)
             {
                 CompMultipleBeds bedsComp = parent.GetComp<CompMultipleBeds>();
                 bedCount = bedsComp?.bedCount ?? 1;
+                
+                // For barracks with ambient upgrades (not directly to bed), halve the required count
+                bool directlyToBed = ext?.directlyToBed ?? false;
+                if (!directlyToBed && IsBarracks && bedCount > 1)
+                {
+                    bedCount = Mathf.CeilToInt(bedCount / 2f);
+                }
             }
 
             return bedCount;
+        }
+
+        /// <summary>
+        /// Gets the required bed count for UI display purposes.
+        /// This is separate from GetBedCount since it may show different values for player clarity.
+        /// </summary>
+        public int GetRequiredBedCountForUpgrade(StaircaseUpgradeDef def)
+        {
+            return GetBedCount(def);
         }
 
         /// <summary>

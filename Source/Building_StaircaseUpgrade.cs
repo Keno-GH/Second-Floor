@@ -179,6 +179,13 @@ namespace SecondFloor
     {
         public StaircaseUpgradeDef upgradeDef;
         public bool onePerBed = true; // By default, upgrades are one per bed
+        /// <summary>
+        /// If true, this upgrade affects the bed directly (e.g., mattress/bedding upgrades).
+        /// When directlyToBed is true, the upgrade always requires one per bed spot.
+        /// When directlyToBed is false and the room type is Barracks, only half the bed count
+        /// is required since the upgrade affects the ambient environment rather than beds individually.
+        /// </summary>
+        public bool directlyToBed = false;
     }
 
     /// <summary>

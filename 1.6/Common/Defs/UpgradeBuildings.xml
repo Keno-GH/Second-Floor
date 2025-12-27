@@ -216,6 +216,7 @@
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_BetterBeddings</upgradeDef>
+                <directlyToBed>true</directlyToBed>
             </li>
         </modExtensions>
     </ThingDef>
@@ -239,6 +240,7 @@
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_BetterMattresses</upgradeDef>
+                <directlyToBed>true</directlyToBed>
             </li>
         </modExtensions>
     </ThingDef>
@@ -262,6 +264,7 @@
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_StaircaseUpgrade_ErgonomicBeds</upgradeDef>
+                <directlyToBed>true</directlyToBed>
             </li>
         </modExtensions>
     </ThingDef>

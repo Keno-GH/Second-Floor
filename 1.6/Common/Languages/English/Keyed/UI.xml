@@ -37,4 +37,12 @@
   <SF_ToggleOn>Toggle On</SF_ToggleOn>
   <SF_ToggleOffTooltip>Turn off this upgrade. While off, it won't consume fuel or power and won't provide any effects.</SF_ToggleOffTooltip>
   <SF_ToggleOnTooltip>Turn on this upgrade. It will resume consuming fuel or power and provide its effects.</SF_ToggleOnTooltip>
+  
+  <!-- OnePerBed upgrade tooltips -->
+  <SF_OnePerBedDirect>This upgrade is installed directly on each bed ({0} required). You have {1} constructed. Click to place {2} more blueprint(s) to reach the required amount.</SF_OnePerBedDirect>
+  <SF_OnePerBedAmbientBarracks>This ambient upgrade is shared between beds in barracks (only {0} required instead of {1}). You have {2} constructed. Click to place {3} more blueprint(s) to reach the required amount.</SF_OnePerBedAmbientBarracks>
+  
+  <!-- Power usage labels -->
+  <SF_PowerUsagePerBed>  Power Usage: {0}W per bed</SF_PowerUsagePerBed>
+  <SF_PowerUsagePerBedAmbient>  Power Usage: {0}W per bed (halved in barracks)</SF_PowerUsagePerBedAmbient>
 </LanguageData>
