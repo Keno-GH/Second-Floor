@@ -13,6 +13,7 @@ namespace SecondFloor
     public enum UpgradeDisableReason
     {
         None,
+        ToggledOff,      // Manually toggled off by player
         OutOfFuel,
         NoPower,
         InsufficientCount // For onePerBed upgrades
@@ -34,6 +35,11 @@ namespace SecondFloor
         public StaircaseUpgradeDef def;
         public ThingDef stuff;
         public int count;
+        /// <summary>
+        /// Whether this upgrade has been manually toggled off by the player.
+        /// Only applicable to upgrades that require fuel or power.
+        /// </summary>
+        public bool isToggledOff;
         
         public ActiveUpgrade()
         {
@@ -44,6 +50,7 @@ namespace SecondFloor
             this.def = def;
             this.stuff = stuff;
             this.count = 1;
+            this.isToggledOff = false;
         }
         
         public void ExposeData()
@@ -51,6 +58,7 @@ namespace SecondFloor
             Scribe_Defs.Look(ref def, "def");
             Scribe_Defs.Look(ref stuff, "stuff");
             Scribe_Values.Look(ref count, "count", 1);
+            Scribe_Values.Look(ref isToggledOff, "isToggledOff", false);
         }
     }
 
@@ -183,6 +191,12 @@ namespace SecondFloor
                 return UpgradeDisableReason.None;
             }
 
+            // Check if manually toggled off first (takes priority)
+            if (constructedUpgrade.isToggledOff && def.CanBeToggled)
+            {
+                return UpgradeDisableReason.ToggledOff;
+            }
+
             // Check if upgrade requires power
             if (def.requiresPower)
             {
@@ -258,6 +272,49 @@ namespace SecondFloor
         public bool HasAnyInsulatingModifier()
         {
             return constructedUpgrades.Any(au => au.def.insulationAdjustment > 0f);
+        }
+        
+        /// <summary>
+        /// Returns true if the specified upgrade is toggled off.
+        /// </summary>
+        public bool IsUpgradeToggledOff(StaircaseUpgradeDef def)
+        {
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            return activeUpgrade?.isToggledOff ?? false;
+        }
+        
+        /// <summary>
+        /// Sets the toggle state for an upgrade. Only works for upgrades that can be toggled.
+        /// </summary>
+        public void SetUpgradeToggled(StaircaseUpgradeDef def, bool toggledOff)
+        {
+            if (!def.CanBeToggled)
+            {
+                return;
+            }
+            
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade != null)
+            {
+                activeUpgrade.isToggledOff = toggledOff;
+            }
+        }
+        
+        /// <summary>
+        /// Toggles an upgrade's on/off state. Only works for upgrades that can be toggled.
+        /// </summary>
+        public void ToggleUpgrade(StaircaseUpgradeDef def)
+        {
+            if (!def.CanBeToggled)
+            {
+                return;
+            }
+            
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade != null)
+            {
+                activeUpgrade.isToggledOff = !activeUpgrade.isToggledOff;
+            }
         }
 
         /// <summary>
@@ -818,6 +875,11 @@ namespace SecondFloor
             foreach (var activeUpgrade in constructedUpgrades)
             {
                 if (!activeUpgrade.def.requiresPower)
+                    continue;
+                
+                // Skip disabled upgrades (including toggled off ones)
+                var disableReason = GetUpgradeDisableReason(activeUpgrade.def);
+                if (disableReason != UpgradeDisableReason.None && disableReason != UpgradeDisableReason.NoPower)
                     continue;
                 
                 float basePower = activeUpgrade.def.basePowerConsumption * activeUpgrade.count;

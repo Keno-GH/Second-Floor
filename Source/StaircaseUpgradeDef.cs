@@ -141,5 +141,11 @@ namespace SecondFloor
         /// Returns true if this upgrade can be made from different materials
         /// </summary>
         public bool IsStuffable => !stuffCategories.NullOrEmpty();
+        
+        /// <summary>
+        /// Returns true if this upgrade can be toggled on/off by the player.
+        /// Only upgrades that require fuel or power can be toggled.
+        /// </summary>
+        public bool CanBeToggled => requiresPower || fuelPerBed > 0f;
     }
 }

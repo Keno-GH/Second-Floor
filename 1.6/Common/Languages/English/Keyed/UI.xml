@@ -31,4 +31,10 @@
   <SF_TempMax>40°C</SF_TempMax>
   <SF_NoPower>NO POWER</SF_NoPower>
   <SF_PowerUsage>Power Usage: {0}W</SF_PowerUsage>
+  
+  <!-- Toggle upgrade UI -->
+  <SF_ToggleOff>Toggle Off</SF_ToggleOff>
+  <SF_ToggleOn>Toggle On</SF_ToggleOn>
+  <SF_ToggleOffTooltip>Turn off this upgrade. While off, it won't consume fuel or power and won't provide any effects.</SF_ToggleOffTooltip>
+  <SF_ToggleOnTooltip>Turn on this upgrade. It will resume consuming fuel or power and provide its effects.</SF_ToggleOnTooltip>
 </LanguageData>

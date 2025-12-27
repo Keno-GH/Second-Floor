@@ -375,6 +375,9 @@ namespace SecondFloor
                 tooltip += "\n\n<color=#ffaa00>This upgrade is constructed but disabled: ";
                 switch (disableReason)
                 {
+                    case UpgradeDisableReason.ToggledOff:
+                        tooltip += "Toggled off</color>";
+                        break;
                     case UpgradeDisableReason.OutOfFuel:
                         tooltip += "Out of fuel</color>";
                         break;
@@ -434,6 +437,9 @@ namespace SecondFloor
                 status = "DISABLED: ";
                 switch (disableReason)
                 {
+                    case UpgradeDisableReason.ToggledOff:
+                        status += "Toggled Off";
+                        break;
                     case UpgradeDisableReason.OutOfFuel:
                         status += "Out of Fuel";
                         break;
@@ -631,11 +637,60 @@ namespace SecondFloor
             // Buttons at the bottom - outside scroll view
             if (isInstalled)
             {
-                // Show Remove button for active upgrades
-                if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                // Show Toggle and Remove buttons for active upgrades that can be toggled
+                if (def.CanBeToggled)
+                {
+                    float buttonWidth = (buttonRect.width - 5f) / 2f;
+                    Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // Toggle Off button
+                    if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOff".Translate()))
+                    {
+                        comp.ToggleUpgrade(def);
+                    }
+                    TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOffTooltip".Translate());
+                    
+                    // Remove button
+                    GUI.color = new Color(1f, 0.5f, 0.5f);
+                    if (Widgets.ButtonText(removeButtonRect, "Remove (75% refund)"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
+                }
+                else
+                {
+                    // Show only Remove button for non-toggleable upgrades
+                    if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
+                }
+            }
+            else if (disableReason == UpgradeDisableReason.ToggledOff)
+            {
+                // Upgrade is toggled off - show Toggle On and Remove buttons
+                float buttonWidth = (buttonRect.width - 5f) / 2f;
+                Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                
+                // Toggle On button
+                GUI.color = Color.green;
+                if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOn".Translate()))
+                {
+                    comp.ToggleUpgrade(def);
+                }
+                GUI.color = Color.white;
+                TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOnTooltip".Translate());
+                
+                // Remove button
+                GUI.color = new Color(1f, 0.5f, 0.5f);
+                if (Widgets.ButtonText(removeButtonRect, "Remove (75% refund)"))
                 {
                     TryRemoveUpgrade(def, comp, SelThing);
                 }
+                GUI.color = Color.white;
             }
             else if (disableReason == UpgradeDisableReason.InsufficientCount)
             {
@@ -711,10 +766,36 @@ namespace SecondFloor
             }
             else if (disableReason != UpgradeDisableReason.None)
             {
-                // Disabled for other reasons (e.g. OutOfFuel) - show only Remove button
-                if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                // Disabled for other reasons (e.g. OutOfFuel, NoPower)
+                // If toggleable, show both Toggle Off and Remove buttons
+                if (def.CanBeToggled)
                 {
-                    TryRemoveUpgrade(def, comp, SelThing);
+                    float buttonWidth = (buttonRect.width - 5f) / 2f;
+                    Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // Toggle Off button (even though it's already disabled, let them toggle it off for when power/fuel returns)
+                    if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOff".Translate()))
+                    {
+                        comp.ToggleUpgrade(def);
+                    }
+                    TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOffTooltip".Translate());
+                    
+                    // Remove button
+                    GUI.color = new Color(1f, 0.5f, 0.5f);
+                    if (Widgets.ButtonText(removeButtonRect, "Remove (75% refund)"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
+                }
+                else
+                {
+                    // Show only Remove button for non-toggleable upgrades
+                    if (Widgets.ButtonText(buttonRect, "Remove (75% refund)"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
                 }
             }
             else if (!isPending)
