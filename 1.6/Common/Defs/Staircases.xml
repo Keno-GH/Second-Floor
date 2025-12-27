@@ -48,12 +48,6 @@
         <RemoveSoakingWet>true</RemoveSoakingWet>
         <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
         <RemoveSleptOutside>true</RemoveSleptOutside>
-        <RemoveSleptInCold>false</RemoveSleptInCold>
-        <RemoveSleptInHeat>false</RemoveSleptInHeat>
-        <RemoveSleptInBarracks>false</RemoveSleptInBarracks>
-        <RemoveSleepDisturbed>false</RemoveSleepDisturbed>
-        <RemoveSharedBed>false</RemoveSharedBed>
-        <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
       </li>
     </modExtensions>
     <statBases>
@@ -71,8 +65,7 @@
       <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
     </statBases>
     <researchPrerequisites>
-      <li>PassiveCooler</li>
-      <li>ComplexFurniture</li>
+      <li>SF_Upstairs</li>
     </researchPrerequisites>
     <costStuffCount>200</costStuffCount>
     <stuffCategories>
@@ -141,13 +134,8 @@
     <modExtensions>
       <li Class="SecondFloor.SecondFloorModExtension">
         <RemoveSoakingWet>true</RemoveSoakingWet>
-        <RemoveSleptInCold>false</RemoveSleptInCold>
         <RemoveSleptOutside>true</RemoveSleptOutside>
-        <RemoveSleptInHeat>true</RemoveSleptInHeat>
-        <RemoveSleptInBarracks>true</RemoveSleptInBarracks>
         <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
-        <RemoveSharedBed>true</RemoveSharedBed>
-        <RemoveSleptInBedroom>true</RemoveSleptInBedroom>
       </li>
     </modExtensions>
     <statBases>
@@ -165,7 +153,7 @@
       <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
     </statBases>
     <researchPrerequisites>
-      <li>Stonecutting</li>
+      <li>SF_Downstairs</li>
     </researchPrerequisites>
     <costStuffCount>200</costStuffCount>
     <stuffCategories>

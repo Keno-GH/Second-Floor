@@ -110,6 +110,9 @@
         <defName>SF_UpgradeBuilding_BasicDecoration</defName>
         <label>basic decoration upgrade</label>
         <description>Add simple decorations to improve the room's impressiveness.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>1500</WorkToBuild>
         </statBases>
@@ -129,6 +132,9 @@
         <defName>SF_UpgradeBuilding_ComfortableUpgrade</defName>
         <label>comfortable upgrade</label>
         <description>Upgrade furniture and amenities for improved comfort.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>3500</WorkToBuild>
         </statBases>
@@ -150,6 +156,9 @@
         <defName>SF_UpgradeBuilding_FineDecoration</defName>
         <label>fine decoration upgrade</label>
         <description>Add fine art and decorations for an impressive room.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>5000</WorkToBuild>
         </statBases>
@@ -170,6 +179,10 @@
         <defName>SF_UpgradeBuilding_LuxuryFinishing</defName>
         <label>luxury finishing upgrade</label>
         <description>Install high-end materials and luxury amenities.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+            <li>CarpetMaking</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>12000</WorkToBuild>
         </statBases>

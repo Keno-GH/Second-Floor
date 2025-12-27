@@ -84,6 +84,7 @@
         <impressivenessLevel>1</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
         <iconPath>Things/Building/Furniture/PlantPot</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -95,6 +96,7 @@
         <impressivenessLevel>2</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
         <iconPath>Things/Building/Furniture/EndTable_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -106,6 +108,7 @@
         <impressivenessLevel>3</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_FineDecoration</upgradeBuildingDef>
         <minArtisticSkill>7</minArtisticSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
         <requiredUpgrades>
             <li>SF_StaircaseUpgrade_BasicDecoration</li>
         </requiredUpgrades>
@@ -120,6 +123,7 @@
         <impressivenessLevel>4</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_LuxuryFinishing</upgradeBuildingDef>
         <minArtisticSkill>10</minArtisticSkill>
+        <researchPrerequisite>CarpetMaking</researchPrerequisite>
         <requiredUpgrades>
             <li>SF_StaircaseUpgrade_FineDecoration</li>
         </requiredUpgrades>
