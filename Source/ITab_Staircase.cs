@@ -1051,6 +1051,23 @@ namespace SecondFloor
                 hasEffects = true;
             }
             
+            // Comfort and sleep effectiveness bonuses
+            if (def.comfortBonus != 0f)
+            {
+                string sign = def.comfortBonus > 0 ? "+" : "";
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Comfort: {sign}{def.comfortBonus.ToStringPercent()}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
+            if (def.sleepEffectivenessBonus != 0f)
+            {
+                string sign = def.sleepEffectivenessBonus > 0 ? "+" : "";
+                Widgets.Label(new Rect(x, curY, width, 24f), $"  Sleep Effectiveness: {sign}{def.sleepEffectivenessBonus.ToStringPercent()}");
+                curY += 24f;
+                hasEffects = true;
+            }
+            
             // Temperature effects
             if (def.heatOffset > 0)
             {

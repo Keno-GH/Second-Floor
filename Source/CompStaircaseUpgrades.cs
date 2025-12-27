@@ -1041,5 +1041,55 @@ namespace SecondFloor
                 }
             }
         }
+        
+        // =====================================================
+        // Comfort and Sleep Effectiveness Calculations
+        // =====================================================
+        
+        /// <summary>
+        /// Calculates the total comfort bonus from all active upgrades.
+        /// Each unique upgrade type contributes only once (not per bed).
+        /// </summary>
+        /// <returns>Total comfort bonus to add to the staircase's base comfort</returns>
+        public float GetTotalComfortBonus()
+        {
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+                return 0f;
+            
+            float totalBonus = 0f;
+            
+            // Get distinct active upgrade defs - each upgrade type only contributes once
+            var activeUpgradeDefs = GetActiveUpgradeDefs();
+            
+            foreach (var upgradeDef in activeUpgradeDefs)
+            {
+                totalBonus += upgradeDef.comfortBonus;
+            }
+            
+            return totalBonus;
+        }
+        
+        /// <summary>
+        /// Calculates the total sleep effectiveness bonus from all active upgrades.
+        /// Each unique upgrade type contributes only once (not per bed).
+        /// </summary>
+        /// <returns>Total sleep effectiveness bonus to add to the staircase's base BedRestEffectiveness</returns>
+        public float GetTotalSleepEffectivenessBonus()
+        {
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+                return 0f;
+            
+            float totalBonus = 0f;
+            
+            // Get distinct active upgrade defs - each upgrade type only contributes once
+            var activeUpgradeDefs = GetActiveUpgradeDefs();
+            
+            foreach (var upgradeDef in activeUpgradeDefs)
+            {
+                totalBonus += upgradeDef.sleepEffectivenessBonus;
+            }
+            
+            return totalBonus;
+        }
     }
 }

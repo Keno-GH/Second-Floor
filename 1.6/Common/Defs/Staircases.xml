@@ -57,8 +57,8 @@
       <BeautyOutdoors>6</BeautyOutdoors>
       <WorkToBuild>100000</WorkToBuild>
       <Mass>400</Mass>
-      <BedRestEffectiveness>0.9</BedRestEffectiveness>
-      <Comfort>.8</Comfort>
+      <BedRestEffectiveness>0.7</BedRestEffectiveness>
+      <Comfort>0.5</Comfort>
       <ImmunityGainSpeedFactor>1.07</ImmunityGainSpeedFactor>
       <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
       <MedicalTendQualityOffset>0.10</MedicalTendQualityOffset>
@@ -145,8 +145,8 @@
       <BeautyOutdoors>2</BeautyOutdoors>
       <WorkToBuild>20000</WorkToBuild>
       <Mass>400</Mass>
-      <BedRestEffectiveness>1</BedRestEffectiveness>
-      <Comfort>.6</Comfort>
+      <BedRestEffectiveness>0.7</BedRestEffectiveness>
+      <Comfort>0.5</Comfort>
       <ImmunityGainSpeedFactor>1.10</ImmunityGainSpeedFactor>
       <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
       <MedicalTendQualityOffset>0.00</MedicalTendQualityOffset>

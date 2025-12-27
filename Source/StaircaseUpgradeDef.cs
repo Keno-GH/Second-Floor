@@ -25,6 +25,19 @@ namespace SecondFloor
         public bool removeSleepDisturbed;
         public ThoughtDef thoughtReplacement; // Keep for backwards compatibility
         public int impressivenessLevel = 0; // Adds to the impressiveness level (0-9)
+        
+        // =====================================================
+        // Comfort and Sleep Effectiveness fields
+        // =====================================================
+        /// <summary>
+        /// Bonus to the staircase's Comfort stat (applied once per unique upgrade, not per bed).
+        /// </summary>
+        public float comfortBonus = 0f;
+        
+        /// <summary>
+        /// Bonus to the staircase's BedRestEffectiveness stat (applied once per unique upgrade, not per bed).
+        /// </summary>
+        public float sleepEffectivenessBonus = 0f;
 
         // Icon texture for this upgrade (optional)
         // Path relative to Textures/ folder (e.g., "Icons/Upgrades/MyUpgrade")

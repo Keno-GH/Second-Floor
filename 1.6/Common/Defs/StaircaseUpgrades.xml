@@ -75,6 +75,11 @@
         <iconPath>Things/Item/Resource/Cloth/Cloth_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- =====================================================
+        Impressiveness Upgrades
+        =====================================================
+    -->
+
     <!-- Impressiveness upgrades - all require construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_BasicDecoration</defName>
@@ -86,18 +91,6 @@
         <minConstructionSkill>2</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
         <iconPath>Things/Building/Furniture/PlantPot</iconPath>
-    </SecondFloor.StaircaseUpgradeDef>
-
-    <SecondFloor.StaircaseUpgradeDef>
-        <defName>SF_StaircaseUpgrade_ComfortableUpgrade</defName>
-        <label>Comfortable Upgrade</label>
-        <description>Upgrades furniture and amenities to make the room more comfortable.</description>
-        <spaceCostPerBed>4</spaceCostPerBed>
-        <impressivenessLevel>2</impressivenessLevel>
-        <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
-        <minConstructionSkill>5</minConstructionSkill>
-        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
-        <iconPath>Things/Building/Furniture/EndTable_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <SecondFloor.StaircaseUpgradeDef>
@@ -121,6 +114,7 @@
         <description>High-end materials and luxury amenities make this room extremely impressive.</description>
         <spaceCostPerBed>6</spaceCostPerBed>
         <impressivenessLevel>4</impressivenessLevel>
+        <comfortBonus>0.3</comfortBonus>
         <upgradeBuildingDef>SF_UpgradeBuilding_LuxuryFinishing</upgradeBuildingDef>
         <minArtisticSkill>10</minArtisticSkill>
         <researchPrerequisite>CarpetMaking</researchPrerequisite>
@@ -129,6 +123,68 @@
         </requiredUpgrades>
         <iconPath>Things/Building/Art/SculptureGrand/SculptureGrandAbstractA</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- =====================================================
+         Comfort and Sleep Effectiveness Upgrades
+         =====================================================
+    -->
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_ComfortableUpgrade</defName>
+        <label>Comfortable Upgrade</label>
+        <description>Upgrades furniture and amenities to make the room more comfortable.</description>
+        <spaceCostPerBed>4</spaceCostPerBed>
+        <impressivenessLevel>1</impressivenessLevel>
+        <comfortBonus>0.2</comfortBonus>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
+        <minConstructionSkill>3</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
+        <iconPath>Things/Building/Furniture/EndTable_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_BetterBeddings</defName>
+        <label>Better Beddings</label>
+        <description>Upgrades the beds quality to improve sleep effectiveness. Requires a lot of textile per bed.</description>
+        <spaceCostPerBed>1</spaceCostPerBed>
+        <comfortBonus>0.2</comfortBonus>
+        <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
+        <upgradeBuildingDef>SF_UpgradeBuilding_BetterBeddings</upgradeBuildingDef>
+        <minConstructionSkill>2</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
+        <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_BetterMattresses</defName>
+        <label>Better Mattresses</label>
+        <description>Upgrades the beds quality to improve sleep effectiveness. Requires a high construction skill.</description>
+        <spaceCostPerBed>1</spaceCostPerBed>
+        <comfortBonus>0.2</comfortBonus>
+        <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
+        <upgradeBuildingDef>SF_UpgradeBuilding_BetterMattresses</upgradeBuildingDef>
+        <minConstructionSkill>6</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
+        <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_ErgonomicBeds</defName>
+        <label>Great Beds</label>
+        <description>Upgrades the beds quality to improve sleep effectiveness. Requires a high construction skill.</description>
+        <spaceCostPerBed>1</spaceCostPerBed>
+        <comfortBonus>0.3</comfortBonus>
+        <sleepEffectivenessBonus>0.4</sleepEffectivenessBonus>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ErgonomicBeds</upgradeBuildingDef>
+        <minConstructionSkill>10</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
+        <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- =====================================================
+         Temperature Control Upgrades
+         =====================================================
+    -->
 
     <!-- Braziers upgrade - provides temperature control -->
     <SecondFloor.StaircaseUpgradeDef>

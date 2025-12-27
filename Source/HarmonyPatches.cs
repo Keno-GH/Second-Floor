@@ -482,4 +482,122 @@ namespace SecondFloor
         }
     }
 
+    // =====================================================
+    // Comfort and Sleep Effectiveness Stat Patches
+    // =====================================================
+    // These patches add bonuses from staircase upgrades to the bed's Comfort and BedRestEffectiveness stats.
+    // Each unique upgrade type contributes only once (not per bed).
+    
+    /// <summary>
+    /// Patches StatWorker.GetValueUnfinalized to add comfort and sleep effectiveness bonuses
+    /// from staircase upgrades to beds with CompStaircaseUpgrades.
+    /// </summary>
+    [HarmonyPatch(typeof(StatWorker), "GetValueUnfinalized")]
+    public static class StatWorker_GetValueUnfinalized_Patch
+    {
+        public static void Postfix(StatWorker __instance, ref float __result, StatRequest req)
+        {
+            // Only apply to things (not pawns or other stat requests)
+            if (!req.HasThing)
+                return;
+            
+            // Only apply to buildings with CompStaircaseUpgrades
+            var upgradesComp = req.Thing.TryGetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null)
+                return;
+            
+            // Access the protected stat field via Traverse
+            StatDef stat = Traverse.Create(__instance).Field("stat").GetValue<StatDef>();
+            if (stat == null)
+                return;
+            
+            // Apply comfort bonus
+            if (stat == StatDefOf.Comfort)
+            {
+                float comfortBonus = upgradesComp.GetTotalComfortBonus();
+                __result += comfortBonus;
+                return;
+            }
+            
+            // Apply sleep effectiveness bonus
+            if (stat == StatDefOf.BedRestEffectiveness)
+            {
+                float sleepBonus = upgradesComp.GetTotalSleepEffectivenessBonus();
+                __result += sleepBonus;
+                return;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Patches StatWorker.GetExplanationUnfinalized to show the breakdown of comfort and sleep effectiveness
+    /// bonuses from staircase upgrades in the stat tooltip.
+    /// </summary>
+    [HarmonyPatch(typeof(StatWorker), "GetExplanationUnfinalized")]
+    public static class StatWorker_GetExplanationUnfinalized_Patch
+    {
+        public static void Postfix(StatWorker __instance, ref string __result, StatRequest req, ToStringNumberSense numberSense)
+        {
+            // Only apply to things (not pawns or other stat requests)
+            if (!req.HasThing)
+                return;
+            
+            // Only apply to buildings with CompStaircaseUpgrades
+            var upgradesComp = req.Thing.TryGetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null)
+                return;
+            
+            // Access the protected stat field via Traverse
+            StatDef stat = Traverse.Create(__instance).Field("stat").GetValue<StatDef>();
+            if (stat == null)
+                return;
+            
+            // Add comfort bonus explanation
+            if (stat == StatDefOf.Comfort)
+            {
+                float totalBonus = 0f;
+                var activeUpgrades = upgradesComp.GetActiveUpgradeDefs();
+                StringBuilder sb = new StringBuilder();
+                
+                foreach (var upgradeDef in activeUpgrades)
+                {
+                    if (upgradeDef.comfortBonus != 0f)
+                    {
+                        sb.AppendLine($"  {upgradeDef.label}: {upgradeDef.comfortBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}");
+                        totalBonus += upgradeDef.comfortBonus;
+                    }
+                }
+                
+                if (totalBonus != 0f)
+                {
+                    __result += $"\n\nStaircase upgrades: {totalBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}\n{sb.ToString().TrimEnd()}";
+                }
+                return;
+            }
+            
+            // Add sleep effectiveness bonus explanation
+            if (stat == StatDefOf.BedRestEffectiveness)
+            {
+                float totalBonus = 0f;
+                var activeUpgrades = upgradesComp.GetActiveUpgradeDefs();
+                StringBuilder sb = new StringBuilder();
+                
+                foreach (var upgradeDef in activeUpgrades)
+                {
+                    if (upgradeDef.sleepEffectivenessBonus != 0f)
+                    {
+                        sb.AppendLine($"  {upgradeDef.label}: {upgradeDef.sleepEffectivenessBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}");
+                        totalBonus += upgradeDef.sleepEffectivenessBonus;
+                    }
+                }
+                
+                if (totalBonus != 0f)
+                {
+                    __result += $"\n\nStaircase upgrades: {totalBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}\n{sb.ToString().TrimEnd()}";
+                }
+                return;
+            }
+        }
+    }
+
 }

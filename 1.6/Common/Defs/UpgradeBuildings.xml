@@ -198,6 +198,73 @@
             </li>
         </modExtensions>
     </ThingDef>
+
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_BetterBeddings</defName>
+        <label>better beddings upgrade</label>
+        <description>Upgrade the beds to improve sleep effectiveness. Requires a lot of textile per bed.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>4000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Cloth>60</Cloth>
+        </costList>
+        <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_BetterBeddings</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_BetterMattresses</defName>
+        <label>better mattresses upgrade</label>
+        <description>Upgrade the beds to improve sleep effectiveness.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>4000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Cloth>40</Cloth>
+            <Steel>20</Steel>
+            <WoodLog>30</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_BetterMattresses</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ErgonomicBeds</defName>
+        <label>ergonomic beds upgrade</label>
+        <description>Upgrade the beds to improve sleep effectiveness.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>8000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Cloth>20</Cloth>
+            <Steel>20</Steel>
+            <WoodLog>80</WoodLog>
+        </costList>
+        <constructionSkillPrerequisite>10</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_ErgonomicBeds</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
     
     <!-- Braziers Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
