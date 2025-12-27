@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SecondFloor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.0.0+71b035bda4990dab54633cafaca7ff5fc451467f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.0.0+23782596af56be5af6fbdca67c563a2cf55d9c7b")]
 [assembly: System.Reflection.AssemblyProductAttribute("SecondFloor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SecondFloor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.1.0.0")]

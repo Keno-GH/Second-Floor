@@ -208,10 +208,25 @@ namespace SecondFloor
                 string powerLabel = $"Power: {powerUsage:F0}W";
                 if (!hasPower)
                 {
-                    powerLabel += " (NO POWER)";
+                    powerLabel += " (No power)";
                     GUI.color = Color.red;
                 }
                 listing.Label(powerLabel);
+                GUI.color = Color.white;
+            }
+            
+            // Fuel display for fuel-requiring upgrades
+            if (comp.HasAnyFuelRequiringUpgrade())
+            {
+                float fuelUsage = comp.CurrentFuelConsumption;
+                bool hasFuel = comp.HasFuel();
+                string fuelLabel = $"Fuel: {fuelUsage:F1}/day";
+                if (!hasFuel)
+                {
+                    fuelLabel += " (No fuel)";
+                    GUI.color = Color.red;
+                }
+                listing.Label(fuelLabel);
                 GUI.color = Color.white;
             }
             
@@ -232,7 +247,13 @@ namespace SecondFloor
             // Add height for power display if there are power-requiring upgrades
             if (comp.HasAnyPowerRequiringUpgrade())
             {
-                height += 30f; // Power line
+                height += 24f; // Power line
+            }
+            
+            // Add height for fuel display if there are fuel-requiring upgrades
+            if (comp.HasAnyFuelRequiringUpgrade())
+            {
+                height += 24f; // Fuel line
             }
             
             return height;

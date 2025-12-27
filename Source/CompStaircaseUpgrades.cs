@@ -257,6 +257,25 @@ namespace SecondFloor
         }
         
         /// <summary>
+        /// Returns true if any constructed upgrade requires fuel.
+        /// </summary>
+        public bool HasAnyFuelRequiringUpgrade()
+        {
+            return constructedUpgrades.Any(au => au.def.fuelPerBed > 0f);
+        }
+        
+        /// <summary>
+        /// Returns true if the parent has fuel available.
+        /// </summary>
+        public bool HasFuel()
+        {
+            var refuelable = parent.GetComp<CompRefuelable>();
+            if (refuelable == null)
+                return true;
+            return refuelable.HasFuel;
+        }
+        
+        /// <summary>
         /// Returns true if any constructed upgrade is a smart temperature modifier.
         /// </summary>
         public bool HasAnySmartTempModifier()
@@ -595,6 +614,11 @@ namespace SecondFloor
         /// Gets the current total power consumption for display purposes.
         /// </summary>
         public float CurrentPowerConsumption => cachedTotalPowerConsumption;
+        
+        /// <summary>
+        /// Gets the current fuel consumption rate (per day) for display purposes.
+        /// </summary>
+        public float CurrentFuelConsumption => cachedFuelConsumptionRate;
         
         public float GetInsulatedTemperature()
         {
