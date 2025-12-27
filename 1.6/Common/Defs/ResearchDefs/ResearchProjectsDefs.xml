@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+    <!-- Column 1 -->
+
+    <ResearchProjectDef>
+        <defName>SF_Upstairs</defName>
+        <label>Upstairs</label>
+        <description>Build a basic staircase leading to an upper floor that can house pawns.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>500</baseCost>
+        <techLevel>Medieval</techLevel>
+        <researchViewX>0.00</researchViewX>
+        <researchViewY>1.00</researchViewY>
+    </ResearchProjectDef>
+
+    <!-- Column 2 -->
+
+    <ResearchProjectDef>
+        <defName>SF_Downstairs</defName>
+        <label>Downstairs</label>
+        <description>Build a basic staircase leading to a lower floor that can house pawns. Downstairs are naturally insulated.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>500</baseCost>
+        <techLevel>Medieval</techLevel>
+        <researchViewX>1.00</researchViewX>
+        <researchViewY>0.00</researchViewY>
+        <prerequisites>
+            <li>SF_Upstairs</li>
+            <li>Stonecutting</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
+        <defName>SF_AirManagement</defName>
+        <label>Air Quality Management</label>
+        <description>Learn how to manage air quality in enclosed spaces to be able to build campfires and passive coolers in other floors.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>200</baseCost>
+        <techLevel>Medieval</techLevel>
+        <researchViewX>1.00</researchViewX>
+        <researchViewY>1.00</researchViewY>
+        <prerequisites>
+            <li>SF_Upstairs</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
+        <defName>SF_TextileInsulation</defName>
+        <label>Textile Insulation</label>
+        <description>Use textiles to insulate rooms from the elements, improving temperature regulation.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>800</baseCost>
+        <techLevel>Industrial</techLevel>
+        <researchViewX>1.00</researchViewX>
+        <researchViewY>2.00</researchViewY>
+        <prerequisites>
+            <li>SF_Upstairs</li>
+            <li>CarpetMaking</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
+        <defName>SF_Soundproofing</defName>
+        <label>Soundproofing</label>
+        <description>Line walls and floors with sound-absorbing materials to reduce noise disturbance from other floors.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>800</baseCost>
+        <techLevel>Medieval</techLevel>
+        <researchViewX>1.00</researchViewX>
+        <researchViewY>3.00</researchViewY>
+        <prerequisites>
+            <li>SF_Upstairs</li>
+            <li>CarpetMaking</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <!-- Column 3 -->
+
+    <ResearchProjectDef>
+        <defName>SF_Heaters</defName>
+        <label>Heaters</label>
+        <description>Install heaters in rooms to maintain a comfortable temperature during cold weather.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>400</baseCost>
+        <techLevel>Industrial</techLevel>
+        <researchViewX>2.00</researchViewX>
+        <researchViewY>0.50</researchViewY>
+        <prerequisites>
+            <li>SF_AirManagement</li>
+            <li>Electricity</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
+        <defName>SF_AirConditioners</defName>
+        <label>Air Conditioners</label>
+        <description>Install air conditioners in rooms to maintain a comfortable temperature during any weather.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>400</baseCost>
+        <techLevel>Industrial</techLevel>
+        <researchViewX>2.00</researchViewX>
+        <researchViewY>1.50</researchViewY>
+        <prerequisites>
+            <li>SF_AirManagement</li>
+            <li>AirConditioning</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+
+
+
+
+</Defs>
