@@ -87,6 +87,9 @@
         <defName>SF_UpgradeBuilding_Soundproofing</defName>
         <label>soundproofing upgrade</label>
         <description>Install soundproofing materials to prevent sleep disturbance.</description>
+        <researchPrerequisites>
+            <li>SF_Soundproofing</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>5000</WorkToBuild>
         </statBases>
@@ -188,6 +191,9 @@
         <defName>SF_UpgradeBuilding_Braziers</defName>
         <label>braziers upgrade</label>
         <description>Install braziers to provide heat to the second floor area. Consumes fuel.</description>
+        <researchPrerequisites>
+            <li>SF_AirManagement</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>2000</WorkToBuild>
         </statBases>
@@ -213,6 +219,9 @@
         <defName>SF_UpgradeBuilding_Campfires</defName>
         <label>campfires upgrade</label>
         <description>Install campfires to provide heat to the second floor area. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
+        <researchPrerequisites>
+            <li>SF_AirManagement</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>4000</WorkToBuild>
         </statBases>
@@ -237,6 +246,9 @@
         <defName>SF_UpgradeBuilding_PassiveCooler</defName>
         <label>passive cooler upgrade</label>
         <description>Install passive coolers to provide cooling to the second floor area. They consume fuel.</description>
+        <researchPrerequisites>
+            <li>SF_AirManagement</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>3000</WorkToBuild>
         </statBases>
@@ -261,6 +273,9 @@
         <defName>SF_UpgradeBuilding_TextileInsulation</defName>
         <label>textile insulation upgrade</label>
         <description>Install textile insulation to help moderate temperatures in the floor area.</description>
+        <researchPrerequisites>
+            <li>SF_TextileInsulation</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>2500</WorkToBuild>
         </statBases>
@@ -318,6 +333,9 @@
         <defName>SF_UpgradeBuilding_ElectricHeater</defName>
         <label>electric heater upgrade</label>
         <description>Install an electric heater to provide smart heating to the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <researchPrerequisites>
+            <li>SF_Heaters</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>4000</WorkToBuild>
         </statBases>
@@ -343,6 +361,9 @@
         <defName>SF_UpgradeBuilding_ElectricCooler</defName>
         <label>electric cooler upgrade</label>
         <description>Install an electric cooler to provide smart cooling to the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <researchPrerequisites>
+            <li>SF_AirConditioners</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>4500</WorkToBuild>
         </statBases>
@@ -368,6 +389,9 @@
         <defName>SF_UpgradeBuilding_AirConditioning</defName>
         <label>air conditioning upgrade</label>
         <description>Install an air conditioning unit that can both heat and cool the second floor area. Power consumption is throttled based on temperature needs.</description>
+        <researchPrerequisites>
+            <li>SF_AirConditioners</li>
+        </researchPrerequisites>
         <statBases>
             <WorkToBuild>6000</WorkToBuild>
         </statBases>
