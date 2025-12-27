@@ -12,6 +12,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceIndoors".Translate());
@@ -27,6 +31,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (!map.roofGrid.Roofed(loc))
             {
                 return new AcceptanceReport("MustPlaceUnderRoof".Translate());
@@ -37,6 +45,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceInSmallRoom".Translate());
@@ -52,6 +64,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceInMediumRoom".Translate());
@@ -67,6 +83,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceInLargeRoom".Translate());
@@ -82,6 +102,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceInBigRoom".Translate());
@@ -98,6 +122,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceIndoors".Translate());
@@ -124,6 +152,10 @@ namespace SecondFloor
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
             if (loc.GetRoom(map) == null)
             {
                 return new AcceptanceReport("MustPlaceIndoors".Translate());
@@ -146,72 +178,4 @@ namespace SecondFloor
             return true;
         }
     }
-    // PlaceWorker that limits building to one per 40 tiles in a whole construction
-    /* public class PlaceWorkerOnlyOnePerFortyTilesInBuilding : PlaceWorker // I can't make this work, hopefully someone more intelligent than me can pick this up in the future (maybe me in the future)
-    {
-        public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
-        {
-            if (loc.GetRoom(map) == null)
-            {
-                return new AcceptanceReport("MustBeABigEnoughBuilding".Translate());
-            }
-
-            Room room = loc.GetRoom(map);
-    
-            int totalTiles = 0;
-            HashSet<Room> checkedRooms = new HashSet<Room>();
-            List<Thing> thingsWithPlaceWorker = new List<Thing>();
-    
-            Queue<Room> roomsToCheck = new Queue<Room>();
-            roomsToCheck.Enqueue(room);
-    
-            while (roomsToCheck.Count > 0)
-            {
-                Room currentRoom = roomsToCheck.Dequeue();
-                if (checkedRooms.Contains(currentRoom))
-                {
-                    continue;
-                }
-    
-                checkedRooms.Add(currentRoom);
-                totalTiles += currentRoom.CellCount;
-    
-                foreach (IntVec3 Cell in currentRoom.Cells)
-                {
-                    if (Cell.Impassable(map))
-                    {
-                        continue;
-                    }
-                    foreach (IntVec3 adjacentCell in GenAdj.CellsAdjacent8Way(new TargetInfo(Cell, map)))
-                    {
-                        if (adjacentCell.Impassable(map))
-                        {
-                            continue;
-                        }
-                        if (adjacentCell.GetRoom(map) == null)
-                        {
-                            continue;
-                        }
-                        Room adjacentRoom = adjacentCell.GetRoom(map);
-                        if (adjacentRoom != null && !checkedRooms.Contains(adjacentRoom) && !adjacentRoom.TouchesMapEdge)
-                        {
-                            roomsToCheck.Enqueue(adjacentRoom);
-                        }
-                    }
-                }
-    
-                thingsWithPlaceWorker.AddRange(currentRoom.ContainedAndAdjacentThings.Where(t => t.def.placeWorkers.Contains(typeof(PlaceWorkerOnlyOnePerFortyTilesInBuilding))));
-            }
-    
-            int allowedCount = Math.Max(1, totalTiles / 36);
-            int actualCount = thingsWithPlaceWorker.Count;
-    
-            if (actualCount >= allowedCount)
-            {
-                return new AcceptanceReport("MustBeABigEnoughBuilding".Translate());
-            }
-    
-            return true;
-        }
-    } */
 }
