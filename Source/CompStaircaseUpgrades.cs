@@ -629,17 +629,15 @@ namespace SecondFloor
             }
             
             // Update the display rate (per day, not per tick)
+            // CompRefuelable will automatically consume fuel based on this rate in its CompTick()
+            // We do NOT manually call refuelable.ConsumeFuel() as that would cause double consumption
             UpdateFuelConsumptionRate(totalFuelToConsume * 60000f);
-            
-            // Consume the fuel
-            if (totalFuelToConsume > 0f)
-            {
-                refuelable.ConsumeFuel(totalFuelToConsume);
-            }
         }
 
         /// <summary>
         /// Updates the fuel consumption rate in the Props so the inspect string shows correct time remaining.
+        /// CompRefuelable automatically consumes fuel based on Props.fuelConsumptionRate in its CompTick().
+        /// We dynamically update this rate based on bed count and throttling conditions.
         /// </summary>
         private void UpdateFuelConsumptionRate(float ratePerDay)
         {
