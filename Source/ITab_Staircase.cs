@@ -1232,8 +1232,8 @@ namespace SecondFloor
                     continue;
                 }
                 
-                // Skip if research prerequisite is not completed
-                if (def.researchPrerequisite != null && !def.researchPrerequisite.IsFinished)
+                // Skip if research prerequisite is not completed (unless God mode is on)
+                if (!DebugSettings.godMode && def.researchPrerequisite != null && !def.researchPrerequisite.IsFinished)
                 {
                     continue;
                 }
