@@ -9,8 +9,8 @@ namespace SecondFloor
 {
     public class ITab_Staircase : ITab
     {
-        // Main window size - wider to accommodate the two-panel layout
-        private static readonly Vector2 WinSize = new Vector2(600f, 520f);
+        // Main window size - wider to accommodate the three-button layout
+        private static readonly Vector2 WinSize = new Vector2(660f, 520f);
         
         // Left panel (upgrade list) dimensions
         private const float LeftPanelWidth = 220f;
@@ -704,8 +704,71 @@ namespace SecondFloor
             // Buttons at the bottom - outside scroll view
             if (isInstalled)
             {
-                // Show Toggle and Remove buttons for active upgrades that can be toggled
-                if (def.CanBeToggled)
+                // Check for excess upgrades (more constructed than required)
+                var extInstalled = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+                bool isOnePerBedInstalled = def.RequiresConstruction && (extInstalled?.onePerBed == true);
+                int constructedCountInstalled = comp.GetConstructedCount(def);
+                int requiredCountInstalled = comp.GetRequiredBedCountForUpgrade(def);
+                int excessCount = isOnePerBedInstalled ? constructedCountInstalled - requiredCountInstalled : 0;
+                
+                if (excessCount > 0)
+                {
+                    // Show buttons for handling excess upgrades
+                    if (def.CanBeToggled)
+                    {
+                        // Three buttons: Toggle Off, Remove Excess, Remove All
+                        float buttonWidth = (buttonRect.width - 10f) / 3f;
+                        Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect excessButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
+                        
+                        if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOff".Translate()))
+                        {
+                            comp.ToggleUpgrade(def);
+                        }
+                        TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOffTooltip".Translate());
+                        
+                        GUI.color = new Color(1f, 0.8f, 0.5f); // Orange for excess removal
+                        if (Widgets.ButtonText(excessButtonRect, $"Remove {excessCount} Excess"))
+                        {
+                            TryRemoveExcessUpgrades(def, comp, SelThing, excessCount);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(excessButtonRect, 
+                            $"Remove {excessCount} excess upgrade{(excessCount > 1 ? "s" : "")} (have {constructedCountInstalled}, need {requiredCountInstalled}) with 75% refund.");
+                        
+                        GUI.color = new Color(1f, 0.5f, 0.5f);
+                        if (Widgets.ButtonText(removeButtonRect, "Remove All"))
+                        {
+                            TryRemoveUpgrade(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                    }
+                    else
+                    {
+                        // Two buttons: Remove Excess, Remove All
+                        float buttonWidth = (buttonRect.width - 5f) / 2f;
+                        Rect excessButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                        Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                        
+                        GUI.color = new Color(1f, 0.8f, 0.5f); // Orange for excess removal
+                        if (Widgets.ButtonText(excessButtonRect, $"Remove {excessCount} Excess"))
+                        {
+                            TryRemoveExcessUpgrades(def, comp, SelThing, excessCount);
+                        }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(excessButtonRect, 
+                            $"Remove {excessCount} excess upgrade{(excessCount > 1 ? "s" : "")} (have {constructedCountInstalled}, need {requiredCountInstalled}) with 75% refund.");
+                        
+                        GUI.color = new Color(1f, 0.5f, 0.5f);
+                        if (Widgets.ButtonText(removeButtonRect, "Remove All"))
+                        {
+                            TryRemoveUpgrade(def, comp, SelThing);
+                        }
+                        GUI.color = Color.white;
+                    }
+                }
+                else if (def.CanBeToggled)
                 {
                     float buttonWidth = (buttonRect.width - 5f) / 2f;
                     Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
@@ -737,27 +800,72 @@ namespace SecondFloor
             }
             else if (disableReason == UpgradeDisableReason.ToggledOff)
             {
-                // Upgrade is toggled off - show Toggle On and Remove buttons
-                float buttonWidth = (buttonRect.width - 5f) / 2f;
-                Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
-                Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                // Check for excess upgrades (more constructed than required)
+                var extToggledOff = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+                bool isOnePerBedToggledOff = def.RequiresConstruction && (extToggledOff?.onePerBed == true);
+                int constructedCountToggledOff = comp.GetConstructedCount(def);
+                int requiredCountToggledOff = comp.GetRequiredBedCountForUpgrade(def);
+                int excessCountToggledOff = isOnePerBedToggledOff ? constructedCountToggledOff - requiredCountToggledOff : 0;
                 
-                // Toggle On button
-                GUI.color = Color.green;
-                if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOn".Translate()))
+                if (excessCountToggledOff > 0)
                 {
-                    comp.ToggleUpgrade(def);
+                    // Three buttons: Toggle On, Remove Excess, Remove All
+                    float buttonWidth = (buttonRect.width - 10f) / 3f;
+                    Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect excessButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // Toggle On button
+                    GUI.color = Color.green;
+                    if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOn".Translate()))
+                    {
+                        comp.ToggleUpgrade(def);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOnTooltip".Translate());
+                    
+                    // Remove Excess button
+                    GUI.color = new Color(1f, 0.8f, 0.5f); // Orange for excess removal
+                    if (Widgets.ButtonText(excessButtonRect, $"Remove {excessCountToggledOff} Excess"))
+                    {
+                        TryRemoveExcessUpgrades(def, comp, SelThing, excessCountToggledOff);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(excessButtonRect, 
+                        $"Remove {excessCountToggledOff} excess upgrade{(excessCountToggledOff > 1 ? "s" : "")} (have {constructedCountToggledOff}, need {requiredCountToggledOff}) with 75% refund.");
+                    
+                    // Remove All button
+                    GUI.color = new Color(1f, 0.5f, 0.5f);
+                    if (Widgets.ButtonText(removeButtonRect, "Remove All"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
                 }
-                GUI.color = Color.white;
-                TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOnTooltip".Translate());
-                
-                // Remove button
-                GUI.color = new Color(1f, 0.5f, 0.5f);
-                if (Widgets.ButtonText(removeButtonRect, "Remove (75% refund)"))
+                else
                 {
-                    TryRemoveUpgrade(def, comp, SelThing);
+                    // Two buttons: Toggle On and Remove
+                    float buttonWidth = (buttonRect.width - 5f) / 2f;
+                    Rect toggleButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
+                    Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
+                    
+                    // Toggle On button
+                    GUI.color = Color.green;
+                    if (Widgets.ButtonText(toggleButtonRect, "SF_ToggleOn".Translate()))
+                    {
+                        comp.ToggleUpgrade(def);
+                    }
+                    GUI.color = Color.white;
+                    TooltipHandler.TipRegion(toggleButtonRect, "SF_ToggleOnTooltip".Translate());
+                    
+                    // Remove button
+                    GUI.color = new Color(1f, 0.5f, 0.5f);
+                    if (Widgets.ButtonText(removeButtonRect, "Remove (75% refund)"))
+                    {
+                        TryRemoveUpgrade(def, comp, SelThing);
+                    }
+                    GUI.color = Color.white;
                 }
-                GUI.color = Color.white;
             }
             else if (disableReason == UpgradeDisableReason.InsufficientCount)
             {
@@ -766,12 +874,16 @@ namespace SecondFloor
                 CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
                 int currentBedCount = bedComp?.bedCount ?? 1;
                 int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
-                int needed = requiredCount - constructedCount;
+                int pendingCount = GetPendingUpgradeCount(SelThing, def);
+                int needed = requiredCount - constructedCount - pendingCount;
                 
                 // Determine if this is an ambient (shared) upgrade in barracks for tooltip clarity
                 var extDisabled = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
                 bool isDirectlyToBedDisabled = extDisabled?.directlyToBed ?? false;
                 bool isBarracksWithAmbientDisabled = comp.IsBarracks && (extDisabled?.onePerBed == true) && !isDirectlyToBedDisabled;
+                
+                // Check if all needed blueprints are already pending
+                bool allPending = needed <= 0 && pendingCount > 0;
                 
                 if (Prefs.DevMode)
                 {
@@ -781,15 +893,28 @@ namespace SecondFloor
                     Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
                     Rect devButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
                     
-                    // "Add More Blueprints" button
-                    string addButtonLabel = $"Add {needed} More";
-                    if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                    // "Add More Blueprints" button - disabled if all needed are pending
+                    string addButtonLabel = allPending ? $"{pendingCount} Pending" : $"Add {needed} More";
+                    Color oldColor = GUI.color;
+                    if (allPending)
                     {
-                        FillMissingBlueprints(def, comp, SelThing);
+                        GUI.color = Color.gray;
                     }
+                    if (Widgets.ButtonText(addButtonRect, addButtonLabel, active: !allPending))
+                    {
+                        if (!allPending)
+                        {
+                            FillMissingBlueprints(def, comp, SelThing);
+                        }
+                    }
+                    GUI.color = oldColor;
                     string tooltipTextDisabledDev = isBarracksWithAmbientDisabled
                         ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
                         : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                    if (allPending)
+                    {
+                        tooltipTextDisabledDev = $"Waiting for {pendingCount} blueprint{(pendingCount > 1 ? "s" : "")} to be constructed.";
+                    }
                     TooltipHandler.TipRegion(addButtonRect, tooltipTextDisabledDev);
                     
                     // "Remove Constructed" button
@@ -817,15 +942,28 @@ namespace SecondFloor
                     Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
                     Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
                     
-                    // "Add More Blueprints" button
-                    string addButtonLabel = $"Add {needed} More";
-                    if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                    // "Add More Blueprints" button - disabled if all needed are pending
+                    string addButtonLabel = allPending ? $"{pendingCount} Pending" : $"Add {needed} More";
+                    Color oldColor2 = GUI.color;
+                    if (allPending)
                     {
-                        FillMissingBlueprints(def, comp, SelThing);
+                        GUI.color = Color.gray;
                     }
+                    if (Widgets.ButtonText(addButtonRect, addButtonLabel, active: !allPending))
+                    {
+                        if (!allPending)
+                        {
+                            FillMissingBlueprints(def, comp, SelThing);
+                        }
+                    }
+                    GUI.color = oldColor2;
                     string tooltipTextDisabled = isBarracksWithAmbientDisabled
                         ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
                         : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                    if (allPending)
+                    {
+                        tooltipTextDisabled = $"Waiting for {pendingCount} blueprint{(pendingCount > 1 ? "s" : "")} to be constructed.";
+                    }
                     TooltipHandler.TipRegion(addButtonRect, tooltipTextDisabled);
                     
                     // "Remove Constructed" button
@@ -882,7 +1020,8 @@ namespace SecondFloor
                 CompMultipleBeds bedComp = SelThing.TryGetComp<CompMultipleBeds>();
                 int currentBedCount = bedComp?.bedCount ?? 1;
                 int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
-                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && constructedCount < requiredCount;
+                int pendingCountNotPending = GetPendingUpgradeCount(SelThing, def);
+                bool needsMoreBlueprints = isOnePerBed && constructedCount > 0 && (constructedCount + pendingCountNotPending) < requiredCount;
                 
                 // Determine if this is an ambient (shared) upgrade in barracks for tooltip clarity
                 bool isDirectlyToBed = ext?.directlyToBed ?? false;
@@ -891,7 +1030,8 @@ namespace SecondFloor
                 if (needsMoreBlueprints)
                 {
                     // Show two buttons side by side: "Add More Blueprints" and "Remove Constructed"
-                    int needed = requiredCount - constructedCount;
+                    int needed = requiredCount - constructedCount - pendingCountNotPending;
+                    bool allPendingNotPending = needed <= 0 && pendingCountNotPending > 0;
                     
                     if (Prefs.DevMode)
                     {
@@ -901,15 +1041,28 @@ namespace SecondFloor
                         Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
                         Rect devButtonRect = new Rect(buttonRect.x + buttonWidth * 2 + 10f, buttonRect.y, buttonWidth, buttonRect.height);
                         
-                        // "Add More Blueprints" button
-                        string addButtonLabel = $"Add {needed} More";
-                        if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                        // "Add More Blueprints" button - disabled if all needed are pending
+                        string addButtonLabel = allPendingNotPending ? $"{pendingCountNotPending} Pending" : $"Add {needed} More";
+                        Color oldColorNP = GUI.color;
+                        if (allPendingNotPending)
                         {
-                            FillMissingBlueprints(def, comp, SelThing);
+                            GUI.color = Color.gray;
                         }
+                        if (Widgets.ButtonText(addButtonRect, addButtonLabel, active: !allPendingNotPending))
+                        {
+                            if (!allPendingNotPending)
+                            {
+                                FillMissingBlueprints(def, comp, SelThing);
+                            }
+                        }
+                        GUI.color = oldColorNP;
                         string tooltipText = isBarracksWithAmbient
                             ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
                             : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                        if (allPendingNotPending)
+                        {
+                            tooltipText = $"Waiting for {pendingCountNotPending} blueprint{(pendingCountNotPending > 1 ? "s" : "")} to be constructed.";
+                        }
                         TooltipHandler.TipRegion(addButtonRect, tooltipText);
                         
                         // "Remove Constructed" button
@@ -938,15 +1091,28 @@ namespace SecondFloor
                         Rect addButtonRect = new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height);
                         Rect removeButtonRect = new Rect(buttonRect.x + buttonWidth + 5f, buttonRect.y, buttonWidth, buttonRect.height);
                         
-                        // "Add More Blueprints" button
-                        string addButtonLabel = $"Add {needed} More";
-                        if (Widgets.ButtonText(addButtonRect, addButtonLabel))
+                        // "Add More Blueprints" button - disabled if all needed are pending
+                        string addButtonLabel = allPendingNotPending ? $"{pendingCountNotPending} Pending" : $"Add {needed} More";
+                        Color oldColorNP2 = GUI.color;
+                        if (allPendingNotPending)
                         {
-                            FillMissingBlueprints(def, comp, SelThing);
+                            GUI.color = Color.gray;
                         }
+                        if (Widgets.ButtonText(addButtonRect, addButtonLabel, active: !allPendingNotPending))
+                        {
+                            if (!allPendingNotPending)
+                            {
+                                FillMissingBlueprints(def, comp, SelThing);
+                            }
+                        }
+                        GUI.color = oldColorNP2;
                         string tooltipText2 = isBarracksWithAmbient
                             ? $"SF_OnePerBedAmbientBarracks".Translate(requiredCount, currentBedCount, constructedCount, needed)
                             : $"SF_OnePerBedDirect".Translate(requiredCount, constructedCount, needed);
+                        if (allPendingNotPending)
+                        {
+                            tooltipText2 = $"Waiting for {pendingCountNotPending} blueprint{(pendingCountNotPending > 1 ? "s" : "")} to be constructed.";
+                        }
                         TooltipHandler.TipRegion(addButtonRect, tooltipText2);
                         
                         // "Remove Constructed" button
@@ -1510,6 +1676,23 @@ namespace SecondFloor
                 staircase, MessageTypeDefOf.NeutralEvent, false);
         }
 
+        private void TryRemoveExcessUpgrades(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase, int excessCount)
+        {
+            if (excessCount <= 0)
+            {
+                return;
+            }
+
+            // Remove the excess upgrades with refund
+            var (removed, refundInfo) = comp.RemoveExcessUpgradesWithRefund(def, excessCount, 0.75f);
+
+            if (removed > 0)
+            {
+                Messages.Message($"Removed {removed} excess {def.label} upgrade{(removed > 1 ? "s" : "")}" + (refundInfo ?? ""), 
+                    staircase, MessageTypeDefOf.NeutralEvent, false);
+            }
+        }
+
         private void CheckAndResetBedAssignments(Thing staircase, int newBedCount, string reason)
         {
             Building_Bed bed = staircase as Building_Bed;
@@ -1630,10 +1813,16 @@ namespace SecondFloor
         {
             int requiredCount = comp.GetRequiredBedCountForUpgrade(def);
             int constructedCount = comp.GetConstructedCount(def);
-            int needed = requiredCount - constructedCount;
+            int pendingCount = GetPendingUpgradeCount(staircase, def);
+            int needed = requiredCount - constructedCount - pendingCount;
             
             if (needed <= 0)
             {
+                if (pendingCount > 0)
+                {
+                    Messages.Message($"{def.label}: Already have enough blueprints pending ({constructedCount} built + {pendingCount} pending = {constructedCount + pendingCount}, need {requiredCount})", 
+                        staircase, MessageTypeDefOf.RejectInput, false);
+                }
                 return;
             }
             
@@ -1692,6 +1881,56 @@ namespace SecondFloor
             }
 
             return pending;
+        }
+
+        /// <summary>
+        /// Gets the count of pending blueprints/frames for a specific upgrade.
+        /// </summary>
+        private int GetPendingUpgradeCount(Thing staircase, StaircaseUpgradeDef def)
+        {
+            int count = 0;
+            Map map = staircase.Map;
+            CellRect staircaseRect = staircase.OccupiedRect();
+
+            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint))
+            {
+                if (!staircaseRect.Contains(t.Position))
+                {
+                    continue;
+                }
+                Blueprint blueprint = t as Blueprint;
+                if (blueprint == null)
+                {
+                    continue;
+                }
+                ThingDef blueprintBuildDef = blueprint.def.entityDefToBuild as ThingDef;
+                var ext = blueprintBuildDef?.GetModExtension<StaircaseUpgradeExtension>();
+                if (ext?.upgradeDef == def)
+                {
+                    count++;
+                }
+            }
+
+            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame))
+            {
+                if (!staircaseRect.Contains(t.Position))
+                {
+                    continue;
+                }
+                Frame frame = t as Frame;
+                if (frame == null)
+                {
+                    continue;
+                }
+                ThingDef frameBuildDef = frame.def.entityDefToBuild as ThingDef;
+                var ext = frameBuildDef?.GetModExtension<StaircaseUpgradeExtension>();
+                if (ext?.upgradeDef == def)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private bool IsUpgradeLocked(StaircaseUpgradeDef def, CompStaircaseUpgrades comp)

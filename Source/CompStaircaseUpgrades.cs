@@ -602,6 +602,115 @@ namespace SecondFloor
         }
         
         /// <summary>
+        /// Decreases the count of an existing upgrade by one.
+        /// Returns true if successfully decreased, false if the upgrade doesn't exist or count is already 0.
+        /// </summary>
+        public bool DecreaseUpgradeCount(StaircaseUpgradeDef def)
+        {
+            var activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade == null || activeUpgrade.count <= 0)
+            {
+                return false;
+            }
+            
+            activeUpgrade.count--;
+            
+            // If count reaches 0, remove the upgrade entirely
+            if (activeUpgrade.count <= 0)
+            {
+                constructedUpgrades.Remove(activeUpgrade);
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
+        /// Removes excess instances of an upgrade and refunds materials.
+        /// Returns the number of instances removed and the refund info.
+        /// </summary>
+        public (int removed, string refundInfo) RemoveExcessUpgradesWithRefund(StaircaseUpgradeDef def, int excessCount, float refundPercent = 0.75f)
+        {
+            ActiveUpgrade activeUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (activeUpgrade == null || excessCount <= 0)
+            {
+                return (0, null);
+            }
+            
+            int actualRemoved = Mathf.Min(excessCount, activeUpgrade.count);
+            ThingDef stuff = activeUpgrade.stuff;
+            string refundInfo = "";
+            
+            // Calculate refund if there's a cost and stuff was used
+            if (stuff != null)
+            {
+                int baseCost = 0;
+                if (def.RequiresConstruction && def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
+                {
+                    baseCost = def.upgradeBuildingDef.costStuffCount;
+                }
+                
+                if (baseCost > 0)
+                {
+                    int totalCost = baseCost * actualRemoved;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+                    
+                    if (refundAmount > 0)
+                    {
+                        Thing refundThing = ThingMaker.MakeThing(stuff);
+                        refundThing.stackCount = refundAmount;
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+                        refundInfo = $" ({refundAmount} {stuff.label} refunded)";
+                    }
+                }
+            }
+            
+            // Handle costList items
+            if (def.upgradeBuildingDef?.costList != null)
+            {
+                foreach (var cost in def.upgradeBuildingDef.costList)
+                {
+                    int totalCost = cost.count * actualRemoved;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+                    
+                    if (refundAmount > 0)
+                    {
+                        Thing refundThing = ThingMaker.MakeThing(cost.thingDef);
+                        refundThing.stackCount = refundAmount;
+                        IntVec3 dropPos = parent.Position;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, parent.Map, ThingPlaceMode.Near);
+                        
+                        if (!string.IsNullOrEmpty(refundInfo))
+                        {
+                            refundInfo += ", ";
+                        }
+                        else
+                        {
+                            refundInfo = " (";
+                        }
+                        refundInfo += $"{refundAmount} {cost.thingDef.label}";
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(refundInfo) && !refundInfo.EndsWith(")"))
+                {
+                    refundInfo += " refunded)";
+                }
+            }
+            
+            // Decrease the count
+            activeUpgrade.count -= actualRemoved;
+            
+            // If count reaches 0, remove the upgrade entirely
+            if (activeUpgrade.count <= 0)
+            {
+                constructedUpgrades.Remove(activeUpgrade);
+            }
+            
+            return (actualRemoved, refundInfo);
+        }
+        
+        /// <summary>
         /// Removes all constructed instances of an upgrade and refunds materials.
         /// Returns the refunded material information for messaging.
         /// </summary>
