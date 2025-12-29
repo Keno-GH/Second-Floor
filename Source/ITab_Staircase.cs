@@ -543,9 +543,60 @@ namespace SecondFloor
             // Costs section
             Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "<b>Costs:</b>");
             curY += 24f;
-            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Base space: {def.spaceCost}");
-            curY += 24f;
-            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Space per bed: {def.spaceCostPerBed}");
+            
+            // Determine upgrade type and barracks status for cost display
+            CompMultipleBeds bedsComp = SelThing.TryGetComp<CompMultipleBeds>();
+            int rawBedCount = bedsComp?.bedCount ?? 1;
+            var costExt = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
+            bool costIsOnePerBed = costExt?.onePerBed ?? true;
+            bool costIsDirectlyToBed = costExt?.directlyToBed ?? false;
+            bool isBarracksRoom = comp.IsBarracks;
+            
+            // Calculate effective bed count for costs
+            int effectiveBedCount = rawBedCount;
+            bool costsAreHalved = false;
+            if (costIsOnePerBed && !costIsDirectlyToBed && isBarracksRoom && rawBedCount > 1)
+            {
+                effectiveBedCount = Mathf.CeilToInt(rawBedCount / 2f);
+                costsAreHalved = true;
+            }
+            else if (!costIsOnePerBed)
+            {
+                effectiveBedCount = 1;
+            }
+            
+            // Show barracks note if applicable
+            if (isBarracksRoom && costIsOnePerBed)
+            {
+                if (costIsDirectlyToBed)
+                {
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "<color=#aaaaaa>* Since this upgrade affects beds directly, it follows normal costs</color>");
+                    curY += 24f;
+                }
+                else if (costsAreHalved)
+                {
+                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "<color=#aaaaaa>* These costs are halved for barracks</color>");
+                    curY += 24f;
+                }
+            }
+            
+            // Space cost with breakdown
+            float baseSpaceCost = def.spaceCost;
+            float perBedSpaceCost = def.spaceCostPerBed;
+            float totalSpaceCost = comp.GetRequiredSpaceForUpgrade(def);
+            float spaceAvailable = comp.GetTotalSpace() - comp.GetUsedSpace();
+            string spaceColorTag = spaceAvailable >= totalSpaceCost ? "" : "<color=#ff6666>";
+            string spaceColorEnd = spaceAvailable >= totalSpaceCost ? "" : "</color>";
+            
+            // Build space cost string with breakdown
+            if (costIsOnePerBed && perBedSpaceCost > 0)
+            {
+                Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {spaceColorTag}Space: {totalSpaceCost} ({perBedSpaceCost} per bed + {baseSpaceCost}){spaceColorEnd}");
+            }
+            else
+            {
+                Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {spaceColorTag}Space: {totalSpaceCost}{spaceColorEnd}");
+            }
             curY += 24f;
             
             // Show additional space cost from bed increase (if this upgrade adds beds)
@@ -565,18 +616,7 @@ namespace SecondFloor
                 }
             }
             
-            // Show total space cost
-            float totalSpaceCost = comp.GetRequiredSpaceForUpgrade(def);
-            float spaceAvailable = comp.GetTotalSpace() - comp.GetUsedSpace();
-            string spaceColorTag = spaceAvailable >= totalSpaceCost ? "" : "<color=#ff6666>";
-            string spaceColorEnd = spaceAvailable >= totalSpaceCost ? "" : "</color>";
-            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {spaceColorTag}Total space required: {totalSpaceCost} (available: {spaceAvailable}){spaceColorEnd}");
-            curY += 24f;
-            
-            // Get bed count for cost calculations
-            CompMultipleBeds bedsComp = SelThing.TryGetComp<CompMultipleBeds>();
-            int bedCount = bedsComp?.bedCount ?? 1;
-            
+            // Material costs
             if (def.RequiresConstruction && def.upgradeBuildingDef != null)
             {
                 ThingDef buildingDef = def.upgradeBuildingDef;
@@ -586,23 +626,29 @@ namespace SecondFloor
                 {
                     // Get the stuff category label(s)
                     string stuffCategoryLabel = "material";
+                    int stuffCategoryCount = 0;
                     if (def.stuffCategories != null && def.stuffCategories.Count > 0)
                     {
-                        if (def.stuffCategories.Count == 1)
-                        {
-                            stuffCategoryLabel = def.stuffCategories[0].label;
-                        }
-                        else
-                        {
-                            stuffCategoryLabel = string.Join(" or ", def.stuffCategories.Select(sc => sc.label));
-                        }
+                        stuffCategoryLabel = string.Join(", ", def.stuffCategories.Select(sc => sc.label));
+                        stuffCategoryCount = def.stuffCategories.Count;
                     }
                     
-                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Cost: {buildingDef.costStuffCount} {stuffCategoryLabel} per bed");
-                    curY += 24f;
-                    int totalStuffCost = buildingDef.costStuffCount * bedCount;
-                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Total: {totalStuffCost} {stuffCategoryLabel} ({bedCount} beds)");
-                    curY += 24f;
+                    int perBedStuffCost = buildingDef.costStuffCount;
+                    int totalStuffCost = perBedStuffCost * effectiveBedCount;
+                    
+                    // If more than 2 categories, show on separate line
+                    if (stuffCategoryCount > 2)
+                    {
+                        Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Stuffable Materials: {totalStuffCost} ({perBedStuffCost} per bed)");
+                        curY += 24f;
+                        Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"    {stuffCategoryLabel}");
+                        curY += 24f;
+                    }
+                    else
+                    {
+                        Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  Stuffable Materials: {totalStuffCost} ({perBedStuffCost} per bed) {stuffCategoryLabel}");
+                        curY += 24f;
+                    }
                     
                     // If installed, show the material used
                     if (isInstalled)
@@ -610,23 +656,31 @@ namespace SecondFloor
                         ActiveUpgrade activeUpgrade = comp.constructedUpgrades.FirstOrDefault(au => au.def == def);
                         if (activeUpgrade != null && activeUpgrade.stuff != null)
                         {
-                            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  <color=#00ff00>Material: {activeUpgrade.stuff.LabelCap}</color>");
+                            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  <color=#00ff00>Material Used: {activeUpgrade.stuff.LabelCap}</color>");
                             curY += 24f;
                         }
                     }
                 }
                 
-                // Also show regular costList items (if any) - these can exist alongside costStuffCount
+                // Show regular costList items (if any)
                 if (buildingDef.costList != null && buildingDef.costList.Count > 0)
                 {
-                    Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), "  Additional Materials:");
-                    curY += 24f;
                     foreach (var cost in buildingDef.costList)
                     {
+                        int perBedCost = cost.count;
+                        int totalCost = perBedCost * effectiveBedCount;
                         int available = SelThing.Map.resourceCounter.GetCount(cost.thingDef);
-                        string colorTag = available >= cost.count ? "" : "<color=#ff6666>";
-                        string colorEnd = available >= cost.count ? "" : "</color>";
-                        Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"    {colorTag}{cost.thingDef.label}: {cost.count} (have: {available}){colorEnd}");
+                        string colorTag = available >= totalCost ? "" : "<color=#ff6666>";
+                        string colorEnd = available >= totalCost ? "" : "</color>";
+                        
+                        if (costIsOnePerBed && effectiveBedCount > 1)
+                        {
+                            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {colorTag}{cost.thingDef.LabelCap}: {totalCost} ({perBedCost} per bed){colorEnd}");
+                        }
+                        else
+                        {
+                            Widgets.Label(new Rect(0f, curY, viewRect.width, 24f), $"  {colorTag}{cost.thingDef.LabelCap}: {totalCost}{colorEnd}");
+                        }
                         curY += 24f;
                     }
                 }
