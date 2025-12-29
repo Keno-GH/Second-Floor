@@ -74,6 +74,21 @@
         <researchPrerequisite>SF_Soundproofing</researchPrerequisite>
         <iconPath>Things/Item/Resource/Cloth/Cloth_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- White Noise upgrade - requires construction and power -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_WhiteNoise</defName>
+        <label>White Noise</label>
+        <description>Installs white noise generators to mask ambient sounds. Prevents sleep disturbed thoughts but requires power to operate.</description>
+        <spaceCostPerBed>1</spaceCostPerBed>
+        <removeSleepDisturbed>true</removeSleepDisturbed>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>50</basePowerConsumption>
+        <upgradeBuildingDef>SF_UpgradeBuilding_WhiteNoise</upgradeBuildingDef>
+        <minConstructionSkill>3</minConstructionSkill>
+        <researchPrerequisite>Electricity</researchPrerequisite>
+        <iconPath>Things/Building/Misc/Loudspeaker/Loudspeaker_north</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
 
     <!-- =====================================================
         Impressiveness Upgrades

@@ -105,6 +105,34 @@
         </modExtensions>
     </ThingDef>
     
+    <!-- White Noise Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_WhiteNoise</defName>
+        <label>white noise upgrade</label>
+        <description>Install white noise generators to mask ambient sounds and prevent sleep disturbance. Requires power to operate.</description>
+        <researchPrerequisites>
+            <li>Electricity</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>3000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>30</Steel>
+            <ComponentIndustrial>1</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
+        <graphicData MayRequire="Ludeon.RimWorld.Ideology">
+            <texPath>Things/Building/Misc/Loudspeaker/Loudspeaker_north</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_WhiteNoise</upgradeDef>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
     <!-- Basic Decoration Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
         <defName>SF_UpgradeBuilding_BasicDecoration</defName>
