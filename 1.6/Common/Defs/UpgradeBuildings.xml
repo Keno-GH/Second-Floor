@@ -523,4 +523,85 @@
         </modExtensions>
     </ThingDef>
 
+    <!-- =====================================================
+         Power Storage Upgrade Buildings
+         =====================================================
+    -->
+    
+    <!-- 
+    Invisible Battery Building - spawned by Battery Room upgrade.
+    This is a real battery building with vanilla CompPowerBattery.
+    It is linked to a staircase and destroyed when the staircase is destroyed.
+    Using a real sub-building ensures maximum compatibility with other mods.
+    -->
+    <ThingDef>
+        <defName>SF_InvisibleBattery</defName>
+        <thingClass>SecondFloor.Building_StaircaseBattery</thingClass>
+        <label>staircase battery</label>
+        <description>A battery system integrated into a staircase.</description>
+        <category>Building</category>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>Standable</passability>
+        <selectable>false</selectable>
+        <useHitPoints>true</useHitPoints>
+        <tickerType>Normal</tickerType>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <Flammability>1.0</Flammability>
+        </statBases>
+        <building>
+            <isEdifice>false</isEdifice>
+        </building>
+        <!-- Invisible - use a very small draw size so it's effectively invisible -->
+        <graphicData>
+            <texPath>Things/Building/Power/Battery_north</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(0.01,0.01)</drawSize>
+        </graphicData>
+        <size>(1,1)</size>
+        <comps>
+            <li Class="CompProperties_Battery">
+                <storedEnergyMax>2400</storedEnergyMax>
+                <efficiency>0.5</efficiency>
+                <!-- transmitsPower=true makes it connect directly to conduits like a real battery -->
+                <transmitsPower>true</transmitsPower>
+            </li>
+        </comps>
+    </ThingDef>
+    
+    <!-- Battery Room Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_BatteryRoom</defName>
+        <label>battery room upgrade</label>
+        <description>Convert part of the floor into a dedicated battery room with storage equivalent to 4 batteries. The enclosed space protects the batteries from the elements.</description>
+        <researchPrerequisites>
+            <li>Electricity</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>8000</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
+        <costStuffCount>100</costStuffCount>
+        <costList>
+            <Steel>280</Steel>
+            <ComponentIndustrial>8</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Power/Battery_north</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_BatteryRoom</upgradeDef>
+                <onePerBed>false</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
 </Defs>

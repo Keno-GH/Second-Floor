@@ -343,5 +343,28 @@
         <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- =====================================================
+         Power Storage Upgrades
+         =====================================================
+    -->
+    
+    <!-- Battery Room upgrade - provides battery storage in the floor -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_BatteryRoom</defName>
+        <label>Battery Room</label>
+        <description>Converts part of the floor into a dedicated battery room, providing power storage equivalent to 4 batteries. The enclosed space protects the batteries from the elements while the efficient layout maximizes storage capacity.</description>
+        <spaceCost>20</spaceCost>
+        <linkedBatteryDef>SF_InvisibleBattery</linkedBatteryDef>
+        <upgradeBuildingDef>SF_UpgradeBuilding_BatteryRoom</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
+        <researchPrerequisite>Electricity</researchPrerequisite>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
+        <iconPath>Things/Building/Power/Battery_north</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
 

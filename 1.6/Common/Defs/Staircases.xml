@@ -188,6 +188,11 @@
         <initialFuelPercent>0</initialFuelPercent>
         <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
       </li>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <shortCircuitInRain>false</shortCircuitInRain>
+        <basePowerConsumption>0</basePowerConsumption>
+      </li>
     </comps>
     <placeWorkers>
       <li>SecondFloor.PlaceWorkerIndoors</li>

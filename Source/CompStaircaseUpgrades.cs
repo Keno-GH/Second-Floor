@@ -82,6 +82,14 @@ namespace SecondFloor
         /// </summary>
         private float cachedTotalPowerConsumption = 0f;
         
+        // =====================================================
+        // Linked Battery System
+        // =====================================================
+        /// <summary>
+        /// Reference to the linked battery building spawned by a battery upgrade.
+        /// </summary>
+        private Thing linkedBattery;
+        
         // Legacy field for backward compatibility
         private List<StaircaseUpgradeDef> upgrades;
 
@@ -90,6 +98,7 @@ namespace SecondFloor
             base.PostExposeData();
             Scribe_Collections.Look(ref constructedUpgrades, "constructedUpgrades", LookMode.Deep);
             Scribe_Values.Look(ref targetTemperature, "targetTemperature", 21f);
+            Scribe_References.Look(ref linkedBattery, "linkedBattery");
             
             // Legacy support: load old "upgrades" and "activeUpgrades" lists and convert to constructedUpgrades
             if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -447,6 +456,98 @@ namespace SecondFloor
             return powerComp.PowerOn;
         }
         
+        // =====================================================
+        // Linked Battery Methods
+        // =====================================================
+        
+        /// <summary>
+        /// Returns true if any constructed upgrade spawns a linked battery.
+        /// </summary>
+        public bool HasBatteryStorage()
+        {
+            return constructedUpgrades.Any(au => au.def.IsBatteryUpgrade);
+        }
+        
+        /// <summary>
+        /// Gets the linked battery building, if any.
+        /// </summary>
+        public Thing LinkedBattery => linkedBattery;
+        
+        /// <summary>
+        /// Gets the battery comp from the linked battery building.
+        /// </summary>
+        public CompPowerBattery LinkedBatteryComp
+        {
+            get
+            {
+                if (linkedBattery == null || linkedBattery.Destroyed)
+                    return null;
+                return linkedBattery.TryGetComp<CompPowerBattery>();
+            }
+        }
+        
+        /// <summary>
+        /// Gets the current stored energy from the linked battery.
+        /// </summary>
+        public float StoredEnergy => LinkedBatteryComp?.StoredEnergy ?? 0f;
+        
+        /// <summary>
+        /// Gets the stored energy as a percentage of max capacity.
+        /// </summary>
+        public float StoredEnergyPct => LinkedBatteryComp?.StoredEnergyPct ?? 0f;
+        
+        /// <summary>
+        /// Gets the total battery capacity from the linked battery's props.
+        /// </summary>
+        public float GetTotalBatteryCapacity()
+        {
+            return LinkedBatteryComp?.Props?.storedEnergyMax ?? 0f;
+        }
+        
+        /// <summary>
+        /// Gets the battery efficiency from the linked battery's props.
+        /// </summary>
+        public float GetBatteryEfficiency()
+        {
+            return LinkedBatteryComp?.Props?.efficiency ?? 0.5f;
+        }
+        
+        /// <summary>
+        /// Spawns the linked battery building for a battery upgrade.
+        /// </summary>
+        private void SpawnLinkedBattery(StaircaseUpgradeDef upgradeDef)
+        {
+            if (upgradeDef.linkedBatteryDef == null)
+                return;
+                
+            // Don't spawn if already have a linked battery
+            if (linkedBattery != null && !linkedBattery.Destroyed && linkedBattery.Spawned)
+                return;
+            
+            Thing battery = ThingMaker.MakeThing(upgradeDef.linkedBatteryDef);
+            GenSpawn.Spawn(battery, parent.Position, parent.Map);
+            
+            // Link the battery to this staircase
+            if (battery is Building_StaircaseBattery staircaseBattery)
+            {
+                staircaseBattery.parentStaircase = parent;
+            }
+            
+            linkedBattery = battery;
+        }
+        
+        /// <summary>
+        /// Destroys the linked battery building if it exists.
+        /// </summary>
+        private void DestroyLinkedBattery()
+        {
+            if (linkedBattery != null && !linkedBattery.Destroyed)
+            {
+                linkedBattery.Destroy(DestroyMode.Vanish);
+            }
+            linkedBattery = null;
+        }
+        
         /// <summary>
         /// Returns true if any constructed upgrade requires power.
         /// </summary>
@@ -568,6 +669,12 @@ namespace SecondFloor
             if (!HasUpgrade(def))
             {
                 constructedUpgrades.Add(new ActiveUpgrade(def, stuff));
+                
+                // If this is a battery upgrade, spawn the linked battery building
+                if (def.IsBatteryUpgrade && parent.Spawned)
+                {
+                    SpawnLinkedBattery(def);
+                }
             }
         }
 

@@ -230,6 +230,16 @@ namespace SecondFloor
                 GUI.color = Color.white;
             }
             
+            // Battery display for battery storage upgrades
+            if (comp.HasBatteryStorage())
+            {
+                float storedEnergy = comp.StoredEnergy;
+                float maxCapacity = comp.GetTotalBatteryCapacity();
+                float efficiency = comp.GetBatteryEfficiency();
+                string batteryLabel = $"Battery: {storedEnergy:F0} / {maxCapacity:F0} Wd ({efficiency * 100f:F0}% efficiency)";
+                listing.Label(batteryLabel);
+            }
+            
             listing.End();
         }
 
@@ -254,6 +264,12 @@ namespace SecondFloor
             if (comp.HasAnyFuelRequiringUpgrade())
             {
                 height += 24f; // Fuel line
+            }
+            
+            // Add height for battery display if there are battery storage upgrades
+            if (comp.HasBatteryStorage())
+            {
+                height += 24f; // Battery line
             }
             
             return height;

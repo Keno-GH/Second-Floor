@@ -163,5 +163,21 @@ namespace SecondFloor
         /// Only upgrades that require fuel or power can be toggled.
         /// </summary>
         public bool CanBeToggled => requiresPower || fuelPerBed > 0f;
+        
+        // =====================================================
+        // Battery Storage fields
+        // =====================================================
+        /// <summary>
+        /// The ThingDef of the invisible battery building to spawn when this upgrade is installed.
+        /// This allows using a real vanilla CompPowerBattery for maximum mod compatibility.
+        /// If set, the staircase will spawn this building at its position when the upgrade is applied.
+        /// The battery building's capacity and efficiency come from its own CompProperties_Battery.
+        /// </summary>
+        public ThingDef linkedBatteryDef;
+        
+        /// <summary>
+        /// Returns true if this upgrade spawns a battery building.
+        /// </summary>
+        public bool IsBatteryUpgrade => linkedBatteryDef != null;
     }
 }
