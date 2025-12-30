@@ -86,6 +86,7 @@
         <compClass>SecondFloor.CompAssignBedHediff</compClass>
       </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
+      <li Class="SecondFloor.CompProperties_BathroomUpgrade" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
         <bedCount>2</bedCount>
       </li>
@@ -173,6 +174,7 @@
         <compClass>SecondFloor.CompAssignBedHediff</compClass>
       </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
+      <li Class="SecondFloor.CompProperties_BathroomUpgrade" />
       <li Class="SecondFloor.CompProperties_MultipleBeds">
         <bedCount>2</bedCount>
       </li>

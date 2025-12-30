@@ -33,6 +33,19 @@ namespace SecondFloor
             return "Second Floor";
         }
     }
+    
+    /// <summary>
+    /// Static constructor to initialize mod integrations after all mods are loaded.
+    /// </summary>
+    [StaticConstructorOnStartup]
+    public static class ModInitializer
+    {
+        static ModInitializer()
+        {
+            // Initialize DBH integration if available
+            DBHReflectionHelper.Initialize();
+        }
+    }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class HotSwappableAttribute : Attribute

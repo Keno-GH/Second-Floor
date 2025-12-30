@@ -179,5 +179,62 @@ namespace SecondFloor
         /// Returns true if this upgrade spawns a battery building.
         /// </summary>
         public bool IsBatteryUpgrade => linkedBatteryDef != null;
+        
+        // =====================================================
+        // Bathroom Upgrade fields (Dubs Bad Hygiene integration)
+        // =====================================================
+        /// <summary>
+        /// The ThingDef of the invisible bathroom building to spawn when this upgrade is installed.
+        /// This building should have DBH's CompPipe to connect to the plumbing grid.
+        /// </summary>
+        public ThingDef linkedBathroomDef;
+        
+        /// <summary>
+        /// Amount of hygiene to restore (0-1 scale). 1.0 = full restore.
+        /// </summary>
+        public float hygieneRestoreAmount = 0f;
+        
+        /// <summary>
+        /// Maximum hygiene level this upgrade can restore to (0-1 scale).
+        /// Use 0.75 for basins (hand washing only), 1.0 for showers/baths.
+        /// </summary>
+        public float hygieneMaxCap = 1f;
+        
+        /// <summary>
+        /// Amount of bladder need to restore (0-1 scale). 1.0 = full restore.
+        /// </summary>
+        public float bladderRestoreAmount = 0f;
+        
+        /// <summary>
+        /// Amount of thirst to restore (0-1 scale). 1.0 = full restore.
+        /// </summary>
+        public float thirstRestoreAmount = 0f;
+        
+        /// <summary>
+        /// Water consumed per bathroom use (in DBH units).
+        /// </summary>
+        public float waterPerUse = 0f;
+        
+        /// <summary>
+        /// Sewage produced per bathroom use (in DBH units).
+        /// </summary>
+        public float sewagePerUse = 0f;
+        
+        /// <summary>
+        /// Hot water consumed per use (for showers/baths).
+        /// If > 0, the upgrade will try to use hot water first.
+        /// </summary>
+        public float hotWaterPerUse = 0f;
+        
+        /// <summary>
+        /// Returns true if this is a bathroom upgrade (has any hygiene-related restoration).
+        /// </summary>
+        public bool IsBathroomUpgrade => linkedBathroomDef != null || 
+            hygieneRestoreAmount > 0f || bladderRestoreAmount > 0f || thirstRestoreAmount > 0f;
+        
+        /// <summary>
+        /// Returns true if this upgrade requires hot water for full functionality.
+        /// </summary>
+        public bool RequiresHotWater => hotWaterPerUse > 0f;
     }
 }

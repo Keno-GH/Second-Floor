@@ -604,4 +604,107 @@
         </modExtensions>
     </ThingDef>
 
+    <!-- =====================================================
+         Bathroom Upgrade Buildings (Dubs Bad Hygiene)
+         =====================================================
+    -->
+    
+    <!-- 
+    Invisible Bathroom Building - spawned by bathroom upgrades.
+    This building has DBH's CompPipe to connect to the plumbing network.
+    It is linked to a staircase and destroyed when the staircase is destroyed.
+    -->
+    <ThingDef MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+        <defName>SF_InvisibleBathroom</defName>
+        <thingClass>SecondFloor.Building_StaircaseBathroom</thingClass>
+        <label>staircase bathroom</label>
+        <description>A bathroom system integrated into a staircase.</description>
+        <category>Building</category>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>Standable</passability>
+        <selectable>false</selectable>
+        <useHitPoints>true</useHitPoints>
+        <tickerType>Normal</tickerType>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <Flammability>1.0</Flammability>
+        </statBases>
+        <building>
+            <isEdifice>false</isEdifice>
+        </building>
+        <!-- Invisible - use a very small draw size so it's effectively invisible -->
+        <graphicData>
+            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(0.01,0.01)</drawSize>
+        </graphicData>
+        <size>(1,1)</size>
+        <comps>
+            <!-- DBH CompPipe for connecting to plumbing network -->
+            <li Class="DubsBadHygiene.CompProperties_Pipe" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+                <mode>Sewage</mode>
+            </li>
+        </comps>
+    </ThingDef>
+    
+    <!-- Basic Bathroom Upgrade Building -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+        <defName>SF_UpgradeBuilding_BasicBathroom</defName>
+        <label>basic bathroom upgrade</label>
+        <description>Install a basic bathroom with toilet and wash basin. Requires plumbing connection after construction.</description>
+        <researchPrerequisites>
+            <li MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">Plumbing</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>6000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>100</Steel>
+            <WoodLog>30</WoodLog>
+            <ComponentIndustrial>1</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_BasicBathroom</upgradeDef>
+                <onePerBed>false</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Full Bathroom Upgrade Building -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+        <defName>SF_UpgradeBuilding_FullBathroom</defName>
+        <label>full bathroom upgrade</label>
+        <description>Upgrade the basic bathroom with a shower for full hygiene restoration. Requires hot water connection for best results.</description>
+        <researchPrerequisites>
+            <li MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">Plumbing</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>8000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>150</Steel>
+            <WoodLog>50</WoodLog>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_FullBathroom</upgradeDef>
+                <onePerBed>false</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
 </Defs>

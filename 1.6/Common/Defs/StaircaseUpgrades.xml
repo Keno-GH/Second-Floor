@@ -366,5 +366,58 @@
         <iconPath>Things/Building/Power/Battery_north</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- =====================================================
+         Bathroom Upgrades (Dubs Bad Hygiene Integration)
+         =====================================================
+         These upgrades require Dubs Bad Hygiene (any version) to function.
+         They allow sleeping pawns to relieve hygiene needs without waking up.
+         The staircase must be connected to a plumbing network via pipes.
+    -->
+    
+    <!-- Basic Bathroom - toilet and basin -->
+    <SecondFloor.StaircaseUpgradeDef MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+        <defName>SF_BasicBathroom</defName>
+        <label>Basic Bathroom</label>
+        <description>Installs a toilet and wash basin in the floor area. Sleeping pawns can relieve their bladder need and wash their hands when needed. The basin only restores hygiene up to 75% - for full cleanliness, a shower is required.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet).</description>
+        <spaceCost>30</spaceCost>
+        <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
+        <upgradeBuildingDef>SF_UpgradeBuilding_BasicBathroom</upgradeBuildingDef>
+        <minConstructionSkill>4</minConstructionSkill>
+        <researchPrerequisite>Plumbing</researchPrerequisite>
+        <!-- Bathroom stats: basin uses 3L water for handwash -->
+        <hygieneRestoreAmount>1.0</hygieneRestoreAmount>
+        <hygieneMaxCap>0.75</hygieneMaxCap>
+        <bladderRestoreAmount>1.0</bladderRestoreAmount>
+        <thirstRestoreAmount>1.0</thirstRestoreAmount>
+        <waterPerUse>3</waterPerUse>
+        <sewagePerUse>0</sewagePerUse>
+        <hotWaterPerUse>0</hotWaterPerUse>
+        <iconPath>Things/Building/Furniture/Sink/Sink_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Full Bathroom - toilet and shower with hot water -->
+    <SecondFloor.StaircaseUpgradeDef MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+        <defName>SF_FullBathroom</defName>
+        <label>Full Bathroom</label>
+        <description>Installs a toilet and shower in the floor area. Sleeping pawns can relieve their bladder need and take a full shower when needed. Includes hot water capability for a more pleasant experience.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet). Hot water requires a boiler and hot water tank.</description>
+        <spaceCost>40</spaceCost>
+        <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
+        <upgradeBuildingDef>SF_UpgradeBuilding_FullBathroom</upgradeBuildingDef>
+        <minConstructionSkill>5</minConstructionSkill>
+        <researchPrerequisite>Plumbing</researchPrerequisite>
+        <requiredUpgrades>
+            <li>SF_BasicBathroom</li>
+        </requiredUpgrades>
+        <!-- Bathroom stats: shower uses 65L water total (hot + cold) -->
+        <hygieneRestoreAmount>1.0</hygieneRestoreAmount>
+        <hygieneMaxCap>1.0</hygieneMaxCap>
+        <bladderRestoreAmount>1.0</bladderRestoreAmount>
+        <thirstRestoreAmount>1.0</thirstRestoreAmount>
+        <waterPerUse>65</waterPerUse>
+        <sewagePerUse>0</sewagePerUse>
+        <hotWaterPerUse>32</hotWaterPerUse>
+        <iconPath>Things/Building/Furniture/Sink/Sink_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
 

@@ -45,4 +45,9 @@
   <!-- Power usage labels -->
   <SF_PowerUsagePerBed>  Power Usage: {0}W per bed</SF_PowerUsagePerBed>
   <SF_PowerUsagePerBedAmbient>  Power Usage: {0}W per bed (halved in barracks)</SF_PowerUsagePerBedAmbient>
+  
+  <!-- Bathroom upgrade status (DBH integration) -->
+  <SF_BathroomNoPipes>Bathroom: Not connected to pipes</SF_BathroomNoPipes>
+  <SF_BathroomNoWater>Bathroom: No water in network</SF_BathroomNoWater>
+  <SF_BathroomReady>Bathroom: Ready</SF_BathroomReady>
 </LanguageData>

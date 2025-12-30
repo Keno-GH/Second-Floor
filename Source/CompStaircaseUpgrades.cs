@@ -90,6 +90,14 @@ namespace SecondFloor
         /// </summary>
         private Thing linkedBattery;
         
+        // =====================================================
+        // Linked Bathroom System (DBH Integration)
+        // =====================================================
+        /// <summary>
+        /// Reference to the linked bathroom building spawned by a bathroom upgrade.
+        /// </summary>
+        private Thing linkedBathroom;
+        
         // Legacy field for backward compatibility
         private List<StaircaseUpgradeDef> upgrades;
 
@@ -99,6 +107,7 @@ namespace SecondFloor
             Scribe_Collections.Look(ref constructedUpgrades, "constructedUpgrades", LookMode.Deep);
             Scribe_Values.Look(ref targetTemperature, "targetTemperature", 21f);
             Scribe_References.Look(ref linkedBattery, "linkedBattery");
+            Scribe_References.Look(ref linkedBathroom, "linkedBathroom");
             
             // Legacy support: load old "upgrades" and "activeUpgrades" lists and convert to constructedUpgrades
             if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -548,6 +557,59 @@ namespace SecondFloor
             linkedBattery = null;
         }
         
+        // =====================================================
+        // Linked Bathroom System (DBH Integration)
+        // =====================================================
+        
+        /// <summary>
+        /// Gets the linked bathroom building.
+        /// </summary>
+        public Thing LinkedBathroom => linkedBathroom;
+        
+        /// <summary>
+        /// Spawns the linked bathroom building for a bathroom upgrade.
+        /// </summary>
+        private void SpawnLinkedBathroom(StaircaseUpgradeDef upgradeDef)
+        {
+            if (upgradeDef.linkedBathroomDef == null)
+                return;
+                
+            // Don't spawn if already have a linked bathroom
+            if (linkedBathroom != null && !linkedBathroom.Destroyed && linkedBathroom.Spawned)
+                return;
+            
+            Thing bathroom = ThingMaker.MakeThing(upgradeDef.linkedBathroomDef);
+            GenSpawn.Spawn(bathroom, parent.Position, parent.Map);
+            
+            // Link the bathroom to this staircase
+            if (bathroom is Building_StaircaseBathroom staircaseBathroom)
+            {
+                staircaseBathroom.parentStaircase = parent;
+            }
+            
+            linkedBathroom = bathroom;
+        }
+        
+        /// <summary>
+        /// Destroys the linked bathroom building if it exists.
+        /// </summary>
+        private void DestroyLinkedBathroom()
+        {
+            if (linkedBathroom != null && !linkedBathroom.Destroyed)
+            {
+                linkedBathroom.Destroy(DestroyMode.Vanish);
+            }
+            linkedBathroom = null;
+        }
+        
+        /// <summary>
+        /// Returns true if any constructed upgrade is a bathroom upgrade.
+        /// </summary>
+        public bool HasAnyBathroomUpgrade()
+        {
+            return constructedUpgrades.Any(au => au.def.IsBathroomUpgrade);
+        }
+        
         /// <summary>
         /// Returns true if any constructed upgrade requires power.
         /// </summary>
@@ -674,6 +736,12 @@ namespace SecondFloor
                 if (def.IsBatteryUpgrade && parent.Spawned)
                 {
                     SpawnLinkedBattery(def);
+                }
+                
+                // If this is a bathroom upgrade, spawn the linked bathroom building
+                if (def.linkedBathroomDef != null && parent.Spawned)
+                {
+                    SpawnLinkedBathroom(def);
                 }
             }
         }
