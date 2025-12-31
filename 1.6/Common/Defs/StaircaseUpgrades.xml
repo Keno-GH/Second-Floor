@@ -43,7 +43,7 @@
         <label>Extra Room</label>
         <description>Adds another room with a double bed (2 bedspaces). This creates multiple private rooms, eliminating the shared bed debuff.</description>
         <category>SF_Category_Bedrooms</category>
-        <spaceCost>20</spaceCost>
+        <spaceCost>30</spaceCost>
         <bedCountOffset>2</bedCountOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
@@ -70,7 +70,7 @@
         <label>Soundproofing</label>
         <description>Prevents sleep disturbed thoughts.</description>
         <category>SF_Category_Acoustics</category>
-        <spaceCostPerBed>5</spaceCostPerBed>
+        <spaceCostPerBed>3</spaceCostPerBed>
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
         <minConstructionSkill>3</minConstructionSkill>
@@ -85,7 +85,7 @@
         <description>Installs white noise generators to mask ambient sounds. Prevents sleep disturbed thoughts but requires power to operate.</description>
         <category>SF_Category_Acoustics</category>
         <isToggleable>true</isToggleable>
-        <spaceCostPerBed>1</spaceCostPerBed>
+        <spaceCostPerBed>0</spaceCostPerBed>
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <requiresPower>true</requiresPower>
         <basePowerConsumption>50</basePowerConsumption>
@@ -382,7 +382,7 @@
         <label>Battery Room</label>
         <description>Converts part of the floor into a dedicated battery room, providing power storage equivalent to 4 batteries. The enclosed space protects the batteries from the elements while the efficient layout maximizes storage capacity.</description>
         <category>SF_Category_Power</category>
-        <spaceCost>20</spaceCost>
+        <spaceCost>25</spaceCost>
         <linkedBatteryDef>SF_InvisibleBattery</linkedBatteryDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_BatteryRoom</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
@@ -409,7 +409,7 @@
         <label>Basic Bathroom</label>
         <description>Installs a toilet and wash basin in the floor area. Sleeping pawns can relieve their bladder need and wash their hands when needed. The basin only restores hygiene up to 75% - for full cleanliness, a shower is required.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet).</description>
         <category>SF_Category_Bathroom</category>
-        <spaceCost>30</spaceCost>
+        <spaceCost>20</spaceCost>
         <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicBathroom</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
@@ -431,7 +431,7 @@
         <label>Full Bathroom</label>
         <description>Installs a toilet and shower in the floor area. Sleeping pawns can relieve their bladder need and take a full shower when needed. Includes hot water capability for a more pleasant experience.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet). Hot water requires a boiler and hot water tank.</description>
         <category>SF_Category_Bathroom</category>
-        <spaceCost>40</spaceCost>
+        <spaceCost>5</spaceCost>
         <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_FullBathroom</upgradeBuildingDef>
         <minConstructionSkill>5</minConstructionSkill>
