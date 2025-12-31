@@ -1,11 +1,11 @@
 <Defs>
   <!-- Base staircase definition -->
-  <ThingDef Abstract="True" Name="StaircaseBase" ParentName="BedWithQualityBase">
+  <ThingDef Abstract="True" Name="StaircaseBase" ParentName="BedBase">
     <tickerType>Normal</tickerType>
     <uiIconScale>1</uiIconScale>
     <uiOrder>2405</uiOrder>
     <building>
-      <ai_neverTrashThis>true</ai_neverTrashThis>
+      <ai_neverTrashThis>false</ai_neverTrashThis>
       <paintable>true</paintable>
       <bed_showSleeperBody>False</bed_showSleeperBody>
       <bed_healPerDay>4</bed_healPerDay>
