@@ -226,6 +226,7 @@
         <maxHeatCap>28</maxHeatCap>
         <coolOffset>0</coolOffset>
         <followsDesiredTemp>true</followsDesiredTemp>
+        <removesSleptInDark>true</removesSleptInDark>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
         <researchPrerequisite>SF_AirManagement</researchPrerequisite>
@@ -248,6 +249,7 @@
         <maxHeatCap>30</maxHeatCap>
         <coolOffset>0</coolOffset>
         <followsDesiredTemp>true</followsDesiredTemp>
+        <removesSleptInDark>true</removesSleptInDark>
         <upgradeBuildingDef>SF_UpgradeBuilding_Campfires</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
         <researchPrerequisite>SF_AirManagement</researchPrerequisite>
@@ -369,6 +371,74 @@
         <minConstructionSkill>6</minConstructionSkill>
         <researchPrerequisite>SF_AirConditioners</researchPrerequisite>
         <iconPath>Things/Building/Misc/TempControl/Cooler_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
+    <!-- =====================================================
+         Lighting Upgrades
+         =====================================================
+         These upgrades provide lighting to the sleeping area,
+         preventing the "slept in the dark" thought. Some also
+         provide minor heating as a side effect.
+    -->
+    
+    <!-- Torches upgrade - basic lighting with heat -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_Torches</defName>
+        <label>Torches</label>
+        <description>Installs torches in the sleeping area to provide light. Also provides minor heating. Consumes fuel.</description>
+        <category>SF_Category_Lighting</category>
+        <isToggleable>true</isToggleable>
+        <spaceCostPerBed>0</spaceCostPerBed>
+        <fuelPerBed>2.0</fuelPerBed>
+        <heatOffset>4</heatOffset>
+        <maxHeatCap>30</maxHeatCap>
+        <followsDesiredTemp>true</followsDesiredTemp>
+        <removesSleptInDark>true</removesSleptInDark>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Torches</upgradeBuildingDef>
+        <minConstructionSkill>0</minConstructionSkill>
+        <stuffCategories>
+            <li>Woody</li>
+        </stuffCategories>
+        <iconPath>Things/Building/Misc/TorchLamp</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Candles upgrade - efficient lighting with minimal heat -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_Candles</defName>
+        <label>Candles</label>
+        <description>Installs candles in the sleeping area to provide light. More fuel efficient than torches but provides less heat. Consumes fuel.</description>
+        <category>SF_Category_Lighting</category>
+        <isToggleable>true</isToggleable>
+        <spaceCostPerBed>0</spaceCostPerBed>
+        <fuelPerBed>1.0</fuelPerBed>
+        <heatOffset>1</heatOffset>
+        <maxHeatCap>20</maxHeatCap>
+        <followsDesiredTemp>true</followsDesiredTemp>
+        <removesSleptInDark>true</removesSleptInDark>
+        <upgradeBuildingDef>SF_UpgradeBuilding_Candles</upgradeBuildingDef>
+        <minConstructionSkill>0</minConstructionSkill>
+        <researchPrerequisite>ComplexFurniture</researchPrerequisite>
+        <stuffCategories>
+            <li>Woody</li>
+        </stuffCategories>
+        <iconPath>Things/Building/Misc/TorchLamp</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Electric Lights upgrade - clean lighting with no heat -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_ElectricLights</defName>
+        <label>Electric Lights</label>
+        <description>Installs electric standing lamps in the sleeping area to provide clean, reliable lighting. Uses power but produces no heat and requires no fuel.</description>
+        <category>SF_Category_Lighting</category>
+        <isToggleable>true</isToggleable>
+        <spaceCostPerBed>0</spaceCostPerBed>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>30</basePowerConsumption>
+        <removesSleptInDark>true</removesSleptInDark>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ElectricLights</upgradeBuildingDef>
+        <minConstructionSkill>4</minConstructionSkill>
+        <researchPrerequisite>Electricity</researchPrerequisite>
+        <iconPath>Things/Building/Furniture/LampStanding</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- =====================================================

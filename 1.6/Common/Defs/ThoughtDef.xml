@@ -251,5 +251,20 @@
       </li>
     </stages>
   </ThoughtDef>
+
+  <!-- Slept in the dark thought - applied when no lighting upgrades are active -->
+  <ThoughtDef>
+    <defName>SF_SleptInTheDark</defName>
+    <durationDays>0.5</durationDays>
+    <stackLimit>1</stackLimit>
+    <validWhileDespawned>true</validWhileDespawned>
+    <stages>
+      <li>
+        <label>slept in the dark</label>
+        <description>I had to sleep in a room with no light at all. Changing clothes, preparing for bed, and doing anything in pitch black darkness is frustrating.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
   
 </Defs>

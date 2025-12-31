@@ -45,6 +45,7 @@ namespace SecondFloor
         public int bedCountOffset;
         public float bedCountMultiplier = 1f;
         public bool removeSleepDisturbed;
+        public bool removesSleptInDark; // If true, this upgrade provides light and removes the "slept in the dark" thought
         public ThoughtDef thoughtReplacement; // Keep for backwards compatibility
         public int impressivenessLevel = 0; // Adds to the impressiveness level (0-9)
         

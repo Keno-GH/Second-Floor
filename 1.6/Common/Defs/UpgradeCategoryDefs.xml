@@ -36,6 +36,14 @@
     </SecondFloor.UpgradeCategoryDef>
     
     <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Lighting</defName>
+        <label>Lighting</label>
+        <description>Upgrades that provide lighting for the sleeping area.</description>
+        <displayOrder>35</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
         <defName>SF_Category_Acoustics</defName>
         <label>Acoustics</label>
         <description>Upgrades that reduce noise and prevent sleep disturbance.</description>

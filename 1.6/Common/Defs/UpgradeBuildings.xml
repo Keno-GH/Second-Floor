@@ -352,6 +352,94 @@
         </modExtensions>
     </ThingDef>
 
+    <!-- =====================================================
+         Lighting Upgrades
+         =====================================================
+    -->
+    
+    <!-- Torches Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Torches</defName>
+        <label>torches upgrade</label>
+        <description>Install torches to provide lighting to the second floor area. Also provides minor heating. Consumes fuel.</description>
+        <statBases>
+            <WorkToBuild>1000</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Woody</li>
+        </stuffCategories>
+        <costStuffCount>20</costStuffCount>
+        <constructionSkillPrerequisite>0</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/TorchLamp</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_Torches</upgradeDef>
+                <onePerBed>true</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Candles Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_Candles</defName>
+        <label>candles upgrade</label>
+        <description>Install candles to provide lighting to the second floor area. More fuel efficient than torches but provides less heat. Consumes fuel.</description>
+        <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>500</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Woody</li>
+        </stuffCategories>
+        <costStuffCount>5</costStuffCount>
+        <constructionSkillPrerequisite>0</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/TorchLamp</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_Candles</upgradeDef>
+                <onePerBed>true</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
+    <!-- Electric Lights Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ElectricLights</defName>
+        <label>electric lights upgrade</label>
+        <description>Install electric standing lamps to provide clean, reliable lighting to the second floor area. Uses power but produces no heat and requires no fuel.</description>
+        <researchPrerequisites>
+            <li>Electricity</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>1500</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>20</Steel>
+        </costList>
+        <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Furniture/LampStanding</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_ElectricLights</upgradeDef>
+                <onePerBed>true</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+
     <!-- Passive Cooler Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
         <defName>SF_UpgradeBuilding_PassiveCooler</defName>
