@@ -42,6 +42,7 @@
         <defName>SF_StaircaseUpgrade_ExtraBeds</defName>
         <label>Extra Room</label>
         <description>Adds another room with a double bed (2 bedspaces). This creates multiple private rooms, eliminating the shared bed debuff.</description>
+        <category>SF_Category_Bedrooms</category>
         <spaceCost>20</spaceCost>
         <bedCountOffset>2</bedCountOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds</upgradeBuildingDef>
@@ -54,6 +55,7 @@
         <defName>SF_StaircaseUpgrade_Barracks</defName>
         <label>Barracks</label>
         <description>Doubles the amount of beds in the staircase, turning it into a barracks.</description>
+        <category>SF_Category_Bedrooms</category>
         <spaceCost>20</spaceCost>
         <bedCountMultiplier>2</bedCountMultiplier>
         <thoughtReplacement>SF_Barracks_Room</thoughtReplacement>
@@ -67,6 +69,7 @@
         <defName>SF_StaircaseUpgrade_Soundproofing</defName>
         <label>Soundproofing</label>
         <description>Prevents sleep disturbed thoughts.</description>
+        <category>SF_Category_Acoustics</category>
         <spaceCostPerBed>5</spaceCostPerBed>
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <upgradeBuildingDef>SF_UpgradeBuilding_Soundproofing</upgradeBuildingDef>
@@ -80,6 +83,8 @@
         <defName>SF_StaircaseUpgrade_WhiteNoise</defName>
         <label>White Noise</label>
         <description>Installs white noise generators to mask ambient sounds. Prevents sleep disturbed thoughts but requires power to operate.</description>
+        <category>SF_Category_Acoustics</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>1</spaceCostPerBed>
         <removeSleepDisturbed>true</removeSleepDisturbed>
         <requiresPower>true</requiresPower>
@@ -100,6 +105,7 @@
         <defName>SF_StaircaseUpgrade_BasicDecoration</defName>
         <label>Basic Decoration</label>
         <description>Adds simple decorations to improve the room's impressiveness slightly.</description>
+        <category>SF_Category_Comfort</category>
         <spaceCostPerBed>2</spaceCostPerBed>
         <impressivenessLevel>1</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
@@ -112,6 +118,7 @@
         <defName>SF_StaircaseUpgrade_FineDecoration</defName>
         <label>Fine Decoration</label>
         <description>Adds fine art and decorations to make the room impressive.</description>
+        <category>SF_Category_Comfort</category>
         <spaceCostPerBed>5</spaceCostPerBed>
         <impressivenessLevel>3</impressivenessLevel>
         <upgradeBuildingDef>SF_UpgradeBuilding_FineDecoration</upgradeBuildingDef>
@@ -127,6 +134,7 @@
         <defName>SF_StaircaseUpgrade_LuxuryFinishing</defName>
         <label>Luxury Finishing</label>
         <description>High-end materials and luxury amenities make this room extremely impressive.</description>
+        <category>SF_Category_Comfort</category>
         <spaceCostPerBed>6</spaceCostPerBed>
         <impressivenessLevel>4</impressivenessLevel>
         <comfortBonus>0.3</comfortBonus>
@@ -148,6 +156,7 @@
         <defName>SF_StaircaseUpgrade_ComfortableUpgrade</defName>
         <label>Comfortable Upgrade</label>
         <description>Upgrades furniture and amenities to make the room more comfortable.</description>
+        <category>SF_Category_Comfort</category>
         <spaceCostPerBed>4</spaceCostPerBed>
         <impressivenessLevel>1</impressivenessLevel>
         <comfortBonus>0.2</comfortBonus>
@@ -161,6 +170,7 @@
         <defName>SF_StaircaseUpgrade_BetterBeddings</defName>
         <label>Better Beddings</label>
         <description>Upgrades the beds quality to improve sleep effectiveness. Requires a lot of textile per bed.</description>
+        <category>SF_Category_Bedding</category>
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.2</comfortBonus>
         <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
@@ -174,6 +184,7 @@
         <defName>SF_StaircaseUpgrade_BetterMattresses</defName>
         <label>Better Mattresses</label>
         <description>Upgrades the beds quality to improve sleep effectiveness. Requires a high construction skill.</description>
+        <category>SF_Category_Bedding</category>
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.2</comfortBonus>
         <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
@@ -187,6 +198,7 @@
         <defName>SF_StaircaseUpgrade_ErgonomicBeds</defName>
         <label>Great Beds</label>
         <description>Upgrades the beds quality to improve sleep effectiveness. Requires a high construction skill.</description>
+        <category>SF_Category_Bedding</category>
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.3</comfortBonus>
         <sleepEffectivenessBonus>0.4</sleepEffectivenessBonus>
@@ -206,6 +218,8 @@
         <defName>SF_Braziers</defName>
         <label>Braziers</label>
         <description>Installs braziers in the second floor area to provide heat. Consumes fuel.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>2</spaceCostPerBed>
         <fuelPerBed>2.0</fuelPerBed>
         <heatOffset>10</heatOffset>
@@ -225,6 +239,8 @@
         <defName>SF_Campfires</defName>
         <label>Campfires</label>
         <description>Installs campfires in the second floor area to provide heat. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>4</spaceCostPerBed>
         <fuelPerBed>10.0</fuelPerBed>
         <heatOffset>40</heatOffset>
@@ -241,6 +257,8 @@
         <defName>SF_PassiveCooler</defName>
         <label>Passive Coolers</label>
         <description>Installs passive coolers in the second floor area to provide cooling. They consume fuel.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>2</spaceCostPerBed>
         <fuelPerBed>10.0</fuelPerBed>
         <minCoolCap>17</minCoolCap>
@@ -256,6 +274,7 @@
         <defName>SF_TextileInsulation</defName>
         <label>Textile Insulation</label>
         <description>Installs textile insulation to help moderate temperatures in the floor area. Very space efficient.</description>
+        <category>SF_Category_Temperature</category>
         <spaceCostPerBed>0</spaceCostPerBed>
         <insulationAdjustment>3</insulationAdjustment>
         <upgradeBuildingDef>SF_UpgradeBuilding_TextileInsulation</upgradeBuildingDef>
@@ -272,6 +291,7 @@
         <defName>SF_ThickInsulation</defName>
         <label>Thick Insulation</label>
         <description>Installs extra walls as insulation to help moderate temperatures in the floor area. Very space inefficient.</description>
+        <category>SF_Category_Temperature</category>
         <spaceCostPerBed>5</spaceCostPerBed>
         <insulationAdjustment>3</insulationAdjustment>
         <upgradeBuildingDef>SF_UpgradeBuilding_ThickInsulation</upgradeBuildingDef>
@@ -297,6 +317,8 @@
         <defName>SF_ElectricHeater</defName>
         <label>Electric Heater</label>
         <description>Installs an electric heater in the second floor area. Uses power to provide heat, with consumption automatically throttled based on how much heating is needed. Combines well with dumb heaters like braziers to reduce power usage.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>2</spaceCostPerBed>
         <requiresPower>true</requiresPower>
         <basePowerConsumption>200</basePowerConsumption>
@@ -314,6 +336,8 @@
         <defName>SF_ElectricCooler</defName>
         <label>Electric Cooler</label>
         <description>Installs an electric cooler in the second floor area. Uses power to provide cooling, with consumption automatically throttled based on how much cooling is needed. Combines well with dumb coolers like passive coolers to reduce power usage.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>2</spaceCostPerBed>
         <requiresPower>true</requiresPower>
         <basePowerConsumption>200</basePowerConsumption>
@@ -331,6 +355,8 @@
         <defName>SF_AirConditioning</defName>
         <label>Air Conditioning</label>
         <description>Installs a modern air conditioning unit in the second floor area. Can both heat and cool as needed, automatically switching modes. Uses more power than dedicated units but provides complete climate control. Power consumption is throttled based on temperature differential.</description>
+        <category>SF_Category_Temperature</category>
+        <isToggleable>true</isToggleable>
         <spaceCostPerBed>3</spaceCostPerBed>
         <requiresPower>true</requiresPower>
         <basePowerConsumption>200</basePowerConsumption>
@@ -353,6 +379,7 @@
         <defName>SF_BatteryRoom</defName>
         <label>Battery Room</label>
         <description>Converts part of the floor into a dedicated battery room, providing power storage equivalent to 4 batteries. The enclosed space protects the batteries from the elements while the efficient layout maximizes storage capacity.</description>
+        <category>SF_Category_Power</category>
         <spaceCost>20</spaceCost>
         <linkedBatteryDef>SF_InvisibleBattery</linkedBatteryDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_BatteryRoom</upgradeBuildingDef>
@@ -379,6 +406,7 @@
         <defName>SF_BasicBathroom</defName>
         <label>Basic Bathroom</label>
         <description>Installs a toilet and wash basin in the floor area. Sleeping pawns can relieve their bladder need and wash their hands when needed. The basin only restores hygiene up to 75% - for full cleanliness, a shower is required.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet).</description>
+        <category>SF_Category_Bathroom</category>
         <spaceCost>30</spaceCost>
         <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicBathroom</upgradeBuildingDef>
@@ -400,6 +428,7 @@
         <defName>SF_FullBathroom</defName>
         <label>Full Bathroom</label>
         <description>Installs a toilet and shower in the floor area. Sleeping pawns can relieve their bladder need and take a full shower when needed. Includes hot water capability for a more pleasant experience.\n\nRequires connection to a plumbing network (pipes, water tower, sewage outlet). Hot water requires a boiler and hot water tank.</description>
+        <category>SF_Category_Bathroom</category>
         <spaceCost>40</spaceCost>
         <linkedBathroomDef>SF_InvisibleBathroom</linkedBathroomDef>
         <upgradeBuildingDef>SF_UpgradeBuilding_FullBathroom</upgradeBuildingDef>

@@ -19,7 +19,10 @@
 
  	<ItemGroup>
 	 	<!-- Mod -->
-	 	<Compile Include="../Source/*" />
+	 	<Compile Include="../Source/*.cs" />
+	 	<Compile Include="../Source/Defs/*.cs" />
+	 	<Compile Include="../Source/ITab/*.cs" />
+	 	<Compile Include="../Source/ITab/Renderers/*.cs" />
 		
 	 	<!-- Rimworld -->
 	 	<Reference Include="../../../RimWorldWin64_Data/Managed/*.dll">

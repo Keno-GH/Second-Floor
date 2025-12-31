@@ -2,6 +2,73 @@
 <LanguageData>
   <TabStaircase>Staircase</TabStaircase>
   
+  <!-- Header and Tabs -->
+  <SF_StaircaseDetails>Staircase Details</SF_StaircaseDetails>
+  <SF_Tab_Manage>Manage</SF_Tab_Manage>
+  <SF_Tab_Control>Control</SF_Tab_Control>
+  <SF_Tab_Construction>Construction</SF_Tab_Construction>
+  <SF_Tab_Manage_Tooltip>View and manage currently built upgrades. Toggle, deconstruct, or expand stackable upgrades.</SF_Tab_Manage_Tooltip>
+  <SF_Tab_Control_Tooltip>Quick access to toggle switches for powered and fueled upgrades.</SF_Tab_Control_Tooltip>
+  <SF_Tab_Construction_Tooltip>Browse and build new upgrades organized by category.</SF_Tab_Construction_Tooltip>
+  
+  <!-- Tab Content Labels -->
+  <SF_ManageTab_Title>Built Upgrades</SF_ManageTab_Title>
+  <SF_ManageTab_NoUpgrades>No upgrades built yet. Switch to the Construction tab to add upgrades.</SF_ManageTab_NoUpgrades>
+  <SF_ControlTab_Title>Toggle Controls</SF_ControlTab_Title>
+  <SF_ControlTab_NoToggleables>No toggleable upgrades installed.\n\nBuild upgrades like heaters, coolers, or white noise machines to see toggle controls here.</SF_ControlTab_NoToggleables>
+  <SF_ConstructionTab_Title>Available Upgrades</SF_ConstructionTab_Title>
+  <SF_Category_Other>Other</SF_Category_Other>
+  
+  <!-- Stats Labels -->
+  <SF_Stat_BedSpaces>Bed Spaces: {0}</SF_Stat_BedSpaces>
+  <SF_Stat_RoomType>Room Type: {0}</SF_Stat_RoomType>
+  <SF_Stat_Impressiveness>Impressiveness: {0}</SF_Stat_Impressiveness>
+  <SF_Stat_Comfort>Comfort: {0}</SF_Stat_Comfort>
+  <SF_Stat_RestEffectiveness>Rest Effectiveness: {0}</SF_Stat_RestEffectiveness>
+  <SF_Stat_Temperature>Temperature: {0}</SF_Stat_Temperature>
+  <SF_Stat_CurrentTemp>Current Temp: {0}</SF_Stat_CurrentTemp>
+  <SF_Stat_TargetTemp>Target Temp: {0}</SF_Stat_TargetTemp>
+  <SF_Stat_PowerUsage>Power: {0}</SF_Stat_PowerUsage>
+  <SF_Stat_FuelUsage>Fuel: {0}</SF_Stat_FuelUsage>
+  <SF_Stat_BatteryStored>Battery: {0}</SF_Stat_BatteryStored>
+  <SF_Stat_Space>Space: {0} (Available: {1})</SF_Stat_Space>
+  <SF_Stat_HygieneCapacity>Hygiene Capacity: {0}</SF_Stat_HygieneCapacity>
+  <SF_Stat_NoiseProtection>Noise Protection: {0}</SF_Stat_NoiseProtection>
+  <SF_Stat_NoiseProtected>Protected</SF_Stat_NoiseProtected>
+  <SF_Stat_NoiseExposed>Exposed to disturbance</SF_Stat_NoiseExposed>
+  <SF_NoFuel>(No fuel)</SF_NoFuel>
+  
+  <!-- Room Types -->
+  <SF_RoomType_Basement>Basement</SF_RoomType_Basement>
+  <SF_RoomType_BasementBarracks>Basement Barracks</SF_RoomType_BasementBarracks>
+  <SF_RoomType_Barracks>Barracks</SF_RoomType_Barracks>
+  <SF_RoomType_MultipleRooms>Multiple Private Rooms</SF_RoomType_MultipleRooms>
+  <SF_RoomType_SingleBedroom>Single Bedroom</SF_RoomType_SingleBedroom>
+  
+  <!-- Control Tab Status -->
+  <SF_Status_Active>Active</SF_Status_Active>
+  <SF_Status_ToggledOff>Toggled Off</SF_Status_ToggledOff>
+  <SF_Status_NoPower>No Power</SF_Status_NoPower>
+  <SF_Status_OutOfFuel>Out of Fuel</SF_Status_OutOfFuel>
+  <SF_Status_Incomplete>Incomplete</SF_Status_Incomplete>
+  <SF_Toggle_TurnOn>Turn On</SF_Toggle_TurnOn>
+  <SF_Toggle_TurnOff>Turn Off</SF_Toggle_TurnOff>
+  
+  <!-- Disable Reasons -->
+  <SF_DisableReason_ToggledOff>Disabled: Manually toggled off</SF_DisableReason_ToggledOff>
+  <SF_DisableReason_OutOfFuel>Disabled: Out of fuel</SF_DisableReason_OutOfFuel>
+  <SF_DisableReason_NoPower>Disabled: No power</SF_DisableReason_NoPower>
+  <SF_DisableReason_InsufficientCount>Disabled: Not enough constructed (requires one per bed)</SF_DisableReason_InsufficientCount>
+  <SF_DisableReason_Unknown>Disabled: Unknown reason</SF_DisableReason_Unknown>
+  
+  <!-- Tooltips -->
+  <SF_Tooltip_ToggledOff>This upgrade has been manually toggled off. Click to re-enable.</SF_Tooltip_ToggledOff>
+  <SF_Tooltip_NoPower>This upgrade requires power but the staircase has no power connection.</SF_Tooltip_NoPower>
+  <SF_Tooltip_OutOfFuel>This upgrade requires fuel but the staircase has run out.</SF_Tooltip_OutOfFuel>
+  <SF_Tooltip_InsufficientCount>This upgrade requires one instance per bed, but not enough have been constructed.</SF_Tooltip_InsufficientCount>
+  <SF_Tooltip_RequiresUpgrades>This upgrade requires other upgrades to be installed first.</SF_Tooltip_RequiresUpgrades>
+  <SF_BuildMore_Tooltip>Build {0} more {1} upgrade(s) to complete installation.</SF_BuildMore_Tooltip>
+  
   <!-- Upgrade system messages -->
   <SF_UpgradeInstalled>{0} upgrade installed on {1}!</SF_UpgradeInstalled>
   <SF_UpgradeCountIncreased>{0} upgrade added to {1}!</SF_UpgradeCountIncreased>
@@ -50,4 +117,16 @@
   <SF_BathroomNoPipes>Bathroom: Not connected to pipes</SF_BathroomNoPipes>
   <SF_BathroomNoWater>Bathroom: No water in network</SF_BathroomNoWater>
   <SF_BathroomReady>Bathroom: Ready</SF_BathroomReady>
+  
+  <!-- Impressiveness Levels -->
+  <SF_Impressiveness_Awful>Awful</SF_Impressiveness_Awful>
+  <SF_Impressiveness_Dull>Dull</SF_Impressiveness_Dull>
+  <SF_Impressiveness_Mediocre>Mediocre</SF_Impressiveness_Mediocre>
+  <SF_Impressiveness_Decent>Decent</SF_Impressiveness_Decent>
+  <SF_Impressiveness_SlightlyImpressive>Slightly Impressive</SF_Impressiveness_SlightlyImpressive>
+  <SF_Impressiveness_Impressive>Impressive</SF_Impressiveness_Impressive>
+  <SF_Impressiveness_VeryImpressive>Very Impressive</SF_Impressiveness_VeryImpressive>
+  <SF_Impressiveness_ExtremelyImpressive>Extremely Impressive</SF_Impressiveness_ExtremelyImpressive>
+  <SF_Impressiveness_UnbelievablyImpressive>Unbelievably Impressive</SF_Impressiveness_UnbelievablyImpressive>
+  <SF_Impressiveness_WondrouslyImpressive>Wondrously Impressive</SF_Impressiveness_WondrouslyImpressive>
 </LanguageData>

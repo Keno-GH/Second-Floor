@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+    <!-- ==================== Upgrade Categories ==================== -->
+    <!-- Categories for organizing upgrades in the Construction tab -->
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Bedrooms</defName>
+        <label>Bedrooms</label>
+        <description>Upgrades that add rooms or change the room structure.</description>
+        <displayOrder>5</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Bedding</defName>
+        <label>Bedding</label>
+        <description>Upgrades that improve bed quality and sleeping comfort.</description>
+        <displayOrder>10</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Comfort</defName>
+        <label>Comfort &amp; Decor</label>
+        <description>Upgrades that improve comfort, rest effectiveness, and room impressiveness.</description>
+        <displayOrder>20</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Temperature</defName>
+        <label>Climate Control</label>
+        <description>Upgrades for heating, cooling, and temperature regulation.</description>
+        <displayOrder>30</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Acoustics</defName>
+        <label>Acoustics</label>
+        <description>Upgrades that reduce noise and prevent sleep disturbance.</description>
+        <displayOrder>40</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Power</defName>
+        <label>Power</label>
+        <description>Power storage and electrical infrastructure upgrades.</description>
+        <displayOrder>50</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+    <SecondFloor.UpgradeCategoryDef>
+        <defName>SF_Category_Bathroom</defName>
+        <label>Bathroom</label>
+        <description>Hygiene and plumbing upgrades for Dubs Bad Hygiene integration.</description>
+        <displayOrder>60</displayOrder>
+        <defaultExpanded>true</defaultExpanded>
+    </SecondFloor.UpgradeCategoryDef>
+    
+</Defs>

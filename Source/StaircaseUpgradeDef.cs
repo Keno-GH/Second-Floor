@@ -18,6 +18,28 @@ namespace SecondFloor
 
     public class StaircaseUpgradeDef : Def
     {
+        // =====================================================
+        // Category and Display fields
+        // =====================================================
+        /// <summary>
+        /// The category this upgrade belongs to for UI organization.
+        /// </summary>
+        public UpgradeCategoryDef category;
+        
+        /// <summary>
+        /// Display order within the category (lower = earlier).
+        /// </summary>
+        public int displayPriority = 0;
+        
+        /// <summary>
+        /// Whether this upgrade appears in the Control tab with a toggle switch.
+        /// Set to true for upgrades that can be turned on/off (heaters, coolers, etc.).
+        /// </summary>
+        public bool isToggleable = false;
+        
+        // =====================================================
+        // Core fields
+        // =====================================================
         public float spaceCost = 0f; // Space cost this upgrade uses in the staircase
         public List<ThingDef> applyToStairs;
         public int bedCountOffset;
