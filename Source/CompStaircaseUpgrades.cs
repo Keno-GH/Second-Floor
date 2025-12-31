@@ -2038,5 +2038,285 @@ namespace SecondFloor
             
             return totalBonus;
         }
+        
+        // =====================================================
+        // Destruction and Deconstruction Handling
+        // =====================================================
+        
+        /// <summary>
+        /// Health percentage threshold below which fire damage triggers explosions.
+        /// </summary>
+        private const float ExplosionHealthThreshold = 0.25f;
+        
+        /// <summary>
+        /// Watt-days of stored energy per cell of explosion radius.
+        /// 600Wd = 1x1, 1200Wd = 2x2, etc.
+        /// </summary>
+        private const float EnergyPerExplosionCell = 600f;
+        
+        /// <summary>
+        /// Maximum explosion radius (7x7 area = radius of ~3.5).
+        /// </summary>
+        private const float MaxExplosionRadius = 3.5f;
+        
+        /// <summary>
+        /// Flag to prevent multiple explosion triggers while health remains below threshold.
+        /// </summary>
+        private bool hasExplodedFromFire = false;
+        
+        /// <summary>
+        /// Called when the parent thing is destroyed. Handles material refunds and subbuilding cleanup.
+        /// </summary>
+        public override void PostDestroy(DestroyMode mode, Map previousMap)
+        {
+            base.PostDestroy(mode, previousMap);
+            
+            // Immediately clean up subbuildings
+            DestroyLinkedBattery();
+            DestroyLinkedBathroom();
+            
+            // Determine refund percentage based on destruction mode
+            float refundPercent = 0f;
+            if (mode == DestroyMode.Deconstruct)
+            {
+                refundPercent = 0.75f;
+            }
+            else if (mode == DestroyMode.KillFinalize)
+            {
+                refundPercent = 0.37f;
+            }
+            
+            // Refund materials for all constructed upgrades
+            if (refundPercent > 0f && previousMap != null)
+            {
+                RefundAllUpgradeMaterials(refundPercent, previousMap);
+            }
+        }
+        
+        /// <summary>
+        /// Refunds materials for all constructed upgrades at the specified percentage.
+        /// </summary>
+        private void RefundAllUpgradeMaterials(float refundPercent, Map map)
+        {
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+            {
+                return;
+            }
+            
+            IntVec3 dropPos = parent.Position;
+            
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (activeUpgrade.def == null || activeUpgrade.count <= 0)
+                {
+                    continue;
+                }
+                
+                int constructedCount = activeUpgrade.count;
+                
+                // Handle stuff-based materials (costStuffCount)
+                if (activeUpgrade.stuff != null && activeUpgrade.def.upgradeBuildingDef?.costStuffCount > 0)
+                {
+                    int baseCost = activeUpgrade.def.upgradeBuildingDef.costStuffCount;
+                    int totalCost = baseCost * constructedCount;
+                    int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+                    
+                    if (refundAmount > 0)
+                    {
+                        Thing refundThing = ThingMaker.MakeThing(activeUpgrade.stuff);
+                        refundThing.stackCount = refundAmount;
+                        GenPlace.TryPlaceThing(refundThing, dropPos, map, ThingPlaceMode.Near);
+                    }
+                }
+                
+                // Handle costList items
+                if (activeUpgrade.def.upgradeBuildingDef?.costList != null)
+                {
+                    foreach (var cost in activeUpgrade.def.upgradeBuildingDef.costList)
+                    {
+                        int totalCost = cost.count * constructedCount;
+                        int refundAmount = Mathf.FloorToInt(totalCost * refundPercent);
+                        
+                        if (refundAmount > 0)
+                        {
+                            Thing refundThing = ThingMaker.MakeThing(cost.thingDef);
+                            refundThing.stackCount = refundAmount;
+                            GenPlace.TryPlaceThing(refundThing, dropPos, map, ThingPlaceMode.Near);
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Called after damage is applied to the parent. Triggers explosions for battery/special upgrades
+        /// when damaged by fire below the health threshold.
+        /// </summary>
+        public override void PostPostApplyDamage(DamageInfo dinfo, float totalDamageDealt)
+        {
+            base.PostPostApplyDamage(dinfo, totalDamageDealt);
+            
+            // Only trigger on fire damage
+            if (dinfo.Def != DamageDefOf.Flame)
+            {
+                return;
+            }
+            
+            // Check if we've already exploded
+            if (hasExplodedFromFire)
+            {
+                return;
+            }
+            
+            // Check health threshold
+            float healthPercent = (float)parent.HitPoints / (float)parent.MaxHitPoints;
+            if (healthPercent >= ExplosionHealthThreshold)
+            {
+                return;
+            }
+            
+            // Check if we have any explosive upgrades installed
+            if (!HasAnyExplosiveUpgrade())
+            {
+                return;
+            }
+            
+            // Mark as exploded and trigger explosions
+            hasExplodedFromFire = true;
+            TriggerUpgradeExplosions();
+        }
+        
+        /// <summary>
+        /// Returns true if any installed upgrade can cause an explosion (battery or special def upgrades).
+        /// </summary>
+        private bool HasAnyExplosiveUpgrade()
+        {
+            if (constructedUpgrades == null)
+            {
+                return false;
+            }
+            
+            foreach (var upgrade in constructedUpgrades)
+            {
+                // Battery upgrades can explode
+                if (upgrade.def.IsBatteryUpgrade)
+                {
+                    return true;
+                }
+                
+                // Upgrades with linked buildings (bathroom, etc.) cause small explosions
+                if (upgrade.def.linkedBathroomDef != null)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Triggers explosions for all installed explosive upgrades.
+        /// Battery upgrades explode based on stored energy, other special upgrades cause 1x1 explosions.
+        /// </summary>
+        private void TriggerUpgradeExplosions()
+        {
+            if (!parent.Spawned || parent.Map == null)
+            {
+                return;
+            }
+            
+            Map map = parent.Map;
+            IntVec3 position = parent.Position;
+            
+            foreach (var upgrade in constructedUpgrades)
+            {
+                if (upgrade.def.IsBatteryUpgrade)
+                {
+                    // Calculate explosion radius based on stored energy
+                    float storedEnergy = StoredEnergy;
+                    float explosionRadius = CalculateExplosionRadius(storedEnergy);
+                    
+                    if (explosionRadius > 0f)
+                    {
+                        GenExplosion.DoExplosion(
+                            center: position,
+                            map: map,
+                            radius: explosionRadius,
+                            damType: DamageDefOf.Bomb,
+                            instigator: parent,
+                            damAmount: -1, // Use default for damage type
+                            armorPenetration: -1f,
+                            explosionSound: null,
+                            weapon: null,
+                            projectile: null,
+                            intendedTarget: null,
+                            postExplosionSpawnThingDef: null,
+                            postExplosionSpawnChance: 0f,
+                            postExplosionSpawnThingCount: 0,
+                            postExplosionGasType: null,
+                            applyDamageToExplosionCellsNeighbors: false,
+                            preExplosionSpawnThingDef: null,
+                            preExplosionSpawnChance: 0f,
+                            preExplosionSpawnThingCount: 0,
+                            chanceToStartFire: 0.5f,
+                            damageFalloff: true
+                        );
+                        
+                        // Drain the battery after explosion
+                        LinkedBatteryComp?.SetStoredEnergyPct(0f);
+                    }
+                }
+                else if (upgrade.def.linkedBathroomDef != null)
+                {
+                    // Non-power-storing special upgrades cause a 1x1 explosion
+                    GenExplosion.DoExplosion(
+                        center: position,
+                        map: map,
+                        radius: 0.5f, // 1x1 area
+                        damType: DamageDefOf.Bomb,
+                        instigator: parent,
+                        damAmount: -1,
+                        armorPenetration: -1f,
+                        explosionSound: null,
+                        weapon: null,
+                        projectile: null,
+                        intendedTarget: null,
+                        postExplosionSpawnThingDef: null,
+                        postExplosionSpawnChance: 0f,
+                        postExplosionSpawnThingCount: 0,
+                        postExplosionGasType: null,
+                        applyDamageToExplosionCellsNeighbors: false,
+                        preExplosionSpawnThingDef: null,
+                        preExplosionSpawnChance: 0f,
+                        preExplosionSpawnThingCount: 0,
+                        chanceToStartFire: 0.25f,
+                        damageFalloff: false
+                    );
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Calculates the explosion radius based on stored energy.
+        /// 600Wd = 1 cell area (radius ~0.5), 1200Wd = 4 cell area (radius ~1.1), etc.
+        /// Capped at 7x7 area (radius 3.5).
+        /// </summary>
+        private float CalculateExplosionRadius(float storedEnergy)
+        {
+            if (storedEnergy <= 0f)
+            {
+                return 0f;
+            }
+            
+            // Calculate area: storedEnergy / 600Wd per cell
+            float explosionArea = storedEnergy / EnergyPerExplosionCell;
+            
+            // Convert area to radius: area = pi * r^2, so r = sqrt(area / pi)
+            // For simplicity, use r = sqrt(area) which gives slightly larger explosions
+            float radius = Mathf.Sqrt(explosionArea);
+            
+            // Cap at maximum radius
+            return Mathf.Min(radius, MaxExplosionRadius);
+        }
     }
 }
