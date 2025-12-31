@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Excavation Site - Special mineable rock for basement expansion -->
+  <!-- Note: Does not use BuildingBase to avoid inheriting impassable/blocking properties -->
+  <ThingDef>
+    <defName>SF_BasementExpansionRock</defName>
+    <label>excavation site</label>
+    <description>Mine this to expand the basement's available space.</description>
+    <thingClass>SecondFloor.Building_BasementExpansionRock</thingClass>
+    <category>Building</category>
+    <selectable>true</selectable>
+    <drawerType>RealtimeOnly</drawerType>
+    <graphicData>
+      <texPath>Designations/Mine</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <shaderType>TransparentPostLight</shaderType>
+      <drawSize>(1,1)</drawSize>
+    </graphicData>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <blockWind>false</blockWind>
+    <blockLight>false</blockLight>
+    <rotatable>false</rotatable>
+    <useHitPoints>true</useHitPoints>
+    <drawDamagedOverlay>false</drawDamagedOverlay>
+    <statBases>
+      <MaxHitPoints>800</MaxHitPoints>
+      <Flammability>0</Flammability>
+    </statBases>
+    <building>
+      <isInert>true</isInert>
+      <isNaturalRock>false</isNaturalRock>
+      <deconstructible>false</deconstructible>
+      <claimable>false</claimable>
+    </building>
+    <mineable>true</mineable>
+    <size>(1,1)</size>
+    <tickerType>Never</tickerType>
+    <destroyable>true</destroyable>
+    <neverMultiSelect>false</neverMultiSelect>
+    <canOverlapZones>true</canOverlapZones>
+    <clearBuildingArea>false</clearBuildingArea>
+    <placeWorkers>
+      <li>PlaceWorker_Conduit</li>
+    </placeWorkers>
+  </ThingDef>
+
+</Defs>

@@ -14,6 +14,9 @@ namespace SecondFloor
         // Static state for category expansion - persists during game session
         private static Dictionary<string, bool> categoryExpanded = new Dictionary<string, bool>();
         
+        // Height of the expand basement button row
+        private const float ExpandButtonHeight = 30f;
+        
         /// <summary>
         /// Draws the Construction tab content with collapsible categories.
         /// </summary>
@@ -37,9 +40,20 @@ namespace SecondFloor
             Widgets.Label(labelRect, "SF_ConstructionTab_Title".Translate());
             Text.Anchor = TextAnchor.UpperLeft;
             
+            float scrollStartY = labelRect.yMax + TabLayout.ContentPadding;
+            
+            // Check if this is a basement and draw expand button if so
+            var expansionComp = staircase.TryGetComp<CompBasementExpansion>();
+            if (expansionComp != null)
+            {
+                Rect buttonRect = new Rect(rect.x, scrollStartY, rect.width, ExpandButtonHeight);
+                DrawExpandBasementButton(buttonRect, expansionComp);
+                scrollStartY = buttonRect.yMax + TabLayout.ContentPadding;
+            }
+            
             // Scrollable list area
-            Rect scrollOuterRect = new Rect(rect.x, labelRect.yMax + TabLayout.ContentPadding, 
-                rect.width, rect.height - labelRect.height - TabLayout.ContentPadding * 2);
+            Rect scrollOuterRect = new Rect(rect.x, scrollStartY, 
+                rect.width, rect.yMax - scrollStartY - TabLayout.ContentPadding);
             
             // Calculate total height (including uncategorized upgrades)
             float viewHeight = CalculateViewHeight(grouped, applicableUpgrades, comp);
@@ -374,6 +388,57 @@ namespace SecondFloor
                 default:
                     return "SF_DisableReason_Unknown".Translate();
             }
+        }
+        
+        /// <summary>
+        /// Draws the "Expand Basement" button for basement staircases.
+        /// </summary>
+        private static void DrawExpandBasementButton(Rect rect, CompBasementExpansion expansionComp)
+        {
+            // Draw background
+            Widgets.DrawLightHighlight(rect);
+            
+            bool isMaxed = expansionComp.IsMaxExpansion;
+            bool inProgress = expansionComp.IsExcavationInProgress;
+            bool canExpand = !isMaxed && !inProgress;
+            
+            // Button text
+            string buttonLabel;
+            string tooltip;
+            
+            if (isMaxed)
+            {
+                buttonLabel = "SF_ExpandBasement_Maxed".Translate();
+                tooltip = "SF_ExpandBasement_Maxed_Tooltip".Translate(expansionComp.MaxSpace);
+            }
+            else if (inProgress)
+            {
+                int mined = 5 - expansionComp.MinedCountInBatch;
+                buttonLabel = "SF_ExpandBasement_InProgress".Translate(expansionComp.MinedCountInBatch, 5);
+                tooltip = "SF_ExpandBasement_InProgress_Tooltip".Translate();
+            }
+            else
+            {
+                buttonLabel = "SF_ExpandBasement".Translate();
+                tooltip = "SF_ExpandBasement_Tooltip".Translate(expansionComp.TotalSpace, expansionComp.MaxSpace);
+            }
+            
+            // Draw the button
+            if (!canExpand)
+            {
+                GUI.color = Color.gray;
+            }
+            
+            if (Widgets.ButtonText(rect, buttonLabel, active: canExpand))
+            {
+                if (canExpand)
+                {
+                    expansionComp.SpawnExpansionRocks();
+                }
+            }
+            
+            GUI.color = Color.white;
+            TooltipHandler.TipRegion(rect, tooltip);
         }
     }
 }

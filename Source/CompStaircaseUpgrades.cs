@@ -164,16 +164,16 @@ namespace SecondFloor
                 return 0f;
             }
             
-            // Basements use room-based space calculation
+            // Basements use CompBasementExpansion for space calculation (base + bonus from mining)
             SecondFloorModExtension ext = parent.def.GetModExtension<SecondFloorModExtension>();
             if (ext != null && ext.floorLevel == StaircaseFloorLevel.Basement)
             {
-                Room room = parent.GetRoom();
-                if (room != null)
+                var expansionComp = parent.TryGetComp<CompBasementExpansion>();
+                if (expansionComp != null)
                 {
-                    return room.CellCount;
+                    return expansionComp.TotalSpace;
                 }
-                return 0f;
+                return 30f; // Fallback default
             }
             
             // Upstairs staircases count cells with constructed roofs in a circular area (radius 10)

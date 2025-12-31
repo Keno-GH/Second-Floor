@@ -179,6 +179,10 @@
       </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="SecondFloor.CompProperties_BathroomUpgrade" />
+      <li Class="SecondFloor.CompProperties_BasementExpansion">
+        <baseSpace>30</baseSpace>
+        <maxBonusSpace>270</maxBonusSpace>
+      </li>
       <li Class="SecondFloor.CompProperties_MultipleBeds">
         <bedCount>2</bedCount>
       </li>

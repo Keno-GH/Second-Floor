@@ -600,4 +600,63 @@ namespace SecondFloor
         }
     }
 
+    /// <summary>
+    /// Patch to detect when a mining designation is removed from a basement expansion rock.
+    /// When any rock's designation is canceled, all rocks in the batch are removed.
+    /// </summary>
+    [HarmonyPatch(typeof(DesignationManager), "RemoveDesignation")]
+    public static class Patch_DesignationManager_RemoveDesignation
+    {
+        // Flag to prevent recursive calls when CancelCurrentBatch removes designations
+        private static bool cancelingBatch = false;
+        
+        public static void Prefix(Designation des)
+        {
+            if (cancelingBatch)
+                return;
+            
+            // Only care about Mine designations
+            if (des.def != DesignationDefOf.Mine)
+                return;
+            
+            // Check if this is a thing-based designation on a basement expansion rock
+            if (des.target.HasThing && des.target.Thing is Building_BasementExpansionRock rock)
+            {
+                if (rock.linkedBasement != null && !rock.linkedBasement.Destroyed)
+                {
+                    var expansionComp = rock.linkedBasement.TryGetComp<CompBasementExpansion>();
+                    if (expansionComp != null && expansionComp.IsRockInCurrentBatch(rock))
+                    {
+                        // This designation was canceled by the player, cancel the whole batch
+                        cancelingBatch = true;
+                        try
+                        {
+                            expansionComp.CancelCurrentBatch();
+                        }
+                        finally
+                        {
+                            cancelingBatch = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Patch to detect when a basement expansion rock is fully mined.
+    /// Notifies the linked basement to grant bonus space.
+    /// </summary>
+    [HarmonyPatch(typeof(Mineable), "DestroyMined")]
+    public static class Patch_Mineable_DestroyMined
+    {
+        public static void Prefix(Mineable __instance, Pawn pawn)
+        {
+            if (__instance is Building_BasementExpansionRock rock)
+            {
+                rock.NotifyMiningComplete(pawn);
+            }
+        }
+    }
+
 }
