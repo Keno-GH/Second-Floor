@@ -291,6 +291,9 @@ namespace SecondFloor
             Texture2D icon = TabAssets.GetUpgradeIcon(def);
             
             bool isDisabled = disableReason != UpgradeDisableReason.None;
+            bool hasSkillRequirement = def.minConstructionSkill > 0 || def.minArtisticSkill > 0;
+            bool skillsUnavailable = hasSkillRequirement && !HasRequiredSkills(def, comp.parent);
+            
             if (isLocked || isDisabled)
             {
                 GUI.color = new Color(0.5f, 0.5f, 0.5f, 0.7f);
@@ -335,6 +338,10 @@ namespace SecondFloor
             {
                 GUI.color = Color.yellow;
             }
+            else if (skillsUnavailable)
+            {
+                GUI.color = Color.yellow;
+            }
             
             string label = def.label;
             if (isPending && !isInstalled)
@@ -370,6 +377,10 @@ namespace SecondFloor
             {
                 tooltip += "\n\n<color=#ffaa00>" + GetDisableReasonText(disableReason) + "</color>";
             }
+            else if (skillsUnavailable)
+            {
+                tooltip += "\n\n<color=#ffff00>" + "SF_Tooltip_SkillsUnavailable".Translate() + "</color>";
+            }
             TooltipHandler.TipRegion(rect, tooltip);
         }
         
@@ -388,6 +399,34 @@ namespace SecondFloor
                 default:
                     return "SF_DisableReason_Unknown".Translate();
             }
+        }
+        
+        /// <summary>
+        /// Checks if the colony has pawns with the required construction or artistic skills.
+        /// </summary>
+        private static bool HasRequiredSkills(StaircaseUpgradeDef def, Thing staircase)
+        {
+            if (staircase?.Map == null)
+            {
+                return true; // Can't check, assume skills are available
+            }
+            
+            bool hasConstructionSkill = true;
+            bool hasArtisticSkill = true;
+            
+            if (def.minConstructionSkill > 0)
+            {
+                hasConstructionSkill = staircase.Map.mapPawns.FreeColonists.Any(p => 
+                    p.skills != null && p.skills.GetSkill(SkillDefOf.Construction).Level >= def.minConstructionSkill);
+            }
+            
+            if (def.minArtisticSkill > 0)
+            {
+                hasArtisticSkill = staircase.Map.mapPawns.FreeColonists.Any(p => 
+                    p.skills != null && p.skills.GetSkill(SkillDefOf.Artistic).Level >= def.minArtisticSkill);
+            }
+            
+            return hasConstructionSkill && hasArtisticSkill;
         }
         
         /// <summary>

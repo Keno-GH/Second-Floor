@@ -69,6 +69,7 @@
   <SF_Tooltip_InsufficientCount>This upgrade requires one instance per bed, but not enough have been constructed.</SF_Tooltip_InsufficientCount>
   <SF_Tooltip_ReachedTemperature>This upgrade is on standby because the desired temperature has already been reached.</SF_Tooltip_ReachedTemperature>
   <SF_Tooltip_RequiresUpgrades>This upgrade requires other upgrades to be installed first.</SF_Tooltip_RequiresUpgrades>
+  <SF_Tooltip_SkillsUnavailable>No colonist has the required construction or artistic skill level for this upgrade.</SF_Tooltip_SkillsUnavailable>
   <SF_BuildMore_Tooltip>Build {0} more {1} upgrade(s) to complete installation.</SF_BuildMore_Tooltip>
   
   <!-- Upgrade system messages -->
