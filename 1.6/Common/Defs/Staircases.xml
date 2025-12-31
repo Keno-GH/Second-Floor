@@ -60,10 +60,10 @@
       <Mass>400</Mass>
       <BedRestEffectiveness>0.7</BedRestEffectiveness>
       <Comfort>0.5</Comfort>
-      <ImmunityGainSpeedFactor>1.07</ImmunityGainSpeedFactor>
-      <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
-      <MedicalTendQualityOffset>0.10</MedicalTendQualityOffset>
-      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
+      <ImmunityGainSpeedFactor>1</ImmunityGainSpeedFactor>
+      <SurgerySuccessChanceFactor>0.5</SurgerySuccessChanceFactor>
+      <MedicalTendQualityOffset>-0.10</MedicalTendQualityOffset>
+      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">1.0</BirthRitualQualityOffset>
     </statBases>
     <researchPrerequisites>
       <li>SF_Upstairs</li>
@@ -112,8 +112,6 @@
     <placeWorkers>
       <li>SecondFloor.PlaceWorkerIndoors</li>
       <li>SecondFloor.PlaceWorkerUnderRoof</li>
-      <li>SecondFloor.PlaceWorkerOnlyOneSFPerRoom</li>
-      <li>SecondFloor.PlaceWorkerInSmallRoom</li>
       <li>SecondFloor.PlaceWorker_StaircaseVisualizer</li>
       <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
     </placeWorkers>
@@ -152,10 +150,10 @@
       <Mass>400</Mass>
       <BedRestEffectiveness>0.7</BedRestEffectiveness>
       <Comfort>0.5</Comfort>
-      <ImmunityGainSpeedFactor>1.10</ImmunityGainSpeedFactor>
-      <SurgerySuccessChanceFactor>1</SurgerySuccessChanceFactor>
-      <MedicalTendQualityOffset>0.00</MedicalTendQualityOffset>
-      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">2</BirthRitualQualityOffset>
+      <ImmunityGainSpeedFactor>1</ImmunityGainSpeedFactor>
+      <SurgerySuccessChanceFactor>0.5</SurgerySuccessChanceFactor>
+      <MedicalTendQualityOffset>-0.10</MedicalTendQualityOffset>
+      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">1.0</BirthRitualQualityOffset>
     </statBases>
     <researchPrerequisites>
       <li>SF_Downstairs</li>
@@ -206,8 +204,6 @@
     </comps>
     <placeWorkers>
       <li>SecondFloor.PlaceWorkerIndoors</li>
-      <li>SecondFloor.PlaceWorkerOnlyOneBSPerRoom</li>
-      <li>SecondFloor.PlaceWorkerInSmallRoom</li>
       <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
     </placeWorkers>
   </ThingDef>

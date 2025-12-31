@@ -339,32 +339,22 @@ namespace SecondFloor
         
         /// <summary>
         /// Gets total comfort from all active upgrades plus base bed comfort.
+        /// The Harmony patch already applies upgrade bonuses to GetStatValue, so we just return that.
         /// </summary>
         private static float GetTotalComfort(Thing staircase, CompStaircaseUpgrades comp)
         {
-            // Get actual comfort stat from the staircase
-            float baseComfort = staircase.GetStatValue(StatDefOf.Comfort);
-            float bonus = 0f;
-            foreach (var upgrade in comp.GetActiveUpgradeDefs())
-            {
-                bonus += upgrade.comfortBonus;
-            }
-            return Mathf.Clamp01(baseComfort + bonus);
+            // GetStatValue already includes upgrade bonuses via the Harmony patch
+            return staircase.GetStatValue(StatDefOf.Comfort);
         }
         
         /// <summary>
         /// Gets total rest effectiveness from all active upgrades plus base.
+        /// The Harmony patch already applies upgrade bonuses to GetStatValue, so we just return that.
         /// </summary>
         private static float GetTotalRestEffectiveness(Thing staircase, CompStaircaseUpgrades comp)
         {
-            // Get actual rest effectiveness stat from the staircase
-            float baseRest = staircase.GetStatValue(StatDefOf.BedRestEffectiveness);
-            float bonus = 0f;
-            foreach (var upgrade in comp.GetActiveUpgradeDefs())
-            {
-                bonus += upgrade.sleepEffectivenessBonus;
-            }
-            return baseRest + bonus;
+            // GetStatValue already includes upgrade bonuses via the Harmony patch
+            return staircase.GetStatValue(StatDefOf.BedRestEffectiveness);
         }
     }
 }
