@@ -11,8 +11,22 @@ using Verse;
 
 namespace SecondFloor
 {
+    /// <summary>
+    /// Defines the floor level type for staircases.
+    /// Used to enforce minimum distance between same-type staircases.
+    /// </summary>
+    public enum StaircaseFloorLevel
+    {
+        Upstairs,
+        Basement
+    }
+    
     public class SecondFloorModExtension : DefModExtension
     {
+        /// <summary>
+        /// The floor level this staircase leads to. Used for distance separation rules.
+        /// </summary>
+        public StaircaseFloorLevel floorLevel = StaircaseFloorLevel.Upstairs;
         public bool RemoveSoakingWet = false;
         public bool RemoveSleptOutside = false;
         public bool RemoveSleptInCold = false;

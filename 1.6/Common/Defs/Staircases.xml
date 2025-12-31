@@ -45,6 +45,7 @@
     <techLevel>Medieval</techLevel>
     <modExtensions>
       <li Class="SecondFloor.SecondFloorModExtension">
+        <floorLevel>Upstairs</floorLevel>
         <RemoveSoakingWet>true</RemoveSoakingWet>
         <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
         <RemoveSleptOutside>true</RemoveSleptOutside>
@@ -113,6 +114,8 @@
       <li>SecondFloor.PlaceWorkerUnderRoof</li>
       <li>SecondFloor.PlaceWorkerOnlyOneSFPerRoom</li>
       <li>SecondFloor.PlaceWorkerInSmallRoom</li>
+      <li>SecondFloor.PlaceWorker_StaircaseVisualizer</li>
+      <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
     </placeWorkers>
   </ThingDef>
 
@@ -134,6 +137,7 @@
     <techLevel>Neolithic</techLevel>
     <modExtensions>
       <li Class="SecondFloor.SecondFloorModExtension">
+        <floorLevel>Basement</floorLevel>
         <RemoveSoakingWet>true</RemoveSoakingWet>
         <RemoveSleptOutside>true</RemoveSleptOutside>
         <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
@@ -200,6 +204,7 @@
       <li>SecondFloor.PlaceWorkerIndoors</li>
       <li>SecondFloor.PlaceWorkerOnlyOneBSPerRoom</li>
       <li>SecondFloor.PlaceWorkerInSmallRoom</li>
+      <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
     </placeWorkers>
   </ThingDef>
 

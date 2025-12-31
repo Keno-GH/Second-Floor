@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
 
 namespace SecondFloor
@@ -176,6 +177,245 @@ namespace SecondFloor
             }
             
             return true;
+        }
+    }
+    
+    /// <summary>
+    /// Visualizes the staircase's area of influence during placement.
+    /// Shows a 20x20 circular area and highlights cells with constructed roofs.
+    /// </summary>
+    public class PlaceWorker_StaircaseVisualizer : PlaceWorker
+    {
+        private static readonly Color AreaRingColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        private static readonly Color RoofHighlightColor = new Color(0.2f, 0.8f, 0.2f, 0.5f);
+        
+        // Reusable list to avoid allocations during DrawGhost
+        private static List<IntVec3> roofedCellsCache = new List<IntVec3>();
+        
+        public override void DrawGhost(ThingDef def, IntVec3 center, Rot4 rot, Color ghostCol, Thing thing = null)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Draw the area ring (radius 10 for 20x20 area)
+            GenDraw.DrawRadiusRing(center, 10f, AreaRingColor);
+            
+            // Collect cells with constructed roofs
+            roofedCellsCache.Clear();
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofConstructed)
+                {
+                    roofedCellsCache.Add(cell);
+                }
+            }
+            
+            // Highlight roofed cells in green
+            if (roofedCellsCache.Count > 0)
+            {
+                GenDraw.DrawFieldEdges(roofedCellsCache, RoofHighlightColor);
+            }
+        }
+        
+        public override void DrawPlaceMouseAttachments(float curX, ref float curY, BuildableDef bdef, IntVec3 center, Rot4 rot)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Count constructed roof cells
+            int roofedCount = 0;
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofConstructed)
+                {
+                    roofedCount++;
+                }
+            }
+            
+            // Display the available space count
+            string label = "SF_AvailableSpace".Translate(roofedCount);
+            Color textColor = roofedCount > 0 ? Color.green : Color.red;
+            
+            Widgets.Label(new Rect(curX, curY, 999f, 999f), label.Colorize(textColor));
+            curY += 22f;
+        }
+    }
+    
+    /// <summary>
+    /// Requires staircases of the same floor level to be at least 10 cells apart.
+    /// </summary>
+    public class PlaceWorker_MinStaircaseDistance : PlaceWorker
+    {
+        private const float MinDistance = 10f;
+        private static readonly Color ExclusionZoneColor = new Color(1f, 0.2f, 0.2f, 0.4f);
+        
+        public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
+        {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
+            
+            // Get the floor level of what we're placing
+            ThingDef thingDef = checkingDef as ThingDef;
+            if (thingDef == null)
+            {
+                return true;
+            }
+            
+            SecondFloorModExtension ext = thingDef.GetModExtension<SecondFloorModExtension>();
+            if (ext == null)
+            {
+                return true;
+            }
+            
+            StaircaseFloorLevel placingFloorLevel = ext.floorLevel;
+            
+            // Check all buildings on the map for same-type staircases
+            foreach (Building building in map.listerBuildings.allBuildingsColonist)
+            {
+                if (building == thingToIgnore)
+                {
+                    continue;
+                }
+                
+                SecondFloorModExtension buildingExt = building.def.GetModExtension<SecondFloorModExtension>();
+                if (buildingExt == null)
+                {
+                    continue;
+                }
+                
+                // Only check staircases of the same floor level
+                if (buildingExt.floorLevel != placingFloorLevel)
+                {
+                    continue;
+                }
+                
+                // Check if this building has CompStaircaseUpgrades (meaning it's a staircase)
+                if (building.GetComp<CompStaircaseUpgrades>() == null)
+                {
+                    continue;
+                }
+                
+                // Check distance
+                if (loc.InHorDistOf(building.Position, MinDistance))
+                {
+                    return new AcceptanceReport("SF_TooCloseToAnotherStaircase".Translate());
+                }
+            }
+            
+            // Also check blueprints and frames for same-type staircases
+            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint))
+            {
+                if (t == thingToIgnore)
+                {
+                    continue;
+                }
+                
+                ThingDef builtDef = t.def.entityDefToBuild as ThingDef;
+                if (builtDef == null)
+                {
+                    continue;
+                }
+                
+                SecondFloorModExtension blueprintExt = builtDef.GetModExtension<SecondFloorModExtension>();
+                if (blueprintExt == null || blueprintExt.floorLevel != placingFloorLevel)
+                {
+                    continue;
+                }
+                
+                if (builtDef.GetCompProperties<CompProperties_StaircaseUpgrades>() == null)
+                {
+                    continue;
+                }
+                
+                if (loc.InHorDistOf(t.Position, MinDistance))
+                {
+                    return new AcceptanceReport("SF_TooCloseToAnotherStaircase".Translate());
+                }
+            }
+            
+            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame))
+            {
+                if (t == thingToIgnore)
+                {
+                    continue;
+                }
+                
+                ThingDef builtDef = t.def.entityDefToBuild as ThingDef;
+                if (builtDef == null)
+                {
+                    continue;
+                }
+                
+                SecondFloorModExtension frameExt = builtDef.GetModExtension<SecondFloorModExtension>();
+                if (frameExt == null || frameExt.floorLevel != placingFloorLevel)
+                {
+                    continue;
+                }
+                
+                if (builtDef.GetCompProperties<CompProperties_StaircaseUpgrades>() == null)
+                {
+                    continue;
+                }
+                
+                if (loc.InHorDistOf(t.Position, MinDistance))
+                {
+                    return new AcceptanceReport("SF_TooCloseToAnotherStaircase".Translate());
+                }
+            }
+            
+            return true;
+        }
+        
+        public override void DrawGhost(ThingDef def, IntVec3 center, Rot4 rot, Color ghostCol, Thing thing = null)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            SecondFloorModExtension ext = def.GetModExtension<SecondFloorModExtension>();
+            if (ext == null)
+            {
+                return;
+            }
+            
+            StaircaseFloorLevel placingFloorLevel = ext.floorLevel;
+            
+            // Draw exclusion rings around existing same-type staircases
+            foreach (Building building in map.listerBuildings.allBuildingsColonist)
+            {
+                SecondFloorModExtension buildingExt = building.def.GetModExtension<SecondFloorModExtension>();
+                if (buildingExt == null || buildingExt.floorLevel != placingFloorLevel)
+                {
+                    continue;
+                }
+                
+                if (building.GetComp<CompStaircaseUpgrades>() == null)
+                {
+                    continue;
+                }
+                
+                GenDraw.DrawRadiusRing(building.Position, MinDistance, ExclusionZoneColor);
+            }
         }
     }
 }

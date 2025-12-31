@@ -137,4 +137,8 @@
   <SF_Impressiveness_ExtremelyImpressive>Extremely Impressive</SF_Impressiveness_ExtremelyImpressive>
   <SF_Impressiveness_UnbelievablyImpressive>Unbelievably Impressive</SF_Impressiveness_UnbelievablyImpressive>
   <SF_Impressiveness_WondrouslyImpressive>Wondrously Impressive</SF_Impressiveness_WondrouslyImpressive>
+  
+  <!-- PlaceWorker Messages -->
+  <SF_AvailableSpace>Available space: {0}</SF_AvailableSpace>
+  <SF_TooCloseToAnotherStaircase>Must be at least 10 cells from another staircase of the same type.</SF_TooCloseToAnotherStaircase>
 </LanguageData>

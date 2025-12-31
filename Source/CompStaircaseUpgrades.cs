@@ -158,11 +158,39 @@ namespace SecondFloor
         
         public float GetTotalSpace()
         {
-            if (parent.GetRoom() != null)
+            Map map = parent.Map;
+            if (map == null)
             {
-                return parent.GetRoom().CellCount;
+                return 0f;
             }
-            return 0f;
+            
+            // Basements use room-based space calculation
+            SecondFloorModExtension ext = parent.def.GetModExtension<SecondFloorModExtension>();
+            if (ext != null && ext.floorLevel == StaircaseFloorLevel.Basement)
+            {
+                Room room = parent.GetRoom();
+                if (room != null)
+                {
+                    return room.CellCount;
+                }
+                return 0f;
+            }
+            
+            // Upstairs staircases count cells with constructed roofs in a circular area (radius 10)
+            float count = 0f;
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofConstructed)
+                {
+                    count += 1f;
+                }
+            }
+            return count;
         }
 
         public float GetUsedSpace()
@@ -2075,6 +2103,17 @@ namespace SecondFloor
             DestroyLinkedBattery();
             DestroyLinkedBathroom();
             
+            // If destroyed by damage (not deconstructed), collapse roofs in a 10x10 area
+            // Only applies to upstairs staircases, not basements
+            if (mode == DestroyMode.KillFinalize && previousMap != null)
+            {
+                SecondFloorModExtension ext = parent.def.GetModExtension<SecondFloorModExtension>();
+                if (ext == null || ext.floorLevel != StaircaseFloorLevel.Basement)
+                {
+                    CollapseNearbyRoofs(previousMap);
+                }
+            }
+            
             // Determine refund percentage based on destruction mode
             float refundPercent = 0f;
             if (mode == DestroyMode.Deconstruct)
@@ -2090,6 +2129,32 @@ namespace SecondFloor
             if (refundPercent > 0f && previousMap != null)
             {
                 RefundAllUpgradeMaterials(refundPercent, previousMap);
+            }
+        }
+        
+        /// <summary>
+        /// Collapses constructed roofs in a circular area (radius 5) around the destroyed staircase.
+        /// </summary>
+        private void CollapseNearbyRoofs(Map map)
+        {
+            List<IntVec3> cellsToCollapse = new List<IntVec3>();
+            
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 5f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofConstructed)
+                {
+                    cellsToCollapse.Add(cell);
+                }
+            }
+            
+            if (cellsToCollapse.Count > 0)
+            {
+                RoofCollapserImmediate.DropRoofInCells(cellsToCollapse, map);
             }
         }
         
