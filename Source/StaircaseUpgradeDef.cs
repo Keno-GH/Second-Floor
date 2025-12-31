@@ -121,6 +121,13 @@ namespace SecondFloor
         public float fuelPerBed = 0f; // Fuel consumed per bed count per tick
         public float spaceCostPerBed = 0f; // Additional space cost per bed count
         
+        /// <summary>
+        /// If true, this fueled temperature changer will adjust its output to match the target temperature,
+        /// rather than always running at full capacity. This allows smart fuel consumption scaling.
+        /// Examples: Braziers and Campfires (true), Passive Coolers and Candles (false).
+        /// </summary>
+        public bool followsDesiredTemp = false;
+        
         // =====================================================
         // Power system fields
         // =====================================================

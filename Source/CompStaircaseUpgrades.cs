@@ -13,10 +13,11 @@ namespace SecondFloor
     public enum UpgradeDisableReason
     {
         None,
-        ToggledOff,      // Manually toggled off by player
+        ToggledOff,         // Manually toggled off by player
         OutOfFuel,
         NoPower,
-        InsufficientCount // For onePerBed upgrades
+        InsufficientCount,  // For onePerBed upgrades
+        ReachedTemperature  // Controllable fueled temp changer is idle because target temp is reached
         // Future: Add more reasons here as needed
     }
     public class CompProperties_StaircaseUpgrades : CompProperties
@@ -78,6 +79,12 @@ namespace SecondFloor
         public float targetTemperature = 21f;
         
         /// <summary>
+        /// When true, fueled temperature changers (braziers, campfires) are used before electric ones.
+        /// When false, electric temperature changers are prioritized.
+        /// </summary>
+        public bool preferFueledFirst = true;
+        
+        /// <summary>
         /// Cached power consumption value for display
         /// </summary>
         private float cachedTotalPowerConsumption = 0f;
@@ -106,6 +113,7 @@ namespace SecondFloor
             base.PostExposeData();
             Scribe_Collections.Look(ref constructedUpgrades, "constructedUpgrades", LookMode.Deep);
             Scribe_Values.Look(ref targetTemperature, "targetTemperature", 21f);
+            Scribe_Values.Look(ref preferFueledFirst, "preferFueledFirst", true);
             Scribe_References.Look(ref linkedBattery, "linkedBattery");
             Scribe_References.Look(ref linkedBathroom, "linkedBathroom");
             
@@ -448,7 +456,70 @@ namespace SecondFloor
                 }
             }
 
+            // Check if controllable fueled temp changer is on standby (target temp reached)
+            if (def.followsDesiredTemp && def.fuelPerBed > 0f && def.heatOffset > 0f)
+            {
+                float utilizationRatio = GetFueledUtilizationRatio();
+                if (utilizationRatio <= 0f)
+                {
+                    return UpgradeDisableReason.ReachedTemperature;
+                }
+            }
+
             return UpgradeDisableReason.None;
+        }
+        
+        /// <summary>
+        /// Checks if an upgrade is basically active (not toggled off, has power/fuel, sufficient count).
+        /// This does NOT check ReachedTemperature status to avoid circular dependencies.
+        /// Used internally for temperature calculations.
+        /// </summary>
+        private bool IsUpgradeBasicallyActive(StaircaseUpgradeDef def)
+        {
+            if (!HasUpgrade(def))
+                return false;
+
+            var constructedUpgrade = constructedUpgrades.FirstOrDefault(au => au.def == def);
+            if (constructedUpgrade == null)
+                return false;
+
+            // Check if manually toggled off
+            if (constructedUpgrade.isToggledOff && def.CanBeToggled)
+                return false;
+
+            // Check if upgrade requires power
+            if (def.requiresPower && !HasPower())
+                return false;
+
+            // Check if upgrade requires fuel
+            if (def.fuelPerBed > 0f)
+            {
+                var refuelable = parent.GetComp<CompRefuelable>();
+                if (refuelable != null && !refuelable.HasFuel)
+                    return false;
+            }
+
+            // Check if this upgrade requires one per bed
+            if (def.upgradeBuildingDef != null)
+            {
+                var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
+                if (ext?.onePerBed == true)
+                {
+                    var bedsComp = parent.GetComp<CompMultipleBeds>();
+                    int bedCount = bedsComp?.bedCount ?? 1;
+                    
+                    bool directlyToBed = ext?.directlyToBed ?? false;
+                    if (!directlyToBed && IsBarracks && bedCount > 1)
+                    {
+                        bedCount = Mathf.CeilToInt(bedCount / 2f);
+                    }
+                    
+                    if (constructedUpgrade.count < bedCount)
+                        return false;
+                }
+            }
+
+            return true;
         }
         
         /// <summary>
@@ -653,6 +724,26 @@ namespace SecondFloor
         public bool HasAnyInsulatingModifier()
         {
             return constructedUpgrades.Any(au => au.def.insulationAdjustment > 0f);
+        }
+        
+        /// <summary>
+        /// Returns true if any constructed upgrade is a controllable fueled temp changer (followsDesiredTemp = true).
+        /// </summary>
+        public bool HasAnyControllableFueledTempChanger()
+        {
+            return constructedUpgrades.Any(au => au.def.followsDesiredTemp && au.def.fuelPerBed > 0f);
+        }
+        
+        /// <summary>
+        /// Returns true if both controllable fueled temp changers AND smart (electric) temp changers are installed.
+        /// Used to determine if the priority toggle should be shown.
+        /// </summary>
+        public bool HasControllableFueledAndSmartTempChangers
+        {
+            get
+            {
+                return HasAnyControllableFueledTempChanger() && HasAnySmartTempModifier();
+            }
         }
         
         /// <summary>
@@ -1221,38 +1312,389 @@ namespace SecondFloor
             return temp;
         }
 
+        /// <summary>
+        /// Gets the temperature after applying outdoor temp, insulation, and uncontrollable dumb temp changers.
+        /// This is the base for calculating how much controllable fueled changers need to work.
+        /// Uses IsUpgradeBasicallyActive to avoid circular dependency with GetFueledUtilizationRatio.
+        /// </summary>
+        public float GetPreControllableTemperature()
+        {
+            if (parent?.Map == null) return 21f;
+            
+            float temp = parent.Map.mapTemperature.OutdoorTemp;
+            
+            // Get basically active upgrades (avoids circular dependency)
+            var basicActiveUpgrades = constructedUpgrades
+                .Where(au => IsUpgradeBasicallyActive(au.def)).ToList();
+            
+            // Step 1: Apply Insulation
+            float totalInsulation = basicActiveUpgrades.Sum(au => au.def.insulationAdjustment);
+            if (totalInsulation > 0)
+            {
+                float weightedTargetSum = 0f;
+                float weightSum = 0f;
+                foreach (var activeUpgrade in basicActiveUpgrades)
+                {
+                    if (activeUpgrade.def.insulationAdjustment > 0)
+                    {
+                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
+                        weightSum += activeUpgrade.def.insulationAdjustment;
+                    }
+                }
+                float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
+                float diff = insulationTarget - temp;
+                float correction = Mathf.Clamp(diff, -totalInsulation, totalInsulation);
+                temp += correction;
+            }
+            
+            // Step 2: Apply Uncontrollable Dumb Heaters (those with followsDesiredTemp = false)
+            var uncontrollableHeaters = basicActiveUpgrades.Where(au => 
+                au.def.IsDumbTempModifier && au.def.heatOffset > 0 && !au.def.followsDesiredTemp).ToList();
+            foreach (var heater in uncontrollableHeaters)
+            {
+                float potentialTemp = temp + heater.def.heatOffset;
+                float actualHeat = heater.def.heatOffset;
+                if (potentialTemp > heater.def.maxHeatCap)
+                {
+                    actualHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                }
+                temp += actualHeat;
+            }
+            
+            // Step 3: Apply Uncontrollable Dumb Coolers (those with followsDesiredTemp = false)
+            var uncontrollableCoolers = basicActiveUpgrades.Where(au => 
+                au.def.IsDumbTempModifier && au.def.coolOffset > 0 && !au.def.followsDesiredTemp).ToList();
+            foreach (var cooler in uncontrollableCoolers)
+            {
+                float potentialTemp = temp - cooler.def.coolOffset;
+                float actualCool = cooler.def.coolOffset;
+                if (potentialTemp < cooler.def.minCoolCap)
+                {
+                    actualCool = Mathf.Max(0f, temp - cooler.def.minCoolCap);
+                }
+                temp -= actualCool;
+            }
+            
+            return temp;
+        }
+
+        /// <summary>
+        /// Calculates the utilization ratio (0.0 to 1.0) for controllable fueled temperature changers.
+        /// Returns how much they need to work to reach the target temperature.
+        /// 0.0 = not needed (temperature already achieved), 1.0 = full capacity needed.
+        /// Uses IsUpgradeBasicallyActive to avoid circular dependency with GetUpgradeDisableReason.
+        /// Respects the priority toggle - if electric goes first, fueled calculates based on temp after electric.
+        /// </summary>
+        public float GetFueledUtilizationRatio()
+        {
+            if (parent?.Map == null) return 0f;
+            
+            // Get temperature before controllable changers are applied
+            float baseTemp = GetPreControllableTemperature();
+            
+            // If electric goes first, we need to calculate temp after smart modifiers
+            if (!preferFueledFirst && HasPower())
+            {
+                baseTemp = GetTempAfterSmartModifiers(baseTemp);
+            }
+            
+            // Get basically active controllable fueled heaters (avoids circular dependency)
+            var controllableHeaters = constructedUpgrades
+                .Where(au => IsUpgradeBasicallyActive(au.def) && 
+                             au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp)
+                .ToList();
+            
+            if (!controllableHeaters.Any())
+                return 0f;
+            
+            float totalHeatingCapacity = controllableHeaters.Sum(h => h.def.heatOffset);
+            if (totalHeatingCapacity <= 0f)
+                return 0f;
+            
+            // Calculate how much heating is needed to reach target
+            float tempDiff = targetTemperature - baseTemp;
+            
+            // If we don't need heating (already at or above target), return 0
+            if (tempDiff <= 0f)
+                return 0f;
+            
+            // Calculate ratio: how much of max capacity is needed
+            float ratio = Mathf.Clamp01(tempDiff / totalHeatingCapacity);
+            
+            return ratio;
+        }
         
+        /// <summary>
+        /// Calculates the utilization ratio (0.0 to 1.0) for smart (electric) temperature changers.
+        /// Returns how much they need to work to reach the target temperature.
+        /// 0.0 = not needed (temperature already achieved), 1.0 = full capacity needed.
+        /// Respects the priority toggle - if fueled goes first, smart calculates based on temp after fueled.
+        /// </summary>
+        public float GetSmartUtilizationRatio(StaircaseUpgradeDef def = null)
+        {
+            if (parent?.Map == null || !HasPower()) return 0f;
+            
+            // Get temperature before controllable changers are applied
+            float baseTemp = GetPreControllableTemperature();
+            
+            // If fueled goes first, we need to calculate temp after fueled heaters
+            if (preferFueledFirst)
+            {
+                baseTemp = GetTempAfterFueledHeaters(baseTemp);
+            }
+            
+            float tempDiff = targetTemperature - baseTemp;
+            
+            // If at target, minimal power for standby
+            if (Mathf.Abs(tempDiff) < 0.5f)
+                return 0.05f;
+            
+            // Get smart modifiers
+            var smartModifiers = constructedUpgrades
+                .Where(au => IsUpgradeBasicallyActive(au.def) && au.def.IsSmartTempModifier)
+                .ToList();
+            
+            if (!smartModifiers.Any())
+                return 0f;
+            
+            // If specific def provided, check if it can address the current need
+            if (def != null)
+            {
+                bool needsHeating = tempDiff > 0f;
+                bool needsCooling = tempDiff < 0f;
+                bool canHeat = def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                               def.smartTempModifierType == TempModifierType.DualMode;
+                bool canCool = def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                               def.smartTempModifierType == TempModifierType.DualMode;
+                
+                if (needsHeating && !canHeat) return 0f;
+                if (needsCooling && !canCool) return 0f;
+            }
+            
+            // Calculate total capacity in the relevant direction
+            float totalCapacity = 0f;
+            bool needsHeatingGeneral = tempDiff > 0f;
+            
+            foreach (var mod in smartModifiers)
+            {
+                if (needsHeatingGeneral)
+                {
+                    if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                        mod.def.smartTempModifierType == TempModifierType.DualMode)
+                    {
+                        totalCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
+                    }
+                }
+                else
+                {
+                    if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                        mod.def.smartTempModifierType == TempModifierType.DualMode)
+                    {
+                        totalCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
+                    }
+                }
+            }
+            
+            if (totalCapacity <= 0f)
+                return 0f;
+            
+            // Calculate ratio based on how much of capacity is needed
+            float ratio = Mathf.Clamp01(Mathf.Abs(tempDiff) / totalCapacity);
+            
+            // Minimum 10% when active to prevent rapid cycling
+            ratio = Mathf.Max(0.1f, ratio);
+            
+            return ratio;
+        }
+        
+        /// <summary>
+        /// Calculates temperature after applying smart (electric) modifiers toward target.
+        /// Used when electric has priority over fueled.
+        /// </summary>
+        private float GetTempAfterSmartModifiers(float startTemp)
+        {
+            if (!HasPower()) return startTemp;
+            
+            var smartModifiers = constructedUpgrades
+                .Where(au => IsUpgradeBasicallyActive(au.def) && au.def.IsSmartTempModifier)
+                .ToList();
+            
+            if (!smartModifiers.Any())
+                return startTemp;
+            
+            float temp = startTemp;
+            float tempDiff = targetTemperature - temp;
+            
+            if (Mathf.Abs(tempDiff) < 0.1f)
+                return temp;
+            
+            // Calculate total capacity
+            float totalHeatingCapacity = 0f;
+            float totalCoolingCapacity = 0f;
+            
+            foreach (var mod in smartModifiers)
+            {
+                if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                {
+                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
+                }
+                if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                {
+                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
+                }
+            }
+            
+            // Apply toward target
+            if (tempDiff > 0f && totalHeatingCapacity > 0f)
+            {
+                temp += Mathf.Min(tempDiff, totalHeatingCapacity);
+            }
+            else if (tempDiff < 0f && totalCoolingCapacity > 0f)
+            {
+                temp -= Mathf.Min(-tempDiff, totalCoolingCapacity);
+            }
+            
+            return temp;
+        }
+        
+        /// <summary>
+        /// Calculates temperature after applying controllable fueled heaters toward target.
+        /// Used when fueled has priority over electric.
+        /// </summary>
+        private float GetTempAfterFueledHeaters(float startTemp)
+        {
+            var controllableHeaters = constructedUpgrades
+                .Where(au => IsUpgradeBasicallyActive(au.def) && 
+                             au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp)
+                .ToList();
+            
+            if (!controllableHeaters.Any())
+                return startTemp;
+            
+            float temp = startTemp;
+            float tempDiff = targetTemperature - temp;
+            
+            // Only heat if needed
+            if (tempDiff <= 0f)
+                return temp;
+            
+            // Calculate total capacity (clamped by maxHeatCap)
+            float totalCapacity = 0f;
+            foreach (var heater in controllableHeaters)
+            {
+                float maxHeat = heater.def.heatOffset;
+                if (temp + maxHeat > heater.def.maxHeatCap)
+                {
+                    maxHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                }
+                totalCapacity += maxHeat;
+            }
+            
+            // Apply only what's needed
+            float heatToAdd = Mathf.Min(tempDiff, totalCapacity);
+            temp += heatToAdd;
+            
+            return temp;
+        }
 
         /// <summary>
         /// Calculates the virtual temperature for the Second Floor based on active upgrades.
-        /// Applies insulation, dumb heaters/coolers, then smart temp modifiers.
+        /// Applies insulation, uncontrollable dumb changers, then controllable fueled and smart modifiers
+        /// based on the preferFueledFirst toggle.
         /// </summary>
         /// <returns>The calculated virtual temperature</returns>
         public float CalculateVirtualTemperature()
         {
             if (parent?.Map == null) return 21f; // Default temperature if not spawned
 
-            // Get base temperature (outdoor + insulation + dumb heaters/coolers)
-            float temp = GetBaseTemperature();
+            // Get base temperature (outdoor + insulation + uncontrollable dumb heaters/coolers)
+            float temp = GetPreControllableTemperature();
             
-            // Now apply smart temperature modifiers
             List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
                 .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
             
-            var smartTempModifiers = activeUpgrades.Where(au => au.def.IsSmartTempModifier).ToList();
+            // Get controllable fueled heaters
+            var controllableHeaters = activeUpgrades.Where(au => 
+                au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp).ToList();
             
-            if (!smartTempModifiers.Any() || !HasPower())
+            // Get smart temp modifiers
+            var smartTempModifiers = activeUpgrades.Where(au => au.def.IsSmartTempModifier).ToList();
+            bool hasPower = HasPower();
+            
+            // Apply temperature modifiers based on priority
+            if (preferFueledFirst)
             {
+                // Apply controllable fueled heaters first (toward target temp)
+                temp = ApplyControllableFueledHeaters(temp, controllableHeaters);
+                
+                // Then apply smart modifiers if still needed
+                if (smartTempModifiers.Any() && hasPower)
+                {
+                    temp = ApplySmartTempModifiers(temp, smartTempModifiers);
+                }
+            }
+            else
+            {
+                // Apply smart modifiers first
+                if (smartTempModifiers.Any() && hasPower)
+                {
+                    temp = ApplySmartTempModifiers(temp, smartTempModifiers);
+                }
+                
+                // Then apply controllable fueled heaters if still needed
+                temp = ApplyControllableFueledHeaters(temp, controllableHeaters);
+            }
+
+            return temp;
+        }
+        
+        /// <summary>
+        /// Applies controllable fueled heaters toward the target temperature.
+        /// Unlike dumb heaters, these won't overshoot the target.
+        /// </summary>
+        private float ApplyControllableFueledHeaters(float temp, List<ActiveUpgrade> controllableHeaters)
+        {
+            if (!controllableHeaters.Any())
                 return temp;
+            
+            float tempDiff = targetTemperature - temp;
+            
+            // Only heat if we need to (temp is below target)
+            if (tempDiff <= 0f)
+                return temp;
+            
+            // Calculate total heating capacity
+            float totalCapacity = 0f;
+            foreach (var heater in controllableHeaters)
+            {
+                // Calculate clamped capacity (can't heat above maxHeatCap)
+                float maxHeat = heater.def.heatOffset;
+                if (temp + maxHeat > heater.def.maxHeatCap)
+                {
+                    maxHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                }
+                totalCapacity += maxHeat;
             }
             
-            // Smart temp modifiers try to reach the target temperature
+            // Apply only what's needed to reach target
+            float heatToAdd = Mathf.Min(tempDiff, totalCapacity);
+            temp += heatToAdd;
+            
+            return temp;
+        }
+        
+        /// <summary>
+        /// Applies smart (electric) temperature modifiers toward the target temperature.
+        /// </summary>
+        private float ApplySmartTempModifiers(float temp, List<ActiveUpgrade> smartTempModifiers)
+        {
             float tempDiff = targetTemperature - temp;
             
             if (Mathf.Abs(tempDiff) < 0.1f)
             {
-                // Already at target, no adjustment needed
-                return temp;
+                return temp; // Already at target
             }
             
             // Calculate total heating and cooling capacity
@@ -1261,16 +1703,12 @@ namespace SecondFloor
             
             foreach (var mod in smartTempModifiers)
             {
-                
-                // Heating capacity
                 if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
                     mod.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    // Degrees per 100W * (power / 100) * count
                     totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
                 }
                 
-                // Cooling capacity
                 if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
                     mod.def.smartTempModifierType == TempModifierType.DualMode)
                 {
@@ -1281,17 +1719,15 @@ namespace SecondFloor
             // Apply heating or cooling based on need
             if (tempDiff > 0f && totalHeatingCapacity > 0f)
             {
-                // Need to heat
                 float heatToAdd = Mathf.Min(tempDiff, totalHeatingCapacity);
                 temp += heatToAdd;
             }
             else if (tempDiff < 0f && totalCoolingCapacity > 0f)
             {
-                // Need to cool
                 float coolToAdd = Mathf.Min(-tempDiff, totalCoolingCapacity);
                 temp -= coolToAdd;
             }
-
+            
             return temp;
         }
         
@@ -1313,9 +1749,6 @@ namespace SecondFloor
             
             float totalPower = 0f;
             
-            // Get base temperature for smart temp modifier calculations
-            float baseTemp = GetBaseTemperature();
-            
             foreach (var activeUpgrade in constructedUpgrades)
             {
                 if (!activeUpgrade.def.requiresPower)
@@ -1331,7 +1764,7 @@ namespace SecondFloor
                 // Apply throttling for smart temperature modifiers
                 if (activeUpgrade.def.IsSmartTempModifier)
                 {
-                    float throttle = CalculateSmartTempThrottle(activeUpgrade.def, baseTemp);
+                    float throttle = GetSmartUtilizationRatio(activeUpgrade.def);
                     upgradePower *= throttle;
                 }
                 
@@ -1394,7 +1827,6 @@ namespace SecondFloor
                 return null;
             
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            float baseTemp = GetBaseTemperature();
             float totalPower = 0f;
             
             foreach (var activeUpgrade in constructedUpgrades)
@@ -1412,7 +1844,7 @@ namespace SecondFloor
                 
                 if (activeUpgrade.def.IsSmartTempModifier)
                 {
-                    float throttle = CalculateSmartTempThrottle(activeUpgrade.def, baseTemp);
+                    float throttle = GetSmartUtilizationRatio(activeUpgrade.def);
                     actualPower = basePower * throttle;
                     sb.AppendLine($"  {activeUpgrade.def.label} x{activeUpgrade.count}: {actualPower:F0}W ({throttle * 100:F0}% of {basePower:F0}W)");
                 }
@@ -1457,13 +1889,14 @@ namespace SecondFloor
 
         /// <summary>
         /// Calculates and consumes fuel based on active upgrades and bed count.
-        /// Applies throttling when temperature is already outside the desired range.
+        /// Controllable fueled temp changers scale consumption based on utilization ratio.
+        /// Uncontrollable fueled changers use the old throttling behavior.
         /// </summary>
         private void ConsumeFuel()
         {
             if (parent?.Map == null || constructedUpgrades == null || constructedUpgrades.Count == 0)
             {
-                UpdateFuelConsumptionRate(1f);
+                UpdateFuelConsumptionRate(0f);
                 return;
             }
 
@@ -1471,7 +1904,7 @@ namespace SecondFloor
             var refuelable = parent.GetComp<CompRefuelable>();
             if (refuelable == null)
             {
-                UpdateFuelConsumptionRate(1f);
+                UpdateFuelConsumptionRate(0f);
                 return;
             }
 
@@ -1479,19 +1912,22 @@ namespace SecondFloor
             var bedsComp = parent.GetComp<CompMultipleBeds>();
             if (bedsComp == null)
             {
-                UpdateFuelConsumptionRate(1f);
+                UpdateFuelConsumptionRate(0f);
                 return;
             }
             
             int currentBedCount = bedsComp.bedCount;
             if (currentBedCount <= 0)
             {
-                UpdateFuelConsumptionRate(1f);
+                UpdateFuelConsumptionRate(0f);
                 return;
             }
 
-            // Get current outdoor temperature
+            // Get current outdoor temperature for uncontrollable throttling
             float currentOutdoorTemp = parent.Map.mapTemperature.OutdoorTemp;
+            
+            // Get utilization ratio for controllable fueled changers
+            float utilizationRatio = GetFueledUtilizationRatio();
             
             // Calculate total fuel to consume
             float totalFuelToConsume = 0f;
@@ -1504,17 +1940,26 @@ namespace SecondFloor
                 
                 float consumption = activeUpgrade.def.fuelPerBed * currentBedCount / 60000f; // Convert per tick
                 
-                // Apply throttling based on temperature
-                // If it's already hot outside and we're heating, throttle to 50%
-                if (activeUpgrade.def.heatOffset > 0f && currentOutdoorTemp > activeUpgrade.def.maxHeatCap)
+                // Check if this is a controllable fueled temp changer
+                if (activeUpgrade.def.followsDesiredTemp && activeUpgrade.def.heatOffset > 0f)
                 {
-                    consumption *= 0.5f;
+                    // Scale consumption by utilization ratio (0% to 100%)
+                    consumption *= utilizationRatio;
                 }
-                
-                // If it's already cold outside and we're cooling, throttle to 50%
-                if (activeUpgrade.def.coolOffset > 0f && currentOutdoorTemp < activeUpgrade.def.minCoolCap)
+                else
                 {
-                    consumption *= 0.5f;
+                    // Uncontrollable - use old throttling behavior
+                    // If it's already hot outside and we're heating, throttle to 50%
+                    if (activeUpgrade.def.heatOffset > 0f && currentOutdoorTemp > activeUpgrade.def.maxHeatCap)
+                    {
+                        consumption *= 0.5f;
+                    }
+                    
+                    // If it's already cold outside and we're cooling, throttle to 50%
+                    if (activeUpgrade.def.coolOffset > 0f && currentOutdoorTemp < activeUpgrade.def.minCoolCap)
+                    {
+                        consumption *= 0.5f;
+                    }
                 }
                 
                 totalFuelToConsume += consumption;

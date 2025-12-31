@@ -28,10 +28,20 @@ namespace SecondFloor
             Widgets.Label(labelRect, "SF_ControlTab_Title".Translate());
             Text.Anchor = TextAnchor.UpperLeft;
             
+            float curY = labelRect.yMax + TabLayout.ContentPadding;
+            
+            // Priority toggle (only show if both controllable fueled and smart temp changers are present)
+            float priorityToggleHeight = 0f;
+            if (comp.HasControllableFueledAndSmartTempChangers)
+            {
+                priorityToggleHeight = DrawPriorityToggle(new Rect(rect.x, curY, rect.width, 28f), comp);
+                curY += priorityToggleHeight + TabLayout.ContentPadding;
+            }
+            
             // Empty state - show message
             if (toggleableUpgrades.Count == 0)
             {
-                Rect emptyRect = new Rect(rect.x + 10f, labelRect.yMax + 30f, rect.width - 20f, 100f);
+                Rect emptyRect = new Rect(rect.x + 10f, curY + 20f, rect.width - 20f, 100f);
                 Text.Anchor = TextAnchor.UpperCenter;
                 GUI.color = Color.gray;
                 Text.Font = GameFont.Small;
@@ -42,8 +52,8 @@ namespace SecondFloor
             }
             
             // Scrollable list area
-            Rect scrollOuterRect = new Rect(rect.x, labelRect.yMax + TabLayout.ContentPadding, 
-                rect.width, rect.height - labelRect.height - TabLayout.ContentPadding * 2);
+            Rect scrollOuterRect = new Rect(rect.x, curY, 
+                rect.width, rect.height - (curY - rect.y) - TabLayout.ContentPadding);
             
             float rowHeight = 50f; // Slightly taller for toggle switches
             float viewHeight = toggleableUpgrades.Count * rowHeight;
@@ -51,12 +61,12 @@ namespace SecondFloor
             
             Widgets.BeginScrollView(scrollOuterRect, ref scrollPosition, viewRect);
             
-            float curY = 0f;
+            float scrollY = 0f;
             foreach (var def in toggleableUpgrades)
             {
-                Rect rowRect = new Rect(0f, curY, viewRect.width, rowHeight);
+                Rect rowRect = new Rect(0f, scrollY, viewRect.width, rowHeight);
                 DrawToggleRow(rowRect, def, comp, staircase);
-                curY += rowHeight;
+                scrollY += rowHeight;
             }
             
             Widgets.EndScrollView();
@@ -80,6 +90,7 @@ namespace SecondFloor
             bool isActive = comp.HasActiveUpgrade(def);
             UpgradeDisableReason disableReason = comp.GetUpgradeDisableReason(def);
             bool isToggledOff = disableReason == UpgradeDisableReason.ToggledOff;
+            bool isOnStandby = disableReason == UpgradeDisableReason.ReachedTemperature;
             bool hasResourceIssue = disableReason == UpgradeDisableReason.NoPower || 
                                     disableReason == UpgradeDisableReason.OutOfFuel;
             
@@ -103,6 +114,10 @@ namespace SecondFloor
             if (isActive)
             {
                 GUI.color = Color.green;
+            }
+            else if (isOnStandby)
+            {
+                GUI.color = new Color(0.4f, 0.8f, 1f); // Cyan for standby
             }
             else if (isToggledOff)
             {
@@ -146,6 +161,11 @@ namespace SecondFloor
                 statusText = "SF_Status_Incomplete".Translate();
                 GUI.color = new Color(1f, 0.5f, 0f);
             }
+            else if (disableReason == UpgradeDisableReason.ReachedTemperature)
+            {
+                statusText = "SF_Status_ReachedTemperature".Translate();
+                GUI.color = new Color(0.4f, 0.8f, 1f); // Cyan for standby
+            }
             
             Widgets.Label(statusRect, statusText);
             GUI.color = Color.white;
@@ -153,7 +173,7 @@ namespace SecondFloor
             // Consumption info (show total based on installed count)
             int installedCount = comp.GetConstructedCount(def);
             Rect consumptionRect = new Rect(statusRect.xMax + 10f, labelRect.yMax, 150f, 18f);
-            string consumptionText = GetConsumptionText(def, installedCount);
+            string consumptionText = GetConsumptionText(def, installedCount, comp);
             if (!string.IsNullOrEmpty(consumptionText))
             {
                 GUI.color = new Color(0.7f, 0.7f, 0.7f);
@@ -199,15 +219,46 @@ namespace SecondFloor
                     return "SF_Tooltip_OutOfFuel".Translate();
                 case UpgradeDisableReason.InsufficientCount:
                     return "SF_Tooltip_InsufficientCount".Translate();
+                case UpgradeDisableReason.ReachedTemperature:
+                    return "SF_Tooltip_ReachedTemperature".Translate();
                 default:
                     return "";
             }
         }
         
         /// <summary>
-        /// Gets total consumption text for the upgrade based on installed count.
+        /// Draws the priority toggle for fueled vs electric temp changers.
         /// </summary>
-        private static string GetConsumptionText(StaircaseUpgradeDef def, int installedCount)
+        private static float DrawPriorityToggle(Rect rect, CompStaircaseUpgrades comp)
+        {
+            Text.Font = GameFont.Small;
+            
+            string label = comp.preferFueledFirst 
+                ? "SF_PreferFueledFirst".Translate() 
+                : "SF_PreferElectricFirst".Translate();
+            string tooltip = comp.preferFueledFirst 
+                ? "SF_PreferFueledFirst_Tooltip".Translate() 
+                : "SF_PreferElectricFirst_Tooltip".Translate();
+            
+            // Button to toggle preference
+            GUI.color = comp.preferFueledFirst ? new Color(1f, 0.7f, 0.3f) : new Color(0.5f, 0.8f, 1f);
+            if (Widgets.ButtonText(rect, label))
+            {
+                comp.preferFueledFirst = !comp.preferFueledFirst;
+            }
+            GUI.color = Color.white;
+            
+            TooltipHandler.TipRegion(rect, tooltip);
+            
+            return rect.height;
+        }
+        
+        /// <summary>
+        /// Gets total consumption text for the upgrade based on installed count.
+        /// For controllable fueled temp changers, shows actual consumption with throttle percentage.
+        /// For smart temp changers, shows actual power consumption with throttle percentage.
+        /// </summary>
+        private static string GetConsumptionText(StaircaseUpgradeDef def, int installedCount, CompStaircaseUpgrades comp)
         {
             if (installedCount <= 0)
             {
@@ -217,13 +268,33 @@ namespace SecondFloor
             if (def.requiresPower && def.basePowerConsumption > 0)
             {
                 float totalPower = def.basePowerConsumption * installedCount;
+                
+                // For smart temp changers, show actual consumption with throttle
+                if (def.IsSmartTempModifier)
+                {
+                    float utilizationRatio = comp.GetSmartUtilizationRatio(def);
+                    float actualPower = totalPower * utilizationRatio;
+                    int throttlePercent = Mathf.RoundToInt(utilizationRatio * 100f);
+                    return $"{actualPower:F0}W ({throttlePercent}%)";
+                }
+                
                 return $"{totalPower:F0}W";
             }
             
             if (def.fuelPerBed > 0)
             {
-                float totalFuel = def.fuelPerBed * installedCount;
-                return $"{totalFuel:F1} fuel/day";
+                float maxFuel = def.fuelPerBed * installedCount;
+                
+                // For controllable fueled temp changers, show actual consumption with throttle
+                if (def.followsDesiredTemp && def.heatOffset > 0f)
+                {
+                    float utilizationRatio = comp.GetFueledUtilizationRatio();
+                    float actualFuel = maxFuel * utilizationRatio;
+                    int throttlePercent = Mathf.RoundToInt(utilizationRatio * 100f);
+                    return $"{actualFuel:F1} fuel/day ({throttlePercent}%)";
+                }
+                
+                return $"{maxFuel:F1} fuel/day";
             }
             
             return "";

@@ -51,6 +51,7 @@
   <SF_Status_NoPower>No Power</SF_Status_NoPower>
   <SF_Status_OutOfFuel>Out of Fuel</SF_Status_OutOfFuel>
   <SF_Status_Incomplete>Incomplete</SF_Status_Incomplete>
+  <SF_Status_ReachedTemperature>Standby</SF_Status_ReachedTemperature>
   <SF_Toggle_TurnOn>Turn On</SF_Toggle_TurnOn>
   <SF_Toggle_TurnOff>Turn Off</SF_Toggle_TurnOff>
   
@@ -66,6 +67,7 @@
   <SF_Tooltip_NoPower>This upgrade requires power but the staircase has no power connection.</SF_Tooltip_NoPower>
   <SF_Tooltip_OutOfFuel>This upgrade requires fuel but the staircase has run out.</SF_Tooltip_OutOfFuel>
   <SF_Tooltip_InsufficientCount>This upgrade requires one instance per bed, but not enough have been constructed.</SF_Tooltip_InsufficientCount>
+  <SF_Tooltip_ReachedTemperature>This upgrade is on standby because the desired temperature has already been reached.</SF_Tooltip_ReachedTemperature>
   <SF_Tooltip_RequiresUpgrades>This upgrade requires other upgrades to be installed first.</SF_Tooltip_RequiresUpgrades>
   <SF_BuildMore_Tooltip>Build {0} more {1} upgrade(s) to complete installation.</SF_BuildMore_Tooltip>
   
@@ -98,6 +100,12 @@
   <SF_TempMax>40°C</SF_TempMax>
   <SF_NoPower>NO POWER</SF_NoPower>
   <SF_PowerUsage>Power Usage: {0}W</SF_PowerUsage>
+  
+  <!-- Temperature priority toggle -->
+  <SF_PreferFueledFirst>Prefer Fueled First</SF_PreferFueledFirst>
+  <SF_PreferElectricFirst>Prefer Electric First</SF_PreferElectricFirst>
+  <SF_PreferFueledFirst_Tooltip>When both fueled and electric temperature changers are installed, fueled sources (braziers, campfires) will be used first to reach the desired temperature, with electric backup.</SF_PreferFueledFirst_Tooltip>
+  <SF_PreferElectricFirst_Tooltip>When both fueled and electric temperature changers are installed, electric sources will be used first to reach the desired temperature, with fueled backup.</SF_PreferElectricFirst_Tooltip>
   
   <!-- Toggle upgrade UI -->
   <SF_ToggleOff>Toggle Off</SF_ToggleOff>

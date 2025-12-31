@@ -254,7 +254,13 @@ namespace SecondFloor
             
             if (def.fuelPerBed > 0)
             {
-                Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), $"  Fuel Consumption: {def.fuelPerBed:F1} per bed per day");
+                string fuelText = $"  Fuel Consumption: {def.fuelPerBed:F1} per bed per day";
+                // Note for controllable fueled temp changers
+                if (def.followsDesiredTemp && def.heatOffset > 0)
+                {
+                    fuelText += " (max - scales with temperature need)";
+                }
+                Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), fuelText);
                 curY += TabLayout.StatsLineHeight;
                 hasEffects = true;
             }

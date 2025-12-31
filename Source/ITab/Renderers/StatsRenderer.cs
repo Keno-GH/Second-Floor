@@ -106,10 +106,19 @@ namespace SecondFloor
             listing.Label("SF_Stat_PowerUsage".Translate(powerLabel));
             GUI.color = Color.white;
             
-            // Fuel consumption
+            // Fuel consumption with throttle percentage for controllable fueled changers
             float fuelUsage = comp.CurrentFuelConsumption;
             bool hasFuel = comp.HasFuel();
             string fuelLabel = $"{fuelUsage:F1}/day";
+            
+            // Show throttle percentage if there are controllable fueled temp changers
+            if (comp.HasAnyControllableFueledTempChanger())
+            {
+                float utilizationRatio = comp.GetFueledUtilizationRatio();
+                int throttlePercent = Mathf.RoundToInt(utilizationRatio * 100f);
+                fuelLabel += $" ({throttlePercent}%)";
+            }
+            
             if (!hasFuel && comp.HasAnyFuelRequiringUpgrade())
             {
                 fuelLabel += " " + "SF_NoFuel".Translate();
@@ -122,8 +131,8 @@ namespace SecondFloor
             float currentTemp = comp.CurrentVirtualTemperature;
             listing.Label("SF_Stat_CurrentTemp".Translate(currentTemp.ToStringTemperature("F0")));
             
-            // Target temperature (if has smart temp modifiers)
-            if (comp.HasAnySmartTempModifier())
+            // Target temperature (if has smart temp modifiers OR controllable fueled changers)
+            if (comp.HasAnySmartTempModifier() || comp.HasAnyControllableFueledTempChanger())
             {
                 Rect sliderRect = listing.GetRect(TabLayout.SliderHeight);
                 Rect labelRect = new Rect(sliderRect.x, sliderRect.y, 120f, sliderRect.height);
@@ -215,7 +224,7 @@ namespace SecondFloor
         private static void DrawTemperatureDisplay(Listing_Standard listing, Thing staircase, CompStaircaseUpgrades comp, bool showSlider)
         {
             float currentTemp = comp.CurrentVirtualTemperature;
-            float baseTemp = comp.GetBaseTemperature();
+            float preControllableTemp = comp.GetPreControllableTemperature();
             float insulatedTemp = comp.GetInsulatedTemperature();
             float outdoorTemp = staircase.Map?.mapTemperature.OutdoorTemp ?? 21f;
             
@@ -227,7 +236,17 @@ namespace SecondFloor
             }
             if (comp.HasAnyDumbTempModifier())
             {
-                tempLabel += $", Passive: {baseTemp.ToStringTemperature("F0")}";
+                // Show controllable fueled changers with throttle percentage
+                if (comp.HasAnyControllableFueledTempChanger())
+                {
+                    float utilizationRatio = comp.GetFueledUtilizationRatio();
+                    int throttlePercent = Mathf.RoundToInt(utilizationRatio * 100f);
+                    tempLabel += $", Fueled: {preControllableTemp.ToStringTemperature("F0")} ({throttlePercent}%)";
+                }
+                else
+                {
+                    tempLabel += $", Passive: {preControllableTemp.ToStringTemperature("F0")}";
+                }
             }
             if (comp.HasAnySmartTempModifier())
             {
@@ -236,8 +255,8 @@ namespace SecondFloor
             tempLabel += ")";
             listing.Label("SF_Stat_Temperature".Translate(tempLabel));
             
-            // Target temperature slider
-            if (showSlider && comp.HasAnySmartTempModifier())
+            // Target temperature slider (show if has smart temp modifiers OR controllable fueled changers)
+            if (showSlider && (comp.HasAnySmartTempModifier() || comp.HasAnyControllableFueledTempChanger()))
             {
                 Rect sliderRect = listing.GetRect(TabLayout.SliderHeight);
                 Rect labelRect = new Rect(sliderRect.x, sliderRect.y, 120f, sliderRect.height);

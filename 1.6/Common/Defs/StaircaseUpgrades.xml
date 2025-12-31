@@ -217,7 +217,7 @@
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_Braziers</defName>
         <label>Braziers</label>
-        <description>Installs braziers in the second floor area to provide heat. Consumes fuel.</description>
+        <description>Installs braziers in the second floor area to provide heat. Automatically adjusts output to maintain the target temperature, consuming less fuel when less heat is needed.</description>
         <category>SF_Category_Temperature</category>
         <isToggleable>true</isToggleable>
         <spaceCostPerBed>2</spaceCostPerBed>
@@ -225,6 +225,7 @@
         <heatOffset>10</heatOffset>
         <maxHeatCap>28</maxHeatCap>
         <coolOffset>0</coolOffset>
+        <followsDesiredTemp>true</followsDesiredTemp>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
         <researchPrerequisite>SF_AirManagement</researchPrerequisite>
@@ -238,7 +239,7 @@
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_Campfires</defName>
         <label>Campfires</label>
-        <description>Installs campfires in the second floor area to provide heat. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
+        <description>Installs campfires in the second floor area to provide heat. Automatically adjusts output to maintain the target temperature. They require more space and fuel than braziers but provide more heat.</description>
         <category>SF_Category_Temperature</category>
         <isToggleable>true</isToggleable>
         <spaceCostPerBed>4</spaceCostPerBed>
@@ -246,6 +247,7 @@
         <heatOffset>40</heatOffset>
         <maxHeatCap>30</maxHeatCap>
         <coolOffset>0</coolOffset>
+        <followsDesiredTemp>true</followsDesiredTemp>
         <upgradeBuildingDef>SF_UpgradeBuilding_Campfires</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
         <researchPrerequisite>SF_AirManagement</researchPrerequisite>
