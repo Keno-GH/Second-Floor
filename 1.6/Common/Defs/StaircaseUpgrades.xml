@@ -306,6 +306,9 @@
             <li>Woody</li>
         </stuffCategories>
         <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
+        <applyToStairs>
+            <li>SF_Upstairs</li>
+        </applyToStairs>
     </SecondFloor.StaircaseUpgradeDef>
 
     <!-- =====================================================
