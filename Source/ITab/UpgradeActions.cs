@@ -189,6 +189,13 @@ namespace SecondFloor
             {
                 return;
             }
+            
+            // Block removal of non-removable upgrades
+            if (!def.canRemove)
+            {
+                Messages.Message($"Cannot remove {def.label}: This upgrade is permanent and cannot be removed.", staircase, MessageTypeDefOf.RejectInput, false);
+                return;
+            }
 
             List<StaircaseUpgradeDef> dependentUpgrades = UpgradeFiltering.GetInstalledUpgradesThatRequire(def, comp);
             if (dependentUpgrades.Count > 0)

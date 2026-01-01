@@ -37,6 +37,12 @@ namespace SecondFloor
         /// </summary>
         public bool isToggleable = false;
         
+        /// <summary>
+        /// Whether this upgrade can be removed once installed.
+        /// Set to false for built-in upgrades that should be permanent (e.g., natural insulation).
+        /// </summary>
+        public bool canRemove = true;
+        
         // =====================================================
         // Core fields
         // =====================================================

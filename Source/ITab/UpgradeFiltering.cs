@@ -29,6 +29,12 @@ namespace SecondFloor
             
             foreach (var def in DefDatabase<StaircaseUpgradeDef>.AllDefs)
             {
+                // Skip non-removable upgrades from construction tab (they're built-in only)
+                if (!def.canRemove)
+                {
+                    continue;
+                }
+                
                 // Skip if not applicable to this staircase type
                 if (def.applyToStairs != null && !def.applyToStairs.Contains(staircase.def))
                 {

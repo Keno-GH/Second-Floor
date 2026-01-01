@@ -583,6 +583,42 @@ namespace SecondFloor
         private static void DrawInstalledButtons(Rect rect, StaircaseUpgradeDef def, CompStaircaseUpgrades comp, 
             Thing staircase, ref StaircaseUpgradeDef selectedUpgrade)
         {
+            // Check if this upgrade can be removed
+            if (!def.canRemove)
+            {
+                // Show explanatory text for non-removable upgrades
+                if (def.CanBeToggled)
+                {
+                    float buttonWidth = (rect.width - 5f) / 2f;
+                    Rect toggleRect = new Rect(rect.x, rect.y, buttonWidth, rect.height);
+                    Rect infoRect = new Rect(rect.x + buttonWidth + 5f, rect.y, buttonWidth, rect.height);
+                    
+                    if (Widgets.ButtonText(toggleRect, "SF_ToggleOff".Translate()))
+                    {
+                        comp.ToggleUpgrade(def);
+                    }
+                    
+                    // Show permanent text instead of remove button
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    GUI.color = Color.gray;
+                    Widgets.Label(infoRect, "Permanent");
+                    TooltipHandler.TipRegion(infoRect, "This upgrade is a built-in feature and cannot be removed.");
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                }
+                else
+                {
+                    // Show permanent text for non-toggleable, non-removable upgrades
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    GUI.color = Color.gray;
+                    Widgets.Label(rect, "Permanent Upgrade");
+                    TooltipHandler.TipRegion(rect, "This upgrade is a built-in feature and cannot be removed.");
+                    GUI.color = Color.white;
+                    Text.Anchor = TextAnchor.UpperLeft;
+                }
+                return;
+            }
+            
             var ext = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
             bool isOnePerBed = def.RequiresConstruction && (ext?.onePerBed == true);
             int constructedCount = comp.GetConstructedCount(def);
@@ -669,12 +705,36 @@ namespace SecondFloor
         private static void DrawToggledOffButtons(Rect rect, StaircaseUpgradeDef def, CompStaircaseUpgrades comp, 
             Thing staircase, ref StaircaseUpgradeDef selectedUpgrade)
         {
-            float buttonWidth = (rect.width - 5f) / 2f;
-            Rect toggleRect = new Rect(rect.x, rect.y, buttonWidth, rect.height);
-            Rect removeRect = new Rect(rect.x + buttonWidth + 5f, rect.y, buttonWidth, rect.height);
+            // Check if this upgrade can be removed
+            if (!def.canRemove)
+            {
+                float buttonWidth = (rect.width - 5f) / 2f;
+                Rect toggleRect = new Rect(rect.x, rect.y, buttonWidth, rect.height);
+                Rect infoRect = new Rect(rect.x + buttonWidth + 5f, rect.y, buttonWidth, rect.height);
+                
+                GUI.color = Color.green;
+                if (Widgets.ButtonText(toggleRect, "SF_ToggleOn".Translate()))
+                {
+                    comp.ToggleUpgrade(def);
+                }
+                GUI.color = Color.white;
+                
+                // Show permanent text instead of remove button
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = Color.gray;
+                Widgets.Label(infoRect, "Permanent");
+                TooltipHandler.TipRegion(infoRect, "This upgrade is a built-in feature and cannot be removed.");
+                GUI.color = Color.white;
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+            
+            float buttonWidth2 = (rect.width - 5f) / 2f;
+            Rect toggleRect2 = new Rect(rect.x, rect.y, buttonWidth2, rect.height);
+            Rect removeRect = new Rect(rect.x + buttonWidth2 + 5f, rect.y, buttonWidth2, rect.height);
             
             GUI.color = Color.green;
-            if (Widgets.ButtonText(toggleRect, "SF_ToggleOn".Translate()))
+            if (Widgets.ButtonText(toggleRect2, "SF_ToggleOn".Translate()))
             {
                 comp.ToggleUpgrade(def);
             }

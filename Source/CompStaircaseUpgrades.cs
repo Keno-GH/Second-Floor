@@ -22,6 +22,12 @@ namespace SecondFloor
     }
     public class CompProperties_StaircaseUpgrades : CompProperties
     {
+        /// <summary>
+        /// List of upgrade defs that are automatically installed when the staircase spawns.
+        /// These upgrades don't consume space and are typically marked as canRemove=false.
+        /// </summary>
+        public List<StaircaseUpgradeDef> initialUpgrades;
+        
         public CompProperties_StaircaseUpgrades()
         {
             this.compClass = typeof(CompStaircaseUpgrades);
@@ -156,6 +162,58 @@ namespace SecondFloor
             }
         }
         
+        public CompProperties_StaircaseUpgrades Props => (CompProperties_StaircaseUpgrades)props;
+        
+        public override void PostSpawnSetup(bool respawningAfterLoad)
+        {
+            base.PostSpawnSetup(respawningAfterLoad);
+            
+            // Don't add initial upgrades when loading a save
+            if (respawningAfterLoad)
+            {
+                return;
+            }
+            
+            // Add initial upgrades from comp properties
+            if (Props.initialUpgrades.NullOrEmpty())
+            {
+                return;
+            }
+            
+            foreach (var upgradeDef in Props.initialUpgrades)
+            {
+                if (upgradeDef == null)
+                {
+                    continue;
+                }
+                
+                // Skip if already has this upgrade
+                if (HasUpgrade(upgradeDef))
+                {
+                    continue;
+                }
+                
+                // Handle stuff selection for stuffable upgrades
+                ThingDef stuff = null;
+                if (upgradeDef.IsStuffable && !upgradeDef.stuffCategories.NullOrEmpty())
+                {
+                    // Log a dev warning about stuffable initial upgrades
+                    Log.Warning($"[SecondFloor] Initial upgrade '{upgradeDef.defName}' is stuffable. " +
+                        "This may cause issues if the player wants to build more and the randomly selected material is unavailable. " +
+                        "Consider making initial upgrades non-stuffable.");
+                    
+                    // Select a random allowed stuff
+                    var allowedStuffs = GenStuff.AllowedStuffsFor(upgradeDef.upgradeBuildingDef);
+                    if (allowedStuffs.Any())
+                    {
+                        stuff = allowedStuffs.RandomElement();
+                    }
+                }
+                
+                AddUpgrade(upgradeDef, stuff);
+            }
+        }
+        
         public float GetTotalSpace()
         {
             Map map = parent.Map;
@@ -200,6 +258,12 @@ namespace SecondFloor
             
             foreach(var activeUpgrade in constructedUpgrades)
             {
+                // Skip non-removable upgrades from space calculation (they're "free")
+                if (!activeUpgrade.def.canRemove)
+                {
+                    continue;
+                }
+                
                 used += activeUpgrade.def.spaceCost;
                 
                 // For spaceCostPerBed, apply barracks halving logic for ambient upgrades

@@ -175,7 +175,11 @@
       <li>
         <compClass>SecondFloor.CompAssignBedHediff</compClass>
       </li>
-      <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
+      <li Class="SecondFloor.CompProperties_StaircaseUpgrades">
+        <initialUpgrades>
+          <li>SF_NaturalInsulation</li>
+        </initialUpgrades>
+      </li>
       <li Class="SecondFloor.CompProperties_BathroomUpgrade" />
       <li Class="SecondFloor.CompProperties_BasementExpansion">
         <baseSpace>30</baseSpace>

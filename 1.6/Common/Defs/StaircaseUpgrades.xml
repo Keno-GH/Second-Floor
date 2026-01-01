@@ -519,6 +519,28 @@
         <hotWaterPerUse>32</hotWaterPerUse>
         <iconPath>Things/Building/Furniture/Sink/Sink_south</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- =====================================================
+        Built-in Upgrades (Non-removable, auto-installed)
+        =====================================================
+    -->
+    
+    <!-- Natural Rock Insulation - built-in for basements -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_NaturalInsulation</defName>
+        <label>Natural Rock Insulation</label>
+        <description>The surrounding rock mass provides natural temperature insulation, helping to maintain a comfortable temperature in the basement. This is a permanent feature of the basement structure.</description>
+        <category>SF_Category_Temperature</category>
+        <spaceCost>0</spaceCost>
+        <canRemove>false</canRemove>
+        <insulationAdjustment>2</insulationAdjustment>
+        <insulationTarget>21</insulationTarget>
+        <applyToStairs>
+            <li>SF_Basement</li>
+        </applyToStairs>
+        <!-- No upgradeBuildingDef - this is a built-in feature, not constructable -->
+        <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
 
 </Defs>
 
