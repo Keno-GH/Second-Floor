@@ -343,8 +343,7 @@ namespace SecondFloor
             curY += TabLayout.StatsLineHeight;
             
             // Calculate effective bed count
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int rawBedCount = bedsComp?.bedCount ?? 1;
+            int rawBedCount = comp.BedCount;
             var costExt = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
             bool costIsOnePerBed = costExt?.onePerBed ?? true;
             bool costIsDirectlyToBed = costExt?.directlyToBed ?? false;

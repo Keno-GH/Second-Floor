@@ -96,23 +96,18 @@ namespace SecondFloor
             }
             
             // Check if this is barracks or multiple private rooms
-            var bedsComp = building_Bed.GetComp<CompMultipleBeds>();
             var upgradesComp = building_Bed.GetComp<CompStaircaseUpgrades>();
-            
-            if (bedsComp == null) return;
+            if (upgradesComp == null) return;
             
             bool isBarracks = false;
             
             // Check if barracks upgrade is installed
-            if (upgradesComp != null)
+            foreach (var upgrade in upgradesComp.GetActiveUpgradeDefs())
             {
-                foreach (var upgrade in upgradesComp.GetActiveUpgradeDefs())
+                if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
                 {
-                    if (upgrade.defName == "SF_StaircaseUpgrade_Barracks")
-                    {
-                        isBarracks = true;
-                        break;
-                    }
+                    isBarracks = true;
+                    break;
                 }
             }
             
@@ -124,7 +119,7 @@ namespace SecondFloor
             }
             
             // If multiple private rooms (bedCount >= 4), remove shared bed thought
-            if (bedsComp.bedCount >= 4)
+            if (upgradesComp.BedCount >= 4)
             {
                 __result = false;
                 return;
@@ -180,12 +175,12 @@ namespace SecondFloor
                 return true;
             }
 
-            var compMultipleBeds = __instance.GetComp<CompMultipleBeds>();
-            if (compMultipleBeds == null)
+            var upgradesComp = __instance.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null)
             {
                 return true;
             }
-            var bedSpots = compMultipleBeds.bedCount;
+            var bedSpots = upgradesComp.BedCount;
             if (bedSpots < 1) 
             {
                 return true;
@@ -229,7 +224,7 @@ namespace SecondFloor
                 {
                     // Logic to fix position before the original check runs
                     Building_Bed bed = actor.CurrentBed();
-                    if (bed != null && bed.GetComp<CompMultipleBeds>() != null)
+                    if (bed != null && bed.GetComp<CompStaircaseUpgrades>() != null)
                     {
                         actor.Position = bed.Position;
                     }
@@ -248,7 +243,7 @@ namespace SecondFloor
         public static bool Prefix(Building_Bed __instance, ref Pawn __result, int slotIndex)
         {
             var bedSize = __instance.def.size.x;
-            if (__instance.GetComp<CompMultipleBeds>() != null)
+            if (__instance.GetComp<CompStaircaseUpgrades>() != null)
             {
                 if ((bedSize == 2 && slotIndex > 0) || (bedSize == 1))
                 {
@@ -309,13 +304,13 @@ namespace SecondFloor
                 return true;
             }
 
-            var compMultipleBeds = __instance.GetComp<CompMultipleBeds>();
-            if (compMultipleBeds == null)
+            var upgradesComp = __instance.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null)
             {
                 return true;
             }
 
-            compMultipleBeds.DrawGUIOverlay();
+            upgradesComp.DrawGUIOverlay();
 
             if (guestBedType != null && guestBedType.IsAssignableFrom(__instance.def.thingClass))
             {
@@ -395,8 +390,8 @@ namespace SecondFloor
                 return true;
             }
 
-            var compMultipleBeds = bed.GetComp<CompMultipleBeds>();
-            if (compMultipleBeds == null)
+            var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null)
             {
                 return true;
             }
@@ -411,10 +406,10 @@ namespace SecondFloor
         public static void Postfix(CompProperties_AssignableToPawn __instance, ThingDef parent)
         {
             if (parent == null) return;
-            var multipleBedComp = parent.GetCompProperties<CompProperties_MultipleBeds>();
-            if (multipleBedComp == null) return;
+            var modExt = parent.GetModExtension<SecondFloorModExtension>();
+            if (modExt == null) return;
 
-            var bedSpots = multipleBedComp.bedCount;
+            var bedSpots = modExt.bedCount;
             if (bedSpots < 1) return;
             __instance.maxAssignedPawnsCount = bedSpots;
         }
@@ -624,14 +619,14 @@ namespace SecondFloor
             {
                 if (rock.linkedBasement != null && !rock.linkedBasement.Destroyed)
                 {
-                    var expansionComp = rock.linkedBasement.TryGetComp<CompBasementExpansion>();
-                    if (expansionComp != null && expansionComp.IsRockInCurrentBatch(rock))
+                    var upgradesComp = rock.linkedBasement.TryGetComp<CompStaircaseUpgrades>();
+                    if (upgradesComp != null && upgradesComp.IsRockInCurrentBatch(rock))
                     {
                         // This designation was canceled by the player, cancel the whole batch
                         cancelingBatch = true;
                         try
                         {
-                            expansionComp.CancelCurrentBatch();
+                            upgradesComp.CancelCurrentBatch();
                         }
                         finally
                         {

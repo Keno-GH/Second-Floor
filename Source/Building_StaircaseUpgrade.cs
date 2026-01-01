@@ -56,8 +56,7 @@ namespace SecondFloor
             }
 
             // Store bed count before the upgrade
-            var bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCountBefore = bedsComp?.bedCount ?? 0;
+            int bedCountBefore = upgradeComp?.BedCount ?? 0;
 
             // Get the stuff this upgrade is made of
             ThingDef stuff = this.Stuff;
@@ -68,7 +67,7 @@ namespace SecondFloor
                 upgradeComp.AddUpgrade(UpgradeDef, stuff);
 
                 // Check bed count after upgrade - may need to reset assignments
-                int bedCountAfter = bedsComp?.bedCount ?? 0;
+                int bedCountAfter = upgradeComp?.BedCount ?? 0;
                 if (bedCountAfter < bedCountBefore)
                 {
                     CheckAndResetBedAssignments(staircase, bedCountAfter);

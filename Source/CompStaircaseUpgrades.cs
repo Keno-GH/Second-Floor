@@ -69,10 +69,84 @@ namespace SecondFloor
         }
     }
 
-    public class CompStaircaseUpgrades : ThingComp
+    public partial class CompStaircaseUpgrades : ThingComp
     {
         public List<ActiveUpgrade> constructedUpgrades = new List<ActiveUpgrade>();
         private float cachedFuelConsumptionRate = 0f;
+        
+        // =====================================================
+        // Cached Mod Extension (avoids repeated GetModExtension calls)
+        // =====================================================
+        private SecondFloorModExtension cachedModExtension;
+        public SecondFloorModExtension ModExtension
+        {
+            get
+            {
+                if (cachedModExtension == null)
+                {
+                    cachedModExtension = parent.def.GetModExtension<SecondFloorModExtension>();
+                }
+                return cachedModExtension;
+            }
+        }
+        
+        // =====================================================
+        // Bed Count System (merged from CompMultipleBeds)
+        // =====================================================
+        
+        /// <summary>
+        /// Static set tracking all staircases with multiple beds for global lookups.
+        /// </summary>
+        public static HashSet<ThingWithComps> multipleBeds = new HashSet<ThingWithComps>();
+        
+        private int cachedBedCount = -1;
+        private bool bedCountDirty = true;
+        
+        /// <summary>
+        /// Gets the current bed count, applying upgrade modifiers.
+        /// Uses aggressive caching - only recalculates when upgrades change.
+        /// </summary>
+        public int BedCount
+        {
+            get
+            {
+                if (bedCountDirty || cachedBedCount < 0)
+                {
+                    RecalculateBedCount();
+                }
+                return cachedBedCount;
+            }
+        }
+        
+        /// <summary>
+        /// Recalculates the bed count from base value + upgrade modifiers.
+        /// Called when upgrades change.
+        /// </summary>
+        private void RecalculateBedCount()
+        {
+            float count = ModExtension?.bedCount ?? 1;
+            
+            // Apply offsets first, then multipliers
+            foreach (var upgrade in constructedUpgrades)
+            {
+                count += upgrade.def.bedCountOffset;
+            }
+            foreach (var upgrade in constructedUpgrades)
+            {
+                count *= upgrade.def.bedCountMultiplier;
+            }
+            
+            cachedBedCount = Mathf.Max(1, (int)count);
+            bedCountDirty = false;
+        }
+        
+        /// <summary>
+        /// Invalidates the bed count cache. Called when upgrades are added/removed.
+        /// </summary>
+        public void InvalidateBedCountCache()
+        {
+            bedCountDirty = true;
+        }
         
         // =====================================================
         // Smart Temperature Control System
@@ -123,6 +197,10 @@ namespace SecondFloor
             Scribe_References.Look(ref linkedBattery, "linkedBattery");
             Scribe_References.Look(ref linkedBathroom, "linkedBathroom");
             
+            // Partial class expose methods
+            ExposeBasementData();
+            ExposeBathroomData();
+            
             // Legacy support: load old "upgrades" and "activeUpgrades" lists and convert to constructedUpgrades
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
@@ -167,6 +245,12 @@ namespace SecondFloor
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
+            
+            // Track this staircase in the global multi-bed list
+            multipleBeds.Add(this.parent);
+            
+            // Invalidate bed count cache on spawn
+            InvalidateBedCountCache();
             
             // Don't add initial upgrades when loading a save
             if (respawningAfterLoad)
@@ -214,6 +298,14 @@ namespace SecondFloor
             }
         }
         
+        public override void PostDeSpawn(Map map, DestroyMode mode = DestroyMode.Vanish)
+        {
+            base.PostDeSpawn(map, mode);
+            
+            // Remove from global multi-bed tracking
+            multipleBeds.Remove(this.parent);
+        }
+        
         public float GetTotalSpace()
         {
             Map map = parent.Map;
@@ -222,16 +314,11 @@ namespace SecondFloor
                 return 0f;
             }
             
-            // Basements use CompBasementExpansion for space calculation (base + bonus from mining)
-            SecondFloorModExtension ext = parent.def.GetModExtension<SecondFloorModExtension>();
-            if (ext != null && ext.floorLevel == StaircaseFloorLevel.Basement)
+            // Basements use basement expansion for space calculation (base + bonus from mining)
+            // BasementTotalSpace is defined in the Basement partial class
+            if (ModExtension != null && ModExtension.HasBasementExpansion)
             {
-                var expansionComp = parent.TryGetComp<CompBasementExpansion>();
-                if (expansionComp != null)
-                {
-                    return expansionComp.TotalSpace;
-                }
-                return 30f; // Fallback default
+                return BasementTotalSpace;
             }
             
             // Upstairs staircases count cells with constructed roofs in a circular area (radius 10)
@@ -254,7 +341,7 @@ namespace SecondFloor
         public float GetUsedSpace()
         {
             float used = 0;
-            int rawBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            int rawBedCount = BedCount;
             
             foreach(var activeUpgrade in constructedUpgrades)
             {
@@ -309,7 +396,7 @@ namespace SecondFloor
         /// </summary>
         public float GetRequiredSpaceForUpgrade(StaircaseUpgradeDef def)
         {
-            int rawBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            int rawBedCount = BedCount;
             int effectiveBedCount = GetEffectiveBedCountForUpgrade(def, rawBedCount);
             float baseSpaceCost = def.spaceCost + (def.spaceCostPerBed * effectiveBedCount);
             
@@ -330,7 +417,7 @@ namespace SecondFloor
                 return 0f;
             }
             
-            int currentBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            int currentBedCount = BedCount;
             
             // Calculate what the new bed count would be after this upgrade
             int newBedCount = currentBedCount;
@@ -383,7 +470,7 @@ namespace SecondFloor
                 return breakdown;
             }
             
-            int currentBedCount = parent.GetComp<CompMultipleBeds>()?.bedCount ?? 1;
+            int currentBedCount = BedCount;
             
             // Calculate what the new bed count would be after this upgrade
             int newBedCount = currentBedCount;
@@ -531,8 +618,7 @@ namespace SecondFloor
                 var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
                 if (ext?.onePerBed == true)
                 {
-                    var bedsComp = parent.GetComp<CompMultipleBeds>();
-                    int bedCount = bedsComp?.bedCount ?? 1;
+                    int bedCount = BedCount;
                     
                     // For barracks with ambient upgrades (not directly to bed), halve the required count
                     bool directlyToBed = ext?.directlyToBed ?? false;
@@ -597,8 +683,7 @@ namespace SecondFloor
                 var ext = def.upgradeBuildingDef.GetModExtension<StaircaseUpgradeExtension>();
                 if (ext?.onePerBed == true)
                 {
-                    var bedsComp = parent.GetComp<CompMultipleBeds>();
-                    int bedCount = bedsComp?.bedCount ?? 1;
+                    int bedCount = BedCount;
                     
                     bool directlyToBed = ext?.directlyToBed ?? false;
                     if (!directlyToBed && IsBarracks && bedCount > 1)
@@ -915,6 +1000,9 @@ namespace SecondFloor
             {
                 constructedUpgrades.Add(new ActiveUpgrade(def, stuff));
                 
+                // Invalidate bed count cache since upgrades may modify bed count
+                InvalidateBedCountCache();
+                
                 // If this is a battery upgrade, spawn the linked battery building
                 if (def.IsBatteryUpgrade && parent.Spawned)
                 {
@@ -938,6 +1026,7 @@ namespace SecondFloor
             if (activeUpgrade != null)
             {
                 activeUpgrade.count++;
+                InvalidateBedCountCache();
             }
         }
         
@@ -957,6 +1046,7 @@ namespace SecondFloor
         public void RemoveUpgrade(StaircaseUpgradeDef def)
         {
             constructedUpgrades.RemoveAll(au => au.def == def);
+            InvalidateBedCountCache();
         }
         
         /// <summary>
@@ -972,6 +1062,7 @@ namespace SecondFloor
             }
             
             activeUpgrade.count--;
+            InvalidateBedCountCache();
             
             // If count reaches 0, remove the upgrade entirely
             if (activeUpgrade.count <= 0)
@@ -1064,6 +1155,9 @@ namespace SecondFloor
             {
                 constructedUpgrades.Remove(activeUpgrade);
             }
+            
+            // Invalidate bed count cache since upgrades may modify bed count
+            InvalidateBedCountCache();
             
             return (actualRemoved, refundInfo);
         }
@@ -1159,6 +1253,9 @@ namespace SecondFloor
             // Remove the upgrade completely
             constructedUpgrades.RemoveAll(au => au.def == def);
 
+            // Invalidate bed count cache since upgrades may modify bed count
+            InvalidateBedCountCache();
+
             return refundInfo;
         }
         
@@ -1243,6 +1340,9 @@ namespace SecondFloor
             // Remove the upgrade
             constructedUpgrades.RemoveAll(au => au.def == def);
 
+            // Invalidate bed count cache since upgrades may modify bed count
+            InvalidateBedCountCache();
+
             return refundInfo;
         }
 
@@ -1259,8 +1359,7 @@ namespace SecondFloor
             bool onePerBed = ext?.onePerBed ?? true;
             if (onePerBed)
             {
-                CompMultipleBeds bedsComp = parent.GetComp<CompMultipleBeds>();
-                bedCount = bedsComp?.bedCount ?? 1;
+                bedCount = BedCount;
                 
                 // For barracks with ambient upgrades (not directly to bed), halve the required count
                 bool directlyToBed = ext?.directlyToBed ?? false;
@@ -1953,12 +2052,74 @@ namespace SecondFloor
         }
 
         /// <summary>
-        /// Called every tick to handle fuel consumption based on active upgrades.
+        /// Called every tick to handle fuel consumption, power, thoughts, and bathroom.
         /// </summary>
         public override void CompTick()
         {
             ConsumeFuel();
             UpdatePowerConsumption();
+            
+            // Partial class tick methods
+            TickThoughtApplication();
+            TickBathroom();
+        }
+        
+        // =====================================================
+        // GUI Overlay (merged from CompMultipleBeds)
+        // =====================================================
+        
+        /// <summary>
+        /// Draws the owner labels for multi-bed staircases.
+        /// Called from HarmonyPatches Building_Bed_DrawGUIOverlay_Patch.
+        /// </summary>
+        public override void DrawGUIOverlay()
+        {
+            var bed = parent as Building_Bed;
+            if (bed == null)
+                return;
+            
+            if (bed.Medical || Find.CameraDriver.CurrentZoom != 0)
+                return;
+            
+            Color defaultThingLabelColor = GenMapUI.DefaultThingLabelColor;
+            
+            // Check for guest bed type (Hospitality mod compatibility)
+            var guestBedType = Building_Bed_DrawGUIOverlay_Patch.guestBedType;
+            
+            if (!bed.OwnersForReading.Any() && (guestBedType == null 
+                || !guestBedType.IsAssignableFrom(parent.def.thingClass)))
+            {
+                GenMapUI.DrawThingLabel(bed, "Unowned".Translate(), defaultThingLabelColor);
+                return;
+            }
+            
+            if (bed.OwnersForReading.Count == 1)
+            {
+                Pawn pawn = bed.OwnersForReading[0];
+                pawn.CurrentBed(out var sleepingSpot);
+                if ((!pawn.InBed() || pawn.CurrentBed() != bed || sleepingSpot == 0) 
+                    && (!pawn.RaceProps.Animal || Prefs.AnimalNameMode.ShouldDisplayAnimalName(pawn)))
+                {
+                    GenMapUI.DrawThingLabel(parent, pawn.LabelShort, defaultThingLabelColor);
+                }
+                return;
+            }
+            
+            // Multiple owners - draw each label with offset
+            for (int i = 0; i < bed.OwnersForReading.Count; i++)
+            {
+                Pawn pawn = bed.OwnersForReading[i];
+                GenMapUI.DrawThingLabel(GetMultiOwnersLabelScreenPosFor(i), pawn.LabelShort, defaultThingLabelColor);
+            }
+        }
+        
+        private Vector3 GetMultiOwnersLabelScreenPosFor(int slotIndex)
+        {
+            Vector3 drawPos = parent.DrawPos;
+            float stepSize = 0.4f;
+            float zValue = 0.2f + stepSize * slotIndex - 1;
+            drawPos += new Vector3(0, 0, zValue);
+            return drawPos.MapToUIPosition();
         }
         
         /// <summary>
@@ -2001,14 +2162,7 @@ namespace SecondFloor
             }
 
             // Get current bed count
-            var bedsComp = parent.GetComp<CompMultipleBeds>();
-            if (bedsComp == null)
-            {
-                UpdateFuelConsumptionRate(0f);
-                return;
-            }
-            
-            int currentBedCount = bedsComp.bedCount;
+            int currentBedCount = BedCount;
             if (currentBedCount <= 0)
             {
                 UpdateFuelConsumptionRate(0f);

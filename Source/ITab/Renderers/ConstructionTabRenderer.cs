@@ -43,11 +43,11 @@ namespace SecondFloor
             float scrollStartY = labelRect.yMax + TabLayout.ContentPadding;
             
             // Check if this is a basement and draw expand button if so
-            var expansionComp = staircase.TryGetComp<CompBasementExpansion>();
-            if (expansionComp != null)
+            var modExt = staircase.def.GetModExtension<SecondFloorModExtension>();
+            if (modExt != null && modExt.HasBasementExpansion)
             {
                 Rect buttonRect = new Rect(rect.x, scrollStartY, rect.width, ExpandButtonHeight);
-                DrawExpandBasementButton(buttonRect, expansionComp);
+                DrawExpandBasementButton(buttonRect, comp);
                 scrollStartY = buttonRect.yMax + TabLayout.ContentPadding;
             }
             
@@ -432,13 +432,13 @@ namespace SecondFloor
         /// <summary>
         /// Draws the "Expand Basement" button for basement staircases.
         /// </summary>
-        private static void DrawExpandBasementButton(Rect rect, CompBasementExpansion expansionComp)
+        private static void DrawExpandBasementButton(Rect rect, CompStaircaseUpgrades upgradesComp)
         {
             // Draw background
             Widgets.DrawLightHighlight(rect);
             
-            bool isMaxed = expansionComp.IsMaxExpansion;
-            bool inProgress = expansionComp.IsExcavationInProgress;
+            bool isMaxed = upgradesComp.IsMaxExpansion;
+            bool inProgress = upgradesComp.IsExcavationInProgress;
             bool canExpand = !isMaxed && !inProgress;
             
             // Button text
@@ -448,18 +448,18 @@ namespace SecondFloor
             if (isMaxed)
             {
                 buttonLabel = "SF_ExpandBasement_Maxed".Translate();
-                tooltip = "SF_ExpandBasement_Maxed_Tooltip".Translate(expansionComp.MaxSpace);
+                tooltip = "SF_ExpandBasement_Maxed_Tooltip".Translate(upgradesComp.BasementMaxSpace);
             }
             else if (inProgress)
             {
-                int mined = 5 - expansionComp.MinedCountInBatch;
-                buttonLabel = "SF_ExpandBasement_InProgress".Translate(expansionComp.MinedCountInBatch, 5);
+                int mined = 5 - upgradesComp.MinedCountInBatch;
+                buttonLabel = "SF_ExpandBasement_InProgress".Translate(upgradesComp.MinedCountInBatch, 5);
                 tooltip = "SF_ExpandBasement_InProgress_Tooltip".Translate();
             }
             else
             {
                 buttonLabel = "SF_ExpandBasement".Translate();
-                tooltip = "SF_ExpandBasement_Tooltip".Translate(expansionComp.TotalSpace, expansionComp.MaxSpace);
+                tooltip = "SF_ExpandBasement_Tooltip".Translate(upgradesComp.BasementTotalSpace, upgradesComp.BasementMaxSpace);
             }
             
             // Draw the button
@@ -472,7 +472,7 @@ namespace SecondFloor
             {
                 if (canExpand)
                 {
-                    expansionComp.SpawnExpansionRocks();
+                    upgradesComp.SpawnExpansionRocks();
                 }
             }
             

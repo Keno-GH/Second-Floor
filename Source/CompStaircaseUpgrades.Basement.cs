@@ -6,11 +6,15 @@ using Verse;
 namespace SecondFloor
 {
     /// <summary>
-    /// Component that manages basement space expansion through mining.
-    /// Attached to basement staircases to track bonus space and excavation progress.
+    /// Partial class for basement expansion functionality.
+    /// Merged from CompBasementExpansion.
     /// </summary>
-    public class CompBasementExpansion : ThingComp
+    public partial class CompStaircaseUpgrades
     {
+        // =====================================================
+        // Basement Expansion State (merged from CompBasementExpansion)
+        // =====================================================
+        
         /// <summary>
         /// Bonus space unlocked through completed mining batches.
         /// </summary>
@@ -32,20 +36,22 @@ namespace SecondFloor
         /// </summary>
         private int nextBatchId = 0;
         
-        public CompProperties_BasementExpansion Props => (CompProperties_BasementExpansion)props;
+        // =====================================================
+        // Basement Expansion Properties
+        // =====================================================
         
         /// <summary>
-        /// Total space available (base + bonus).
+        /// Total space available (base + bonus). Only valid for basements.
         /// </summary>
-        public int TotalSpace => Props.baseSpace + bonusSpace;
+        public int BasementTotalSpace => (ModExtension?.baseSpace ?? 0) + bonusSpace;
         
         /// <summary>
-        /// Maximum possible space (base + max bonus).
+        /// Maximum possible space (base + max bonus). Only valid for basements.
         /// </summary>
-        public int MaxSpace => Props.baseSpace + Props.maxBonusSpace;
+        public int BasementMaxSpace => (ModExtension?.baseSpace ?? 0) + (ModExtension?.maxBonusSpace ?? 0);
         
         /// <summary>
-        /// Current bonus space unlocked.
+        /// Current bonus space unlocked through mining.
         /// </summary>
         public int BonusSpace => bonusSpace;
         
@@ -57,16 +63,22 @@ namespace SecondFloor
         /// <summary>
         /// Whether the basement has reached maximum expansion.
         /// </summary>
-        public bool IsMaxExpansion => bonusSpace >= Props.maxBonusSpace;
+        public bool IsMaxExpansion => bonusSpace >= (ModExtension?.maxBonusSpace ?? 0);
         
         /// <summary>
         /// Number of rocks mined in the current batch.
         /// </summary>
         public int MinedCountInBatch => minedCountInBatch;
         
-        public override void PostExposeData()
+        // =====================================================
+        // Basement Expansion Methods
+        // =====================================================
+        
+        /// <summary>
+        /// Called during PostExposeData to save/load basement state.
+        /// </summary>
+        private void ExposeBasementData()
         {
-            base.PostExposeData();
             Scribe_Values.Look(ref bonusSpace, "bonusSpace", 0);
             Scribe_Values.Look(ref minedCountInBatch, "minedCountInBatch", 0);
             Scribe_Values.Look(ref nextBatchId, "nextBatchId", 0);
@@ -196,7 +208,7 @@ namespace SecondFloor
                 currentBatchRocks.Clear();
                 
                 // Notify player
-                Messages.Message("SF_ExcavationComplete".Translate(5, TotalSpace, MaxSpace), 
+                Messages.Message("SF_ExcavationComplete".Translate(5, BasementTotalSpace, BasementMaxSpace), 
                     parent, MessageTypeDefOf.PositiveEvent);
             }
         }
@@ -240,9 +252,15 @@ namespace SecondFloor
             return currentBatchRocks.Contains(rock);
         }
         
-        public override string CompInspectStringExtra()
+        /// <summary>
+        /// Gets the basement expansion inspect string extra.
+        /// </summary>
+        private string GetBasementInspectString()
         {
-            string result = "SF_BasementSpace".Translate(TotalSpace, MaxSpace);
+            if (ModExtension == null || !ModExtension.HasBasementExpansion)
+                return null;
+            
+            string result = "SF_BasementSpace".Translate(BasementTotalSpace, BasementMaxSpace);
             
             if (IsExcavationInProgress)
             {

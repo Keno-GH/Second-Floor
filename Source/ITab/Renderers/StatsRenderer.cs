@@ -54,13 +54,8 @@ namespace SecondFloor
         /// </summary>
         private static void DrawManageStats(Listing_Standard listing, Thing staircase, CompStaircaseUpgrades comp)
         {
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            
             // Bed spaces
-            if (bedsComp != null)
-            {
-                listing.Label("SF_Stat_BedSpaces".Translate(bedsComp.bedCount));
-            }
+            listing.Label("SF_Stat_BedSpaces".Translate(comp.BedCount));
             
             // Room type
             string roomType = GetRoomTypeLabel(staircase, comp);
@@ -193,11 +188,7 @@ namespace SecondFloor
             listing.Label("SF_Stat_RestEffectiveness".Translate(restEffectiveness.ToStringPercent()));
             
             // Bed count
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            if (bedsComp != null)
-            {
-                listing.Label("SF_Stat_BedSpaces".Translate(bedsComp.bedCount));
-            }
+            listing.Label("SF_Stat_BedSpaces".Translate(comp.BedCount));
             
             // Temperature (simple display, no slider)
             float currentTemp = comp.CurrentVirtualTemperature;
@@ -280,15 +271,10 @@ namespace SecondFloor
         private static string GetRoomTypeLabel(Thing staircase, CompStaircaseUpgrades comp)
         {
             bool isBarracks = comp.IsBarracks;
-            bool isBasement = false;
             
-            CompProperties_GiveThoughtStairs thoughtComp = staircase.TryGetComp<CompGiveThoughtStairs>()?.Props;
-            if (thoughtComp != null && thoughtComp.thoughtDef != null)
-            {
-                isBasement = thoughtComp.thoughtDef.defName == "SF_Low_Quality_Basement";
-            }
-            
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
+            // Check if this is a basement via mod extension
+            var modExt = staircase.def.GetModExtension<SecondFloorModExtension>();
+            bool isBasement = modExt != null && modExt.HasBasementExpansion;
             
             if (isBasement)
             {
@@ -300,7 +286,7 @@ namespace SecondFloor
                 return "SF_RoomType_Barracks".Translate();
             }
             
-            if (bedsComp != null && bedsComp.bedCount >= 4)
+            if (comp.BedCount >= 4)
             {
                 return "SF_RoomType_MultipleRooms".Translate();
             }

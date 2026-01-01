@@ -6,20 +6,23 @@ using Verse;
 namespace SecondFloor
 {
     /// <summary>
-    /// Component that handles bathroom functionality for sleeping pawns.
-    /// Periodically checks sleeping pawns' DBH needs and allows them to relieve
-    /// those needs using the bathroom upgrade's facilities without waking up.
+    /// Partial class for bathroom functionality (DBH integration).
+    /// Merged from CompBathroomUpgrade.
     /// </summary>
-    public class CompBathroomUpgrade : ThingComp
+    public partial class CompStaircaseUpgrades
     {
+        // =====================================================
+        // Bathroom State (merged from CompBathroomUpgrade)
+        // =====================================================
+        
         // Threshold below which pawns will try to use bathroom (50%)
-        private const float NeedThreshold = 0.5f;
+        private const float BathroomNeedThreshold = 0.5f;
         
         // Cooldown when water is insufficient (1 in-game hour = 2500 ticks)
-        private const int WaterCooldownTicks = 2500;
+        private const int BathroomWaterCooldownTicks = 2500;
         
         // Check interval (every ~250 ticks = ~4 seconds)
-        private const int CheckIntervalTicks = 250;
+        private const int BathroomCheckIntervalTicks = 250;
         
         // Duration in ticks for bathroom actions (60 ticks ≈ 1 real second at 1x speed)
         private const int ToiletDurationTicks = 120;    // 2 seconds
@@ -30,13 +33,20 @@ namespace SecondFloor
         // Thought defs for hot/cold showers
         private static ThoughtDef _hotShowerThought;
         private static ThoughtDef _coldShowerThought;
-        private static bool _thoughtsInitialized;
+        private static bool _bathroomThoughtsInitialized;
         
         // Cooldown tracker - when we last failed due to insufficient water
         private int lastWaterFailTick = -99999;
         
         // Active bathroom uses - tracks pawns currently using bathroom
         private Dictionary<Pawn, BathroomUseInfo> activeBathroomUses = new Dictionary<Pawn, BathroomUseInfo>();
+        
+        private enum BathroomUseType
+        {
+            Toilet,
+            Wash,
+            Drink
+        }
         
         private class BathroomUseInfo : IExposable
         {
@@ -64,18 +74,25 @@ namespace SecondFloor
             }
         }
         
-        public override void PostExposeData()
+        // =====================================================
+        // Bathroom Methods
+        // =====================================================
+        
+        /// <summary>
+        /// Called during PostExposeData to save/load bathroom state.
+        /// </summary>
+        private void ExposeBathroomData()
         {
-            base.PostExposeData();
             Scribe_Values.Look(ref lastWaterFailTick, "lastWaterFailTick", -99999);
             // Note: activeBathroomUses is not saved - bathroom actions in progress are lost on save/load
             // This is acceptable as they are very short duration
         }
         
-        public override void CompTick()
+        /// <summary>
+        /// Called every tick to process bathroom functionality.
+        /// </summary>
+        private void TickBathroom()
         {
-            base.CompTick();
-            
             // Only run if DBH is active
             if (!DBHReflectionHelper.IsDBHActive)
                 return;
@@ -84,11 +101,11 @@ namespace SecondFloor
             ProcessActiveBathroomUses();
             
             // Check for new bathroom needs at intervals, offset by thingID to spread load
-            if ((Find.TickManager.TicksGame + parent.thingIDNumber) % CheckIntervalTicks != 0)
+            if ((Find.TickManager.TicksGame + parent.thingIDNumber) % BathroomCheckIntervalTicks != 0)
                 return;
             
             // Check cooldown
-            if (Find.TickManager.TicksGame - lastWaterFailTick < WaterCooldownTicks)
+            if (Find.TickManager.TicksGame - lastWaterFailTick < BathroomWaterCooldownTicks)
                 return;
             
             ProcessSleepingPawns();
@@ -161,7 +178,7 @@ namespace SecondFloor
             // Apply mood effects for washing
             if (info.useType == BathroomUseType.Wash && pawn.needs?.mood != null)
             {
-                InitializeThoughts();
+                InitializeBathroomThoughts();
                 
                 if (info.usedHotWater && _hotShowerThought != null)
                 {
@@ -178,19 +195,11 @@ namespace SecondFloor
         private void ProcessSleepingPawns()
         {
             if (!(parent is Building_Bed bed))
-            {
                 return;
-            }
-            
-            var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
-            if (upgradesComp == null)
-            {
-                return;
-            }
             
             // Get active bathroom upgrades
             var bathroomUpgrades = new List<StaircaseUpgradeDef>();
-            foreach (var upgrade in upgradesComp.GetActiveUpgradeDefs())
+            foreach (var upgrade in GetActiveUpgradeDefs())
             {
                 if (upgrade.IsBathroomUpgrade)
                 {
@@ -202,7 +211,7 @@ namespace SecondFloor
                 return;
             
             // Get the bathroom building for water access
-            var bathroom = upgradesComp.LinkedBathroom as Building_StaircaseBathroom;
+            var bathroom = LinkedBathroom as Building_StaircaseBathroom;
             
             // Process each sleeping occupant
             foreach (var pawn in bed.CurOccupants)
@@ -253,21 +262,21 @@ namespace SecondFloor
                 return;
             
             // Process bladder (toilet usage)
-            if (bladderNeed != null && bladderNeed.CurLevel < NeedThreshold && bestBladderUpgrade != null)
+            if (bladderNeed != null && bladderNeed.CurLevel < BathroomNeedThreshold && bestBladderUpgrade != null)
             {
                 if (TryStartBathroomUse(pawn, bestBladderUpgrade, bathroom, BathroomUseType.Toilet, bladderNeed, bestBladderUpgrade.bladderRestoreAmount))
                     return; // Only one bathroom action at a time
             }
             
             // Process thirst (drinking water)
-            if (thirstNeed != null && thirstNeed.CurLevel < NeedThreshold && bestThirstUpgrade != null)
+            if (thirstNeed != null && thirstNeed.CurLevel < BathroomNeedThreshold && bestThirstUpgrade != null)
             {
                 if (TryStartBathroomUse(pawn, bestThirstUpgrade, bathroom, BathroomUseType.Drink, thirstNeed, bestThirstUpgrade.thirstRestoreAmount))
                     return;
             }
             
             // Process hygiene (washing/showering)
-            if (hygieneNeed != null && hygieneNeed.CurLevel < NeedThreshold && bestHygieneUpgrade != null)
+            if (hygieneNeed != null && hygieneNeed.CurLevel < BathroomNeedThreshold && bestHygieneUpgrade != null)
             {
                 // Don't wash if already above the best cap
                 if (hygieneNeed.CurLevel < bestHygieneUpgrade.hygieneMaxCap)
@@ -276,13 +285,6 @@ namespace SecondFloor
                     TryStartBathroomUse(pawn, bestHygieneUpgrade, bathroom, BathroomUseType.Wash, hygieneNeed, targetLevel);
                 }
             }
-        }
-        
-        private enum BathroomUseType
-        {
-            Toilet,
-            Wash,
-            Drink
         }
         
         private int GetDurationForUseType(BathroomUseType useType, StaircaseUpgradeDef upgrade)
@@ -391,30 +393,29 @@ namespace SecondFloor
             return true;
         }
         
-        private static void InitializeThoughts()
+        private static void InitializeBathroomThoughts()
         {
-            if (_thoughtsInitialized)
+            if (_bathroomThoughtsInitialized)
                 return;
             
-            _thoughtsInitialized = true;
+            _bathroomThoughtsInitialized = true;
             
             // Try to get DBH's shower thoughts
             _hotShowerThought = DefDatabase<ThoughtDef>.GetNamedSilentFail("HotShower");
             _coldShowerThought = DefDatabase<ThoughtDef>.GetNamedSilentFail("ColdShower");
         }
         
-        public override string CompInspectStringExtra()
+        /// <summary>
+        /// Gets the bathroom inspect string extra.
+        /// </summary>
+        private string GetBathroomInspectString()
         {
             if (!DBHReflectionHelper.IsDBHActive)
                 return null;
             
-            var upgradesComp = parent.GetComp<CompStaircaseUpgrades>();
-            if (upgradesComp == null)
-                return null;
-            
             // Check if we have any bathroom upgrades
             bool hasBathroom = false;
-            foreach (var upgrade in upgradesComp.GetActiveUpgradeDefs())
+            foreach (var upgrade in GetActiveUpgradeDefs())
             {
                 if (upgrade.IsBathroomUpgrade)
                 {
@@ -426,7 +427,7 @@ namespace SecondFloor
             if (!hasBathroom)
                 return null;
             
-            var bathroom = upgradesComp.LinkedBathroom as Building_StaircaseBathroom;
+            var bathroom = LinkedBathroom as Building_StaircaseBathroom;
             if (bathroom == null)
                 return "SF_BathroomNoPipes".Translate();
             
@@ -434,14 +435,6 @@ namespace SecondFloor
                 return "SF_BathroomNoWater".Translate();
             
             return null;
-        }
-    }
-    
-    public class CompProperties_BathroomUpgrade : CompProperties
-    {
-        public CompProperties_BathroomUpgrade()
-        {
-            this.compClass = typeof(CompBathroomUpgrade);
         }
     }
 }

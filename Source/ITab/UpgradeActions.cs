@@ -27,8 +27,7 @@ namespace SecondFloor
             }
 
             // Store bed count before the upgrade
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCountBefore = bedsComp?.bedCount ?? 0;
+            int bedCountBefore = comp.BedCount;
 
             // Check if this upgrade is stuffable
             if (def.IsStuffable)
@@ -48,8 +47,7 @@ namespace SecondFloor
         {
             List<FloatMenuOption> options = new List<FloatMenuOption>();
             
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCount = bedsComp?.bedCount ?? 1;
+            int bedCount = comp.BedCount;
             
             int baseCost = 50;
             if (def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
@@ -126,11 +124,10 @@ namespace SecondFloor
                 
                 if (def.IsStuffable && stuff != null)
                 {
-                    DeductMaterials(def, stuff, staircase);
+                    DeductMaterials(def, stuff, staircase, comp);
                 }
                 
-                CompMultipleBeds bedsComp2 = staircase.TryGetComp<CompMultipleBeds>();
-                int bedCountAfter = bedsComp2?.bedCount ?? 0;
+                int bedCountAfter = comp.BedCount;
                 if (bedCountAfter < bedCountBefore)
                 {
                     CheckAndResetBedAssignments(staircase, bedCountAfter, "upgrade installation");
@@ -145,10 +142,9 @@ namespace SecondFloor
         /// <summary>
         /// Deducts materials from the map for instant upgrades.
         /// </summary>
-        private static void DeductMaterials(StaircaseUpgradeDef def, ThingDef stuff, Thing staircase)
+        private static void DeductMaterials(StaircaseUpgradeDef def, ThingDef stuff, Thing staircase, CompStaircaseUpgrades comp)
         {
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCount = bedsComp?.bedCount ?? 1;
+            int bedCount = comp.BedCount;
             
             int baseCost = 50;
             if (def.upgradeBuildingDef != null && def.upgradeBuildingDef.costStuffCount > 0)
@@ -205,12 +201,12 @@ namespace SecondFloor
                 return;
             }
 
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCountBefore = bedsComp?.bedCount ?? 0;
+            CompStaircaseUpgrades upgradesComp = staircase.TryGetComp<CompStaircaseUpgrades>();
+            int bedCountBefore = upgradesComp?.BedCount ?? 0;
 
             string refundInfo = comp.RemoveUpgradeWithRefund(def, 0.75f);
 
-            int bedCountAfter = bedsComp?.bedCount ?? 0;
+            int bedCountAfter = upgradesComp?.BedCount ?? 0;
             if (bedCountAfter < bedCountBefore)
             {
                 CheckAndResetBedAssignments(staircase, bedCountAfter, "upgrade removal");
@@ -232,12 +228,11 @@ namespace SecondFloor
                 return;
             }
 
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCountBefore = bedsComp?.bedCount ?? 0;
+            int bedCountBefore = comp.BedCount;
 
             string refundInfo = comp.RemoveConstructedUpgradesWithRefund(def, 0.75f);
 
-            int bedCountAfter = bedsComp?.bedCount ?? 0;
+            int bedCountAfter = comp.BedCount;
             if (bedCountAfter < bedCountBefore)
             {
                 CheckAndResetBedAssignments(staircase, bedCountAfter, "constructed upgrade removal");
@@ -432,14 +427,13 @@ namespace SecondFloor
         /// </summary>
         public static void DevModeInstantUpgrade(StaircaseUpgradeDef def, CompStaircaseUpgrades comp, Thing staircase)
         {
-            CompMultipleBeds bedsComp = staircase.TryGetComp<CompMultipleBeds>();
-            int bedCountBefore = bedsComp?.bedCount ?? 0;
+            int bedCountBefore = comp.BedCount;
 
             if (!comp.HasUpgrade(def))
             {
                 comp.AddUpgrade(def, null);
                 
-                int bedCountAfter = bedsComp?.bedCount ?? 0;
+                int bedCountAfter = comp.BedCount;
                 if (bedCountAfter < bedCountBefore)
                 {
                     CheckAndResetBedAssignments(staircase, bedCountAfter, "dev mode upgrade");

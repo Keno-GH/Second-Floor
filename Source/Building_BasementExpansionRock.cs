@@ -36,8 +36,8 @@ namespace SecondFloor
         {
             if (linkedBasement != null && !linkedBasement.Destroyed)
             {
-                var expansionComp = linkedBasement.TryGetComp<CompBasementExpansion>();
-                expansionComp?.OnRockMined(this);
+                var upgradesComp = linkedBasement.TryGetComp<CompStaircaseUpgrades>();
+                upgradesComp?.OnRockMined(this);
             }
         }
         
@@ -47,10 +47,10 @@ namespace SecondFloor
             
             if (linkedBasement != null && !linkedBasement.Destroyed)
             {
-                var expansionComp = linkedBasement.TryGetComp<CompBasementExpansion>();
-                if (expansionComp != null)
+                var upgradesComp = linkedBasement.TryGetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
                 {
-                    int currentProgress = expansionComp.MinedCountInBatch;
+                    int currentProgress = upgradesComp.MinedCountInBatch;
                     int total = 5;
                     string progressText = "SF_ExcavationProgress".Translate(currentProgress, total);
                     
