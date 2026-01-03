@@ -36,7 +36,8 @@ namespace SecondFloor
                 }
                 
                 // Skip if not applicable to this staircase type
-                if (def.applyToStairs != null && !def.applyToStairs.Contains(staircase.def))
+                // Use Hospitality-aware check to handle guest bed defName suffix
+                if (!HospitalityPatches.IsStaircaseAllowedForUpgrade(staircase.def, def.applyToStairs))
                 {
                     continue;
                 }

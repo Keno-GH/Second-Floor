@@ -56,6 +56,22 @@ namespace SecondFloor
         public int impressivenessLevel = 0; // Adds to the impressiveness level (0-9)
         
         // =====================================================
+        // Hospitality Integration fields
+        // =====================================================
+        /// <summary>
+        /// If true, this upgrade increases the virtual bed quality by one tier.
+        /// Used by Hospitality to calculate attractiveness for guest beds.
+        /// Each upgrade adds 25 points (equivalent to one quality tier).
+        /// </summary>
+        public bool increasesBedQuality = false;
+        
+        /// <summary>
+        /// If true, this upgrade counts as a connected facility for Hospitality.
+        /// Each facility adds 10 points to the bed's attractiveness.
+        /// </summary>
+        public bool countsAsFacility = false;
+        
+        // =====================================================
         // Comfort and Sleep Effectiveness fields
         // =====================================================
         /// <summary>

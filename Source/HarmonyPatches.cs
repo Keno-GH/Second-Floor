@@ -21,7 +21,7 @@ namespace SecondFloor
             var harmony = new Harmony("avericat.SecondFloors");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
-            // CompatibilityPatches.ExecuteCompatibilityPatches(harmony);
+            CompatibilityPatches.ExecuteCompatibilityPatches(harmony);
         }
     }
 

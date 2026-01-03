@@ -227,7 +227,8 @@ namespace SecondFloor
                     }
 
                     // Check if staircase type is allowed
-                    if (ext.upgradeDef.applyToStairs != null && !ext.upgradeDef.applyToStairs.Contains(staircase.def))
+                    // Use Hospitality-aware check to handle guest bed defName suffix
+                    if (!HospitalityPatches.IsStaircaseAllowedForUpgrade(staircase.def, ext.upgradeDef.applyToStairs))
                     {
                         return new AcceptanceReport("SF_UpgradeNotForThisStaircase".Translate());
                     }

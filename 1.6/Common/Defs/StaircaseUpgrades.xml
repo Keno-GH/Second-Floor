@@ -108,6 +108,7 @@
         <category>SF_Category_Comfort</category>
         <spaceCostPerBed>2</spaceCostPerBed>
         <impressivenessLevel>1</impressivenessLevel>
+        <countsAsFacility>true</countsAsFacility>
         <upgradeBuildingDef>SF_UpgradeBuilding_BasicDecoration</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
@@ -160,6 +161,7 @@
         <spaceCostPerBed>4</spaceCostPerBed>
         <impressivenessLevel>1</impressivenessLevel>
         <comfortBonus>0.2</comfortBonus>
+        <countsAsFacility>true</countsAsFacility>
         <upgradeBuildingDef>SF_UpgradeBuilding_ComfortableUpgrade</upgradeBuildingDef>
         <minConstructionSkill>3</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
@@ -174,6 +176,7 @@
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.2</comfortBonus>
         <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
+        <increasesBedQuality>true</increasesBedQuality>
         <upgradeBuildingDef>SF_UpgradeBuilding_BetterBeddings</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
@@ -188,6 +191,7 @@
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.2</comfortBonus>
         <sleepEffectivenessBonus>0.2</sleepEffectivenessBonus>
+        <increasesBedQuality>true</increasesBedQuality>
         <upgradeBuildingDef>SF_UpgradeBuilding_BetterMattresses</upgradeBuildingDef>
         <minConstructionSkill>6</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
@@ -202,6 +206,7 @@
         <spaceCostPerBed>1</spaceCostPerBed>
         <comfortBonus>0.3</comfortBonus>
         <sleepEffectivenessBonus>0.4</sleepEffectivenessBonus>
+        <increasesBedQuality>true</increasesBedQuality>
         <upgradeBuildingDef>SF_UpgradeBuilding_ErgonomicBeds</upgradeBuildingDef>
         <minConstructionSkill>10</minConstructionSkill>
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>

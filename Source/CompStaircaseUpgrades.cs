@@ -142,10 +142,23 @@ namespace SecondFloor
         
         /// <summary>
         /// Invalidates the bed count cache. Called when upgrades are added/removed.
+        /// Also updates CompAssignableToPawn.maxAssignedPawnsCount to allow more pawns to be assigned.
         /// </summary>
         public void InvalidateBedCountCache()
         {
             bedCountDirty = true;
+            
+            // Update maxAssignedPawnsCount to match the new bed count
+            if (parent is Building_Bed bed)
+            {
+                var assignableComp = bed.GetComp<CompAssignableToPawn>();
+                if (assignableComp != null)
+                {
+                    // Force recalculate bed count now so we have the correct value
+                    RecalculateBedCount();
+                    assignableComp.Props.maxAssignedPawnsCount = cachedBedCount;
+                }
+            }
         }
         
         // =====================================================
@@ -569,6 +582,116 @@ namespace SecondFloor
             {
                 return constructedUpgrades.Any(au => au.def.defName == "SF_StaircaseUpgrade_Barracks");
             }
+        }
+        
+        // =====================================================
+        // Hospitality Integration - Virtual Bed Stats
+        // =====================================================
+        
+        /// <summary>
+        /// Struct containing virtual bed stats for Hospitality compatibility.
+        /// These values are used instead of the physical room stats.
+        /// </summary>
+        public struct VirtualBedStats
+        {
+            public int impressiveness;
+            public int quality;
+            public int roomTypeScore;
+            public int comfort;
+            public int facilities;
+            
+            public int TotalValue => impressiveness + quality + roomTypeScore + comfort + facilities;
+        }
+        
+        /// <summary>
+        /// Calculates virtual bed stats based on upgrades for Hospitality integration.
+        /// These values replace the physical room stats when calculating attractiveness.
+        /// </summary>
+        public VirtualBedStats CalculateVirtualBedStats()
+        {
+            var stats = new VirtualBedStats();
+            
+            // Calculate impressiveness from upgrade levels (0-9 stages)
+            // Map to approximate RimWorld room impressiveness values
+            int totalImpressivenessBonus = 0;
+            foreach (var upgrade in GetActiveUpgradeDefs())
+            {
+                totalImpressivenessBonus += upgrade.impressivenessLevel;
+            }
+            int impressivenessStage = Mathf.Clamp(1 + totalImpressivenessBonus, 0, 9);
+            
+            // Map impressiveness stage (0-9) to RimWorld impressiveness values
+            // RimWorld room impressiveness typically ranges 0-150+
+            switch (impressivenessStage)
+            {
+                case 0:  stats.impressiveness = 0;   break; // Awful
+                case 1:  stats.impressiveness = 15;  break; // Dull
+                case 2:  stats.impressiveness = 30;  break; // Mediocre
+                case 3:  stats.impressiveness = 45;  break; // Decent
+                case 4:  stats.impressiveness = 60;  break; // Slightly Impressive
+                case 5:  stats.impressiveness = 75;  break; // Somewhat Impressive
+                case 6:  stats.impressiveness = 90;  break; // Impressive
+                case 7:  stats.impressiveness = 105; break; // Very Impressive
+                case 8:  stats.impressiveness = 120; break; // Extremely Impressive
+                case 9:  stats.impressiveness = 150; break; // Unbelievably Impressive
+                default: stats.impressiveness = 30;  break;
+            }
+            
+            // Calculate quality from bedding upgrades
+            // Each increasesBedQuality upgrade adds one quality tier (25 points)
+            // Hospitality formula: (QualityCategory - 2) * 25, so Poor = 0, Normal = 25, etc.
+            int qualityUpgradeCount = 0;
+            foreach (var upgrade in GetActiveUpgradeDefs())
+            {
+                if (upgrade.increasesBedQuality)
+                {
+                    qualityUpgradeCount++;
+                }
+            }
+            stats.quality = qualityUpgradeCount * 25;
+            
+            // Calculate room type score based on floor type
+            // Barracks = 0, Single bedroom = 90 (30 base + 60 single bed bonus), Multiple rooms = 30
+            if (IsBarracks)
+            {
+                stats.roomTypeScore = 0;
+            }
+            else if (BedCount >= 4)
+            {
+                // Multiple private rooms - treated as a guest room
+                stats.roomTypeScore = 30;
+            }
+            else
+            {
+                // Single bedroom (1-2 beds = one double bed room)
+                // 30 (GuestRoom base) + 60 (single room bonus) = 90
+                stats.roomTypeScore = 90;
+            }
+            
+            // Calculate comfort from bed stats
+            // Hospitality uses: (int)(100 * bed.GetStatValue(Comfort))
+            if (parent is Building_Bed bed)
+            {
+                stats.comfort = (int)(100 * bed.GetStatValue(RimWorld.StatDefOf.Comfort));
+            }
+            else
+            {
+                stats.comfort = 50; // Default fallback
+            }
+            
+            // Calculate facilities from upgrades with countsAsFacility
+            // Each facility adds 10 points
+            int facilityCount = 0;
+            foreach (var upgrade in GetActiveUpgradeDefs())
+            {
+                if (upgrade.countsAsFacility)
+                {
+                    facilityCount++;
+                }
+            }
+            stats.facilities = facilityCount * 10;
+            
+            return stats;
         }
         
         /// <summary>
@@ -1003,6 +1126,12 @@ namespace SecondFloor
                 // Invalidate bed count cache since upgrades may modify bed count
                 InvalidateBedCountCache();
                 
+                // Trigger Hospitality to recalculate guest bed stats
+                if (parent is Building_Bed bed)
+                {
+                    HospitalityPatches.TriggerGuestBedStatsUpdate(bed);
+                }
+                
                 // If this is a battery upgrade, spawn the linked battery building
                 if (def.IsBatteryUpgrade && parent.Spawned)
                 {
@@ -1027,6 +1156,12 @@ namespace SecondFloor
             {
                 activeUpgrade.count++;
                 InvalidateBedCountCache();
+                
+                // Trigger Hospitality to recalculate guest bed stats
+                if (parent is Building_Bed bed)
+                {
+                    HospitalityPatches.TriggerGuestBedStatsUpdate(bed);
+                }
             }
         }
         
@@ -1047,6 +1182,12 @@ namespace SecondFloor
         {
             constructedUpgrades.RemoveAll(au => au.def == def);
             InvalidateBedCountCache();
+            
+            // Trigger Hospitality to recalculate guest bed stats
+            if (parent is Building_Bed bed)
+            {
+                HospitalityPatches.TriggerGuestBedStatsUpdate(bed);
+            }
         }
         
         /// <summary>
@@ -1068,6 +1209,12 @@ namespace SecondFloor
             if (activeUpgrade.count <= 0)
             {
                 constructedUpgrades.Remove(activeUpgrade);
+            }
+            
+            // Trigger Hospitality to recalculate guest bed stats
+            if (parent is Building_Bed bed)
+            {
+                HospitalityPatches.TriggerGuestBedStatsUpdate(bed);
             }
             
             return true;
