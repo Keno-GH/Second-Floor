@@ -92,7 +92,19 @@ namespace SecondFloor
             // Power consumption
             float powerUsage = comp.CurrentPowerConsumption;
             bool hasPower = comp.HasPower();
-            string powerLabel = $"{powerUsage:F0}W";
+            string powerLabel;
+            
+            // Show range for upgrades with dynamic power (like Sleep Accelerator)
+            if (comp.HasAnyDynamicPowerUpgrade())
+            {
+                var (minPower, maxPower) = comp.GetPowerConsumptionRange();
+                powerLabel = $"{minPower:F0}W to {maxPower:F0}W ({powerUsage:F0}W)";
+            }
+            else
+            {
+                powerLabel = $"{powerUsage:F0}W";
+            }
+            
             if (!hasPower && comp.HasAnyPowerRequiringUpgrade())
             {
                 powerLabel += " " + "SF_NoPower".Translate();

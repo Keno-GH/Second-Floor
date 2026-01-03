@@ -212,6 +212,28 @@
         <researchPrerequisite>ComplexFurniture</researchPrerequisite>
         <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
+    
+    <!-- Sleep Accelerator upgrade - Ideology DLC required, Transhumanist meme required -->
+    <SecondFloor.StaircaseUpgradeDef MayRequire="Ludeon.RimWorld.Ideology">
+        <defName>SF_SleepAccelerator</defName>
+        <label>Sleep Accelerator</label>
+        <description>Installs sleep accelerators at each bed to accelerate the sleeper's circadian rhythm. This speeds up sleep but causes increased hunger. Consumes 50W per bed when idle, and 400W per sleeping pawn when active.\n\nTranshumanist colonists will receive a mood boost from using a sleep accelerator.</description>
+        <category>SF_Category_Bedding</category>
+        <isToggleable>true</isToggleable>
+        <spaceCostPerBed>1</spaceCostPerBed>
+        <sleepEffectivenessBonus>0.35</sleepEffectivenessBonus>
+        <hungerRateBonus>0.20</hungerRateBonus>
+        <requiresPower>true</requiresPower>
+        <basePowerConsumption>50</basePowerConsumption>
+        <activePowerConsumption>400</activePowerConsumption>
+        <requiredMeme>Transhumanist</requiredMeme>
+        <preceptForThought>SleepAccelerator_Preferred</preceptForThought>
+        <preceptGatedThought>SleptUsingSleepAccelerator</preceptGatedThought>
+        <upgradeBuildingDef>SF_UpgradeBuilding_SleepAccelerator</upgradeBuildingDef>
+        <minConstructionSkill>8</minConstructionSkill>
+        <researchPrerequisite>MicroelectronicsBasics</researchPrerequisite>
+        <iconPath>Things/Building/Misc/SleepAccelerator/SleepAccelerator_south</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
 
     <!-- =====================================================
          Temperature Control Upgrades

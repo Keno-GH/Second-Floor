@@ -83,6 +83,13 @@ namespace SecondFloor
         /// Bonus to the staircase's BedRestEffectiveness stat (applied once per unique upgrade, not per bed).
         /// </summary>
         public float sleepEffectivenessBonus = 0f;
+        
+        /// <summary>
+        /// Bonus to the bed's BedHungerRateFactor stat (applied once per unique upgrade).
+        /// Positive values increase hunger rate (e.g., 0.20 = +20% hunger while sleeping).
+        /// Used by Sleep Accelerator upgrade to match vanilla's stat offset.
+        /// </summary>
+        public float hungerRateBonus = 0f;
 
         // Icon texture for this upgrade (optional)
         // Path relative to Textures/ folder (e.g., "Icons/Upgrades/MyUpgrade")
@@ -166,6 +173,30 @@ namespace SecondFloor
         /// For smart temperature modifiers, this is the maximum power draw.
         /// </summary>
         public float basePowerConsumption = 0f;
+        
+        /// <summary>
+        /// Power consumption when the upgrade is actively in use (e.g., per sleeping pawn).
+        /// Used by Sleep Accelerator: idle draws basePowerConsumption per bed,
+        /// active draws activePowerConsumption per sleeping pawn.
+        /// </summary>
+        public float activePowerConsumption = 0f;
+        
+        /// <summary>
+        /// If set, this upgrade only appears when the player's ideology has this meme.
+        /// Requires Ideology DLC to be active.
+        /// </summary>
+        public MemeDef requiredMeme;
+        
+        /// <summary>
+        /// If set, sleeping pawns with an ideology precept matching this will receive the specified thought.
+        /// The thought is only applied if the pawn's ideo has the precept.
+        /// </summary>
+        public PreceptDef preceptForThought;
+        
+        /// <summary>
+        /// The thought to apply to sleeping pawns who have the preceptForThought precept.
+        /// </summary>
+        public ThoughtDef preceptGatedThought;
         
         // =====================================================
         // Smart Temperature Modifier fields (power-based with throttling)

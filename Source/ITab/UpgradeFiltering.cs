@@ -48,6 +48,16 @@ namespace SecondFloor
                     continue;
                 }
                 
+                // Skip if requiredMeme is set but player's ideology doesn't have that meme
+                if (def.requiredMeme != null)
+                {
+                    var playerIdeos = Faction.OfPlayer?.ideos;
+                    if (playerIdeos == null || !playerIdeos.HasAnyIdeoWithMeme(def.requiredMeme))
+                    {
+                        continue;
+                    }
+                }
+                
                 result.Add(def);
             }
             

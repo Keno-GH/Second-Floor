@@ -141,6 +141,53 @@ namespace SecondFloor
                     sleepingOccupant.needs.mood.thoughts.memories.TryGainMemory(thoughtToGive);
                 }
             }
+            
+            // Apply precept-gated thoughts (e.g., Sleep Accelerator for Transhumanists)
+            ApplyPreceptGatedThoughts(bed);
+        }
+        
+        /// <summary>
+        /// Applies thoughts that are gated by ideology precepts.
+        /// For example, Sleep Accelerator gives a mood boost only to pawns whose ideo has the SleepAccelerator_Preferred precept.
+        /// </summary>
+        private void ApplyPreceptGatedThoughts(Building_Bed bed)
+        {
+            // Check if Ideology is active
+            if (!ModsConfig.IdeologyActive)
+                return;
+            
+            foreach (var upgrade in GetActiveUpgradeDefs())
+            {
+                // Skip upgrades without precept-gated thoughts
+                if (upgrade.preceptForThought == null || upgrade.preceptGatedThought == null)
+                    continue;
+                
+                // Apply to each sleeping occupant who has the required precept
+                foreach (var sleepingOccupant in bed.CurOccupants)
+                {
+                    if (sleepingOccupant?.needs?.mood?.thoughts?.memories == null)
+                        continue;
+                    
+                    // Check if pawn's ideology has the required precept
+                    if (sleepingOccupant.Ideo == null)
+                        continue;
+                    
+                    bool hasPrecept = false;
+                    foreach (var precept in sleepingOccupant.Ideo.PreceptsListForReading)
+                    {
+                        if (precept.def == upgrade.preceptForThought)
+                        {
+                            hasPrecept = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasPrecept)
+                    {
+                        sleepingOccupant.needs.mood.thoughts.memories.TryGainMemory(upgrade.preceptGatedThought);
+                    }
+                }
+            }
         }
         
         /// <summary>

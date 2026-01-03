@@ -257,6 +257,7 @@ namespace SecondFloor
         /// Gets total consumption text for the upgrade based on installed count.
         /// For controllable fueled temp changers, shows actual consumption with throttle percentage.
         /// For smart temp changers, shows actual power consumption with throttle percentage.
+        /// For dynamic power upgrades (like Sleep Accelerator), shows current usage and active count.
         /// </summary>
         private static string GetConsumptionText(StaircaseUpgradeDef def, int installedCount, CompStaircaseUpgrades comp)
         {
@@ -267,6 +268,16 @@ namespace SecondFloor
             
             if (def.requiresPower && def.basePowerConsumption > 0)
             {
+                // For dynamic power upgrades (Sleep Accelerator), show current usage with active count
+                if (def.activePowerConsumption > 0f)
+                {
+                    int bedCount = comp.BedCount;
+                    int sleepingCount = comp.GetSleepingPawnCount();
+                    float idlePower = def.basePowerConsumption * bedCount;
+                    float currentPower = idlePower + def.activePowerConsumption * sleepingCount;
+                    return $"{currentPower:F0}W ({sleepingCount}/{bedCount} active)";
+                }
+                
                 float totalPower = def.basePowerConsumption * installedCount;
                 
                 // For smart temp changers, show actual consumption with throttle

@@ -161,6 +161,23 @@ namespace SecondFloor
             }
         }
         
+        /// <summary>
+        /// Gets the number of pawns currently sleeping in this bed.
+        /// Used for dynamic power calculations (e.g., Sleep Accelerator).
+        /// </summary>
+        public int GetSleepingPawnCount()
+        {
+            if (!(parent is Building_Bed bed) || bed.CurOccupants == null)
+                return 0;
+            
+            int count = 0;
+            foreach (var _ in bed.CurOccupants)
+            {
+                count++;
+            }
+            return count;
+        }
+        
         // =====================================================
         // Smart Temperature Control System
         // =====================================================
@@ -990,6 +1007,54 @@ namespace SecondFloor
         }
         
         /// <summary>
+        /// Returns true if any constructed upgrade has dynamic power consumption (activePowerConsumption > 0).
+        /// </summary>
+        public bool HasAnyDynamicPowerUpgrade()
+        {
+            return constructedUpgrades.Any(au => au.def.requiresPower && au.def.activePowerConsumption > 0f);
+        }
+        
+        /// <summary>
+        /// Calculates the power consumption range for display purposes.
+        /// Returns (minPower, maxPower) where min is idle power and max is full active power.
+        /// </summary>
+        public (float minPower, float maxPower) GetPowerConsumptionRange()
+        {
+            float minPower = 0f;
+            float maxPower = 0f;
+            int bedCount = BedCount;
+            
+            foreach (var activeUpgrade in constructedUpgrades)
+            {
+                if (!activeUpgrade.def.requiresPower)
+                    continue;
+                
+                // Check if this upgrade is disabled for non-power reasons
+                var disableReason = GetUpgradeDisableReason(activeUpgrade.def);
+                if (disableReason != UpgradeDisableReason.None && disableReason != UpgradeDisableReason.NoPower)
+                    continue;
+                
+                if (activeUpgrade.def.activePowerConsumption > 0f)
+                {
+                    // Dynamic power: idle = basePowerConsumption * bedCount, max = base + active * bedCount
+                    float idlePower = activeUpgrade.def.basePowerConsumption * bedCount;
+                    float activePower = idlePower + activeUpgrade.def.activePowerConsumption * bedCount;
+                    minPower += idlePower;
+                    maxPower += activePower;
+                }
+                else
+                {
+                    // Static power
+                    float power = activeUpgrade.def.basePowerConsumption * activeUpgrade.count;
+                    minPower += power;
+                    maxPower += power;
+                }
+            }
+            
+            return (minPower, maxPower);
+        }
+        
+        /// <summary>
         /// Returns true if any constructed upgrade requires fuel.
         /// </summary>
         public bool HasAnyFuelRequiringUpgrade()
@@ -1090,9 +1155,9 @@ namespace SecondFloor
         }
 
         /// <summary>
-        /// Helper method to get all active upgrade defs (valid upgrades only).
-        /// For upgrades with onePerBed=true, they must have count >= bedCount to be valid.
-        /// Used for all non-bed-count effects (thoughts, temperature, etc.).
+        /// Helper method to get all active upgrade defs. An upgrade is considered active only if 
+        /// it is not disabled for any reason (e.g., toggled off, out of fuel, no power, 
+        /// insufficient count, or target temperature reached).
         /// </summary>
         public List<StaircaseUpgradeDef> GetActiveUpgradeDefs()
         {
@@ -2076,6 +2141,7 @@ namespace SecondFloor
         /// <summary>
         /// Calculates the total power consumption for all power-requiring upgrades.
         /// Smart temperature modifiers have their power throttled based on temperature differential.
+        /// Sleep accelerators have dynamic power: basePowerConsumption per bed (idle) + activePowerConsumption per sleeping pawn.
         /// </summary>
         /// <returns>Total power consumption in watts</returns>
         public float CalculateTotalPowerConsumption()
@@ -2086,6 +2152,16 @@ namespace SecondFloor
             }
             
             float totalPower = 0f;
+            
+            // Count sleeping pawns for dynamic power upgrades
+            int sleepingPawnCount = 0;
+            if (parent is Building_Bed bed && bed.CurOccupants != null)
+            {
+                foreach (var _ in bed.CurOccupants)
+                {
+                    sleepingPawnCount++;
+                }
+            }
             
             foreach (var activeUpgrade in constructedUpgrades)
             {
@@ -2099,8 +2175,16 @@ namespace SecondFloor
                 
                 float upgradePower = activeUpgrade.def.basePowerConsumption * activeUpgrade.count;
                 
+                // Apply dynamic power for upgrades with activePowerConsumption (like Sleep Accelerator)
+                if (activeUpgrade.def.activePowerConsumption > 0f)
+                {
+                    // Base power is per bed (idle consumption)
+                    upgradePower = activeUpgrade.def.basePowerConsumption * BedCount;
+                    // Add active power per sleeping pawn
+                    upgradePower += activeUpgrade.def.activePowerConsumption * sleepingPawnCount;
+                }
                 // Apply throttling for smart temperature modifiers
-                if (activeUpgrade.def.IsSmartTempModifier)
+                else if (activeUpgrade.def.IsSmartTempModifier)
                 {
                     float throttle = GetSmartUtilizationRatio(activeUpgrade.def);
                     upgradePower *= throttle;
@@ -2427,6 +2511,30 @@ namespace SecondFloor
             foreach (var upgradeDef in activeUpgradeDefs)
             {
                 totalBonus += upgradeDef.sleepEffectivenessBonus;
+            }
+            
+            return totalBonus;
+        }
+        
+        /// <summary>
+        /// Calculates the total hunger rate bonus from all active upgrades.
+        /// Each unique upgrade type contributes only once (not per bed).
+        /// Positive values increase hunger rate (e.g., Sleep Accelerator adds +20%).
+        /// </summary>
+        /// <returns>Total hunger rate bonus to add to the bed's BedHungerRateFactor</returns>
+        public float GetTotalHungerRateBonus()
+        {
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+                return 0f;
+            
+            float totalBonus = 0f;
+            
+            // Get distinct active upgrade defs - each upgrade type only contributes once
+            var activeUpgradeDefs = GetActiveUpgradeDefs();
+            
+            foreach (var upgradeDef in activeUpgradeDefs)
+            {
+                totalBonus += upgradeDef.hungerRateBonus;
             }
             
             return totalBonus;

@@ -297,6 +297,36 @@
         </modExtensions>
     </ThingDef>
     
+    <!-- Sleep Accelerator Upgrade - Ideology DLC required -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase" MayRequire="Ludeon.RimWorld.Ideology">
+        <defName>SF_UpgradeBuilding_SleepAccelerator</defName>
+        <label>sleep accelerator upgrade</label>
+        <description>Install sleep accelerators at each bed to speed up sleep. Requires power.</description>
+        <researchPrerequisites>
+            <li>MicroelectronicsBasics</li>
+        </researchPrerequisites>
+        <statBases>
+            <WorkToBuild>6000</WorkToBuild>
+        </statBases>
+        <costList>
+            <Steel>50</Steel>
+            <ComponentIndustrial>5</ComponentIndustrial>
+        </costList>
+        <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+        <graphicData>
+            <texPath>Things/Building/Misc/SleepAccelerator/SleepAccelerator_south</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_SleepAccelerator</upgradeDef>
+                <directlyToBed>true</directlyToBed>
+                <costPerBed>true</costPerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
     <!-- Braziers Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
         <defName>SF_UpgradeBuilding_Braziers</defName>

@@ -521,6 +521,14 @@ namespace SecondFloor
                 __result += sleepBonus;
                 return;
             }
+            
+            // Apply hunger rate bonus (e.g., Sleep Accelerator)
+            if (stat == StatDefOf.BedHungerRateFactor)
+            {
+                float hungerBonus = upgradesComp.GetTotalHungerRateBonus();
+                __result += hungerBonus;
+                return;
+            }
         }
     }
     
@@ -583,6 +591,29 @@ namespace SecondFloor
                     {
                         sb.AppendLine($"  {upgradeDef.label}: {upgradeDef.sleepEffectivenessBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}");
                         totalBonus += upgradeDef.sleepEffectivenessBonus;
+                    }
+                }
+                
+                if (totalBonus != 0f)
+                {
+                    __result += $"\n\nStaircase upgrades: {totalBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}\n{sb.ToString().TrimEnd()}";
+                }
+                return;
+            }
+            
+            // Add hunger rate bonus explanation (e.g., Sleep Accelerator)
+            if (stat == StatDefOf.BedHungerRateFactor)
+            {
+                float totalBonus = 0f;
+                var activeUpgrades = upgradesComp.GetActiveUpgradeDefs();
+                StringBuilder sb = new StringBuilder();
+                
+                foreach (var upgradeDef in activeUpgrades)
+                {
+                    if (upgradeDef.hungerRateBonus != 0f)
+                    {
+                        sb.AppendLine($"  {upgradeDef.label}: {upgradeDef.hungerRateBonus.ToStringByStyle(ToStringStyle.PercentZero, ToStringNumberSense.Offset)}");
+                        totalBonus += upgradeDef.hungerRateBonus;
                     }
                 }
                 
