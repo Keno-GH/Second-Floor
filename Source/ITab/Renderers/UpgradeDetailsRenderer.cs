@@ -301,6 +301,26 @@ namespace SecondFloor
                 }
             }
             
+            // Battery storage effects
+            if (def.IsBatteryUpgrade && def.linkedBatteryDef != null)
+            {
+                var batteryProps = def.linkedBatteryDef.GetCompProperties<CompProperties_Battery>();
+                if (batteryProps != null)
+                {
+                    Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), 
+                        $"  Power Storage: {batteryProps.storedEnergyMax:F0} Wd");
+                    curY += TabLayout.StatsLineHeight;
+                    hasEffects = true;
+                }
+                
+                GUI.color = new Color(1f, 0.6f, 0.4f);
+                Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), 
+                    "  Warning: Can explode if damaged");
+                GUI.color = Color.white;
+                curY += TabLayout.StatsLineHeight;
+                hasEffects = true;
+            }
+            
             if (def.requiresPower && def.basePowerConsumption > 0)
             {
                 var ext = def.upgradeBuildingDef?.GetModExtension<StaircaseUpgradeExtension>();
