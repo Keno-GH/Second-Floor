@@ -24,9 +24,8 @@
         <placeWorkers>
             <li>SecondFloor.PlaceWorker_OnStaircase</li>
         </placeWorkers>
-        <!-- designationCategory is required for RimWorld to auto-generate blueprint and frame defs -->
-        <!-- The PlaceWorker prevents manual placement anyway since it requires a staircase -->
-        <designationCategory>Misc</designationCategory>
+        <!-- No designationCategory - hides from architect menu while still allowing blueprint/frame generation -->
+        <!-- These are placed programmatically via the staircase ITab only -->
         <size>(1,1)</size>
         <graphicData>
             <!-- Use a vanilla texture until we have custom ones -->
