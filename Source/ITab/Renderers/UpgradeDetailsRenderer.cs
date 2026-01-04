@@ -347,6 +347,34 @@ namespace SecondFloor
                 hasEffects = true;
             }
             
+            // Bathroom effects (DBH integration)
+            if (def.IsBathroomUpgrade)
+            {
+                if (def.bladderRestoreAmount > 0f)
+                {
+                    Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), 
+                        $"  Fills bladder up to {def.bladderRestoreAmount.ToStringPercent()}");
+                    curY += TabLayout.StatsLineHeight;
+                    hasEffects = true;
+                }
+                
+                if (def.hygieneRestoreAmount > 0f)
+                {
+                    Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), 
+                        $"  Fills hygiene up to {def.hygieneMaxCap.ToStringPercent()}");
+                    curY += TabLayout.StatsLineHeight;
+                    hasEffects = true;
+                }
+                
+                if (def.thirstRestoreAmount > 0f)
+                {
+                    Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), 
+                        $"  Fills thirst up to {def.thirstRestoreAmount.ToStringPercent()}");
+                    curY += TabLayout.StatsLineHeight;
+                    hasEffects = true;
+                }
+            }
+            
             if (!hasEffects)
             {
                 Widgets.Label(new Rect(0f, curY, width, TabLayout.StatsLineHeight), "  No gameplay effects");
