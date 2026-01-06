@@ -1,6 +1,7 @@
 <Defs>
   <!-- Base staircase definition -->
   <ThingDef Abstract="True" Name="StaircaseBase" ParentName="BedBase">
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
     <tickerType>Normal</tickerType>
     <uiIconScale>1</uiIconScale>
     <uiOrder>2405</uiOrder>

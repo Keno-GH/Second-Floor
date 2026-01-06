@@ -24,8 +24,11 @@
         <placeWorkers>
             <li>SecondFloor.PlaceWorker_OnStaircase</li>
         </placeWorkers>
-        <!-- No designationCategory - hides from architect menu while still allowing blueprint/frame generation -->
+        <!-- designationCategory is required for RimWorld to generate blueprintDef and frameDef -->
+        <!-- canGenerateDefaultDesignator=false hides it from the architect menu -->
         <!-- These are placed programmatically via the staircase ITab only -->
+        <designationCategory>Furniture</designationCategory>
+        <canGenerateDefaultDesignator>false</canGenerateDefaultDesignator>
         <size>(1,1)</size>
         <graphicData>
             <!-- Use a vanilla texture until we have custom ones -->
