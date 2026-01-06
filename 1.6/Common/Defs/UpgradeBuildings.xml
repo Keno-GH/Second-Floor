@@ -49,9 +49,12 @@
         <statBases>
             <WorkToBuild>3000</WorkToBuild>
         </statBases>
-        <costList>
-            <WoodLog>200</WoodLog>
-        </costList>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
+        <costStuffCount>200</costStuffCount>
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
@@ -332,7 +335,7 @@
         <label>braziers upgrade</label>
         <description>Install braziers to provide heat to the second floor area. Consumes fuel.</description>
         <researchPrerequisites>
-            <li>SF_AirManagement</li>
+            <li>SF_Upstairs</li>
         </researchPrerequisites>
         <statBases>
             <WorkToBuild>2000</WorkToBuild>
@@ -360,7 +363,7 @@
         <label>campfires upgrade</label>
         <description>Install campfires to provide heat to the second floor area. They require more space and fuel than braziers but provide more heat. Consumes fuel.</description>
         <researchPrerequisites>
-            <li>SF_AirManagement</li>
+            <li>SF_Upstairs</li>
         </researchPrerequisites>
         <statBases>
             <WorkToBuild>4000</WorkToBuild>
@@ -475,7 +478,7 @@
         <label>passive cooler upgrade</label>
         <description>Install passive coolers to provide cooling to the second floor area. They consume fuel.</description>
         <researchPrerequisites>
-            <li>SF_AirManagement</li>
+            <li>SF_Upstairs</li>
         </researchPrerequisites>
         <statBases>
             <WorkToBuild>3000</WorkToBuild>

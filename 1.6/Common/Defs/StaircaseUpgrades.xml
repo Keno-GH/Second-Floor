@@ -256,7 +256,7 @@
         <removesSleptInDark>true</removesSleptInDark>
         <upgradeBuildingDef>SF_UpgradeBuilding_Braziers</upgradeBuildingDef>
         <minConstructionSkill>2</minConstructionSkill>
-        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
+        <researchPrerequisite>SF_Upstairs</researchPrerequisite>
         <stuffCategories>
             <li>Metallic</li>
         </stuffCategories>
@@ -279,7 +279,7 @@
         <removesSleptInDark>true</removesSleptInDark>
         <upgradeBuildingDef>SF_UpgradeBuilding_Campfires</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
-        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
+        <researchPrerequisite>SF_Upstairs</researchPrerequisite>
         <iconPath>Things/Building/Misc/Campfire</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -296,7 +296,7 @@
         <coolOffset>20</coolOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_PassiveCooler</upgradeBuildingDef>
         <minConstructionSkill>0</minConstructionSkill>
-        <researchPrerequisite>SF_AirManagement</researchPrerequisite>
+        <researchPrerequisite>SF_Upstairs</researchPrerequisite>
         <iconPath>Things/Building/Misc/PassiveCooler</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
