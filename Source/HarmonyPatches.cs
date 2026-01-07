@@ -25,6 +25,55 @@ namespace SecondFloor
         }
     }
 
+    /// <summary>
+    /// Fixes IsValidBedFor for staircase beds by checking reservations with the correct
+    /// sleeping slot count instead of the physical bed size.
+    /// </summary>
+    [HarmonyPatch(typeof(RestUtility), nameof(RestUtility.IsValidBedFor))]
+    [HarmonyPriority(Priority.Last)] // Run after other patches (like Hospitality)
+    public static class RestUtility_IsValidBedFor_StaircaseFix
+    {
+        public static void Postfix(Thing bedThing, Pawn sleeper, Pawn traveler, bool ignoreOtherReservations, GuestStatus? guestStatus, ref bool __result)
+        {
+            // Only fix if result is currently false
+            if (__result) return;
+            
+            var bed = bedThing as Building_Bed;
+            if (bed == null) return;
+            
+            // Only apply to staircase beds
+            var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null) return;
+            
+            // Skip if ignoring reservations (already handled)
+            if (ignoreOtherReservations) return;
+            
+            // Basic validity checks that would have passed before the reservation check
+            if (bed.Map != sleeper.MapHeld) return;
+            if (!RestUtility.CanUseBedEver(sleeper, bed.def)) return;
+            if (bed.IsForbidden(sleeper)) return;
+            if (bed.IsBurning()) return;
+            
+            // For medical beds, don't override
+            if (bed.Medical && !HealthAIUtility.ShouldSeekMedicalRest(sleeper)) return;
+            
+            // The pawn must be assigned to this bed or be the traveler doing the check
+            bool isAssigned = bed.CompAssignableToPawn.AssignedPawnsForReading.Contains(sleeper);
+            if (!isAssigned && traveler != sleeper) return;
+            
+            // Check if prisoner/guest status is compatible
+            if (bed.ForPrisoners != (sleeper.IsPrisoner || guestStatus == GuestStatus.Prisoner))
+                return;
+            
+            // THE FIX: Check reservation with our correct sleeping slots count
+            int correctSlotCount = bed.SleepingSlotsCount;
+            if (sleeper.CanReserve(bed, correctSlotCount, stackCount: 0))
+            {
+                __result = true;
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(PawnRenderer))]
     [HarmonyPatch("RenderPawnAt")]
     [HarmonyPatch(new Type[] { 
