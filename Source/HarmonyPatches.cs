@@ -237,21 +237,27 @@ namespace SecondFloor
     }
 
     // Prefix to assign pawns to the correct slot index
+    /// <summary>
+    /// Patches GetCurOccupant to check for pawns at the bed's center position rather than
+    /// vanilla slot positions, matching sleeping pawns by their assignment index.
+    /// This is necessary because all pawns in a staircase sleep at bed.Position regardless
+    /// of their slot index, unlike vanilla beds where each slot has a distinct physical position.
+    /// </summary>
     [HarmonyPatch(typeof(Building_Bed), "GetCurOccupant")]
     public static class Building_Bed_GetCurOccupant_Patch
     {
         public static bool Prefix(Building_Bed __instance, ref Pawn __result, int slotIndex)
         {
-            var bedSize = __instance.def.size.x;
-            if (__instance.GetComp<CompStaircaseUpgrades>() != null)
+            // Only apply to staircases with the upgrades component
+            if (__instance.GetComp<CompStaircaseUpgrades>() == null)
             {
-                if ((bedSize == 2 && slotIndex > 0) || (bedSize == 1))
-                {
-                    __result = GetCurOccupant(__instance, slotIndex);
-                    return false;
-                }
+                return true;
             }
-            return true;
+            
+            // For staircases, all pawns sleep at bed.Position, so we must always use
+            // our custom lookup that matches by assignment index rather than physical position
+            __result = GetCurOccupant(__instance, slotIndex);
+            return false;
         }
 
         public static Pawn GetCurOccupant(Building_Bed __instance, int slotIndex)
@@ -260,17 +266,23 @@ namespace SecondFloor
             {
                 return null;
             }
-            IntVec3 sleepingSlotPos = __instance.Position;
-            List<Thing> list = __instance.Map.thingGrid.ThingsListAt(sleepingSlotPos);
+            
             var comp = __instance.CompAssignableToPawn;
-            for (int i = 0; i < list.Count; i++)
+            
+            // Check all cells occupied by the bed, not just bed.Position
+            // This is necessary because pawns may be at any cell of the bed's footprint
+            foreach (IntVec3 cell in __instance.OccupiedRect())
             {
-                Pawn pawn = list[i] as Pawn;
-                if (pawn != null && pawn.CurJob != null && pawn.GetPosture().InBed())
+                List<Thing> list = __instance.Map.thingGrid.ThingsListAt(cell);
+                for (int i = 0; i < list.Count; i++)
                 {
-                    if (comp.AssignedPawnsForReading.IndexOf(pawn) == slotIndex)
+                    Pawn pawn = list[i] as Pawn;
+                    if (pawn != null && pawn.CurJob != null && pawn.GetPosture().InBed())
                     {
-                        return pawn;
+                        if (comp.AssignedPawnsForReading.IndexOf(pawn) == slotIndex)
+                        {
+                            return pawn;
+                        }
                     }
                 }
             }
