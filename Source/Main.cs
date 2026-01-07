@@ -44,6 +44,40 @@ namespace SecondFloor
         {
             // Initialize DBH integration if available
             DBHReflectionHelper.Initialize();
+            
+            // Hide upgrade building designators from the architect menu
+            // We need the designationCategory for blueprint/frame generation, but we don't want
+            // players to build these directly - they're placed via the staircase ITab
+            HideUpgradeBuildingDesignators();
+        }
+        
+        private static void HideUpgradeBuildingDesignators()
+        {
+            var miscCategory = DefDatabase<DesignationCategoryDef>.GetNamed("Misc", errorOnFail: false);
+            if (miscCategory == null)
+            {
+                Log.Warning("[SecondFloor] Could not find Misc designation category to hide upgrade building designators.");
+                return;
+            }
+            
+            // Get the resolved designators list
+            var resolvedDesignators = miscCategory.AllResolvedDesignators;
+            
+            // Find and remove designators for our upgrade buildings
+            var designatorsToRemove = resolvedDesignators
+                .OfType<Designator_Build>()
+                .Where(d => d.PlacingDef?.defName?.StartsWith("SF_UpgradeBuilding_") == true)
+                .ToList();
+            
+            foreach (var designator in designatorsToRemove)
+            {
+                miscCategory.AllResolvedDesignators.Remove(designator);
+            }
+            
+            if (designatorsToRemove.Count > 0)
+            {
+                Log.Message($"[SecondFloor] Hidden {designatorsToRemove.Count} upgrade building designators from architect menu.");
+            }
         }
     }
 
