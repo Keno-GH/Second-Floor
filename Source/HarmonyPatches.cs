@@ -746,4 +746,62 @@ namespace SecondFloor
         }
     }
 
+    /// <summary>
+    /// Prevents staircase beds from converting rooms to Bedroom role.
+    /// This allows rooms with staircases to keep their primary role (e.g., kitchen, lab).
+    /// </summary>
+    [HarmonyPatch(typeof(RoomRoleWorker_Bedroom), "GetScore")]
+    public static class Patch_RoomRoleWorker_Bedroom_GetScore
+    {
+        public static void Postfix(Room room, ref float __result)
+        {
+            if (__result <= 0f) return;
+            
+            // Count only non-staircase beds
+            int nonStaircaseBedCount = 0;
+            foreach (var bed in room.ContainedBeds)
+            {
+                if (bed?.def?.HasModExtension<SecondFloorModExtension>() != true)
+                {
+                    nonStaircaseBedCount++;
+                }
+            }
+            
+            // If there are no non-staircase beds, return 0 (don't make it a bedroom)
+            if (nonStaircaseBedCount == 0)
+            {
+                __result = 0f;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Prevents staircase beds from converting rooms to Barracks role.
+    /// This allows rooms with staircases to keep their primary role (e.g., kitchen, lab).
+    /// </summary>
+    [HarmonyPatch(typeof(RoomRoleWorker_Barracks), "GetScore")]
+    public static class Patch_RoomRoleWorker_Barracks_GetScore
+    {
+        public static void Postfix(Room room, ref float __result)
+        {
+            if (__result <= 0f) return;
+            
+            // Count only non-staircase beds
+            int nonStaircaseBedCount = 0;
+            foreach (var bed in room.ContainedBeds)
+            {
+                if (bed?.def?.HasModExtension<SecondFloorModExtension>() != true)
+                {
+                    nonStaircaseBedCount++;
+                }
+            }
+            
+            // If there are no non-staircase beds, return 0 (don't make it a barracks)
+            if (nonStaircaseBedCount == 0)
+            {
+                __result = 0f;
+            }
+        }
+    }
+
 }
