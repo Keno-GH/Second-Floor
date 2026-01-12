@@ -239,6 +239,27 @@ namespace SecondFloor
         }
     }
 
+    /// <summary>
+    /// Patches RestUtility.GetBedSleepingSlotPosFor to always return bed.Position for staircase beds.
+    /// This ensures all pawns path to the staircase center regardless of their assigned slot index,
+    /// since all sleeping happens at the same physical location for staircases.
+    /// </summary>
+    [HarmonyPatch(typeof(RestUtility), "GetBedSleepingSlotPosFor")]
+    public static class RestUtility_GetBedSleepingSlotPosFor_Patch
+    {
+        public static bool Prefix(Pawn pawn, Building_Bed bed, ref IntVec3 __result)
+        {
+            if (bed == null) return true;
+            
+            var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null) return true;
+            
+            // For staircases, always return bed.Position
+            __result = bed.Position;
+            return false;
+        }
+    }
+
     // If index is outside of the bed size, return the bed center and skip the original method
     [HarmonyPatch(typeof(BedUtility), "GetSlotPos")]
     public static class BedUtility_GetSlotPos_Patch
@@ -257,25 +278,189 @@ namespace SecondFloor
         }
     }
 
+    /// <summary>
+    /// Patches Toils_Bed.GotoBed to fix pathing for staircase beds.
+    /// For staircases, all pawns should path to bed.Position rather than individual slot positions,
+    /// since all sleeping happens at the staircase center. This also uses PathEndMode.Touch instead
+    /// of PathEndMode.OnCell to handle cases where the cell is occupied by other sleeping pawns.
+    /// </summary>
+    [HarmonyPatch(typeof(Toils_Bed), "GotoBed")]
+    public static class Toils_Bed_GotoBed_Patch
+    {
+        // Track retry attempts per pawn to avoid infinite loops
+        private static Dictionary<int, int> pathRetryAttempts = new Dictionary<int, int>();
+        private const int MaxRetryAttempts = 3;
+        
+        public static void Postfix(Toil __result, TargetIndex bedIndex)
+        {
+            if (__result == null) return;
+
+            // Store original actions
+            Action originalInitAction = __result.initAction;
+            Action<int> originalTickAction = __result.tickIntervalAction;
+
+            __result.initAction = delegate
+            {
+                Pawn actor = __result.actor;
+                if (actor?.CurJob == null) return;
+                
+                Building_Bed bed = actor.CurJob.GetTarget(bedIndex).Thing as Building_Bed;
+                if (bed == null) return;
+
+                // Check if this is a staircase bed
+                var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
+                {
+                    // Reset retry counter for this pawn
+                    pathRetryAttempts[actor.thingIDNumber] = 0;
+                    
+                    // For staircases, always use bed.Position as destination
+                    IntVec3 destination = bed.Position;
+                    
+                    // If pawn is already at any cell of the bed, they're close enough
+                    if (bed.OccupiedRect().Contains(actor.Position))
+                    {
+                        actor.jobs.curDriver.ReadyForNextToil();
+                        return;
+                    }
+                    
+                    // Use Touch mode to allow pathing even when cell is occupied
+                    // This is more lenient than OnCell for multi-pawn beds
+                    if (!actor.pather.Moving || actor.pather.Destination.Cell != destination)
+                    {
+                        actor.pather.StartPath(destination, PathEndMode.Touch);
+                        
+                        // Check if pathing failed to start
+                        if (!actor.pather.Moving)
+                        {
+                            // Try to find an adjacent walkable cell instead
+                            foreach (IntVec3 cell in GenAdj.CellsAdjacent8Way(bed))
+                            {
+                                if (cell.Standable(bed.Map) && actor.CanReach(cell, PathEndMode.OnCell, Danger.Some))
+                                {
+                                    actor.pather.StartPath(cell, PathEndMode.OnCell);
+                                    if (actor.pather.Moving)
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                            
+                            // If we still can't path, log and fail the job
+                            Log.Warning($"[SecondFloor] {actor.LabelShort} could not start path to staircase bed at {destination}. Current position: {actor.Position}");
+                        }
+                    }
+                    return;
+                }
+
+                // For non-staircase beds, use original behavior
+                originalInitAction?.Invoke();
+            };
+
+            __result.tickIntervalAction = delegate(int delta)
+            {
+                Pawn actor = __result.actor;
+                if (actor?.CurJob == null) return;
+                
+                Building_Bed bed = actor.CurJob.GetTarget(bedIndex).Thing as Building_Bed;
+                if (bed == null) return;
+
+                // Check if this is a staircase bed
+                var upgradesComp = bed.GetComp<CompStaircaseUpgrades>();
+                if (upgradesComp != null)
+                {
+                    // Check if pawn has stopped moving
+                    if (!actor.pather.Moving)
+                    {
+                        // If pawn is on the bed, proceed to next toil
+                        if (bed.OccupiedRect().Contains(actor.Position))
+                        {
+                            pathRetryAttempts.Remove(actor.thingIDNumber);
+                            Log.Message($"[SecondFloor] {actor.LabelShort} arrived at staircase bed at {bed.Position} ({actor.Position}).");
+                            actor.jobs.curDriver.ReadyForNextToil();
+                            return;
+                        }
+                        
+                        // Pawn stopped but not on the bed - try to re-path or teleport
+                        int retries = pathRetryAttempts.TryGetValue(actor.thingIDNumber, out int r) ? r : 0;
+                        
+                        if (retries < MaxRetryAttempts)
+                        {
+                            // Try to path directly to bed position again
+                            pathRetryAttempts[actor.thingIDNumber] = retries + 1;
+                            actor.pather.StartPath(bed.Position, PathEndMode.Touch);
+                            
+                            if (actor.pather.Moving)
+                            {
+                                return; // Successfully started pathing, wait for arrival
+                            }
+                        }
+                        
+                        // Last resort: teleport to bed position
+                        // This handles cases where pathing is blocked but pawn is adjacent
+                        if (actor.Position.AdjacentTo8Way(bed.Position) || 
+                            GenAdj.CellsAdjacent8Way(bed).Any(c => c == actor.Position))
+                        {
+                            pathRetryAttempts.Remove(actor.thingIDNumber);
+                            actor.Position = bed.Position;
+                            actor.pather.StopDead();
+                            Log.Message($"[SecondFloor] Teleported {actor.LabelShort} to staircase bed at {bed.Position} after failed pathing.");
+                            actor.jobs.curDriver.ReadyForNextToil();
+                            return;
+                        }
+                        
+                        // Pawn is not adjacent - try to path to an adjacent cell
+                        foreach (IntVec3 cell in GenAdj.CellsAdjacent8Way(bed))
+                        {
+                            if (cell.Standable(bed.Map) && actor.CanReach(cell, PathEndMode.OnCell, Danger.Some))
+                            {
+                                actor.pather.StartPath(cell, PathEndMode.OnCell);
+                                if (actor.pather.Moving)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // For non-staircase beds, use original behavior
+                originalTickAction?.Invoke(delta);
+            };
+
+            // We can't conditionally change the defaultCompleteMode here since we don't know
+            // which bed the pawn will target yet. Instead, the initAction and tickIntervalAction
+            // handle completion for staircases by calling ReadyForNextToil() when appropriate.
+        }
+    }
+
     // Postfix to set the pawn position to the bed position if the bed has CompMultipleBeds
     [HarmonyPatch(typeof(Toils_LayDown), "LayDown")]
     public static class Toils_LayDown_LayDown_Patch
     {
-        public static void Postfix(Toil __result)
+        public static void Postfix(Toil __result, TargetIndex bedOrRestSpotIndex, bool hasBed)
         {
             if (__result == null) return;
+            if (!hasBed) return; // Only apply to beds, not rest spots
 
             Action originalInitAction = __result.initAction;
             __result.initAction = delegate
             {
                 Pawn actor = __result.actor;
-                if (actor != null)
+                if (actor?.CurJob != null)
                 {
-                    // Logic to fix position before the original check runs
-                    Building_Bed bed = actor.CurrentBed();
+                    // Get the bed from the job target, not CurrentBed()
+                    // CurrentBed() only works if pawn is already in bed posture
+                    Building_Bed bed = actor.CurJob.GetTarget(bedOrRestSpotIndex).Thing as Building_Bed;
                     if (bed != null && bed.GetComp<CompStaircaseUpgrades>() != null)
                     {
-                        actor.Position = bed.Position;
+                        // Teleport pawn to bed position before the original check runs
+                        if (!bed.OccupiedRect().Contains(actor.Position))
+                        {
+                            actor.Position = bed.Position;
+                            actor.pather.StopDead();
+                        }
                     }
                 }
 
