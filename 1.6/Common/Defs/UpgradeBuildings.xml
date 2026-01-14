@@ -64,6 +64,29 @@
         </modExtensions>
     </ThingDef>
     
+    <!-- Extra Beds / Extra Room 2 Upgrade -->
+    <ThingDef ParentName="SF_UpgradeBuildingBase">
+        <defName>SF_UpgradeBuilding_ExtraBeds2</defName>
+        <label>extra room 2 upgrade</label>
+        <description>Construct an additional private room with a double bed.</description>
+        <statBases>
+            <WorkToBuild>3000</WorkToBuild>
+        </statBases>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
+        <costStuffCount>200</costStuffCount>
+        <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
+        <modExtensions>
+            <li Class="SecondFloor.StaircaseUpgradeExtension">
+                <upgradeDef>SF_StaircaseUpgrade_ExtraBeds2</upgradeDef>
+                <onePerBed>false</onePerBed>
+            </li>
+        </modExtensions>
+    </ThingDef>
+    
     <!-- Barracks Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
         <defName>SF_UpgradeBuilding_Barracks</defName>

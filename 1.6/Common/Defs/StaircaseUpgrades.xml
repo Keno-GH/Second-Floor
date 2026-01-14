@@ -50,6 +50,19 @@
         <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Extra Room 2 upgrade - requires construction -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_StaircaseUpgrade_ExtraBeds2</defName>
+        <label>Extra Room 2</label>
+        <description>Adds another room with a double bed (2 bedspaces). This creates multiple private rooms, eliminating the shared bed debuff.</description>
+        <category>SF_Category_Bedrooms</category>
+        <spaceCost>30</spaceCost>
+        <bedCountOffset>2</bedCountOffset>
+        <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds2</upgradeBuildingDef>
+        <minConstructionSkill>4</minConstructionSkill>
+        <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
     <!-- Barracks upgrade - requires construction -->
     <SecondFloor.StaircaseUpgradeDef>
         <defName>SF_StaircaseUpgrade_Barracks</defName>
