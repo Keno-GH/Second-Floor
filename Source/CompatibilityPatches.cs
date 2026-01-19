@@ -84,6 +84,19 @@ namespace SecondFloor
                 harmony.Patch(otherOwnerScoreMethod, prefix: prefix);
             }
             
+            // Patch CalculateBedValue to use virtual room stats for temperature calculation
+            // This is called when guests evaluate if the bed was worth the price after claiming it
+            var calculateBedValueMethod = AccessTools.Method(bedUtilityType, "CalculateBedValue");
+            if (calculateBedValueMethod != null)
+            {
+                var prefix = new HarmonyMethod(typeof(HospitalityPatches), nameof(CalculateBedValue_Prefix));
+                harmony.Patch(calculateBedValueMethod, prefix: prefix);
+            }
+            else
+            {
+                Log.Warning("[Second Floor] Could not find BedUtility.CalculateBedValue method to patch.");
+            }
+            
             // Patch Building_GuestBed.Swap to preserve staircase upgrades during conversion
             var swapMethod = AccessTools.Method(buildingGuestBedType, "Swap", new Type[] { typeof(Building_Bed) });
             if (swapMethod != null)
@@ -248,6 +261,156 @@ namespace SecondFloor
             // This is a Second Floor staircase - pawns don't share rooms, so no opinion penalty
             __result = 0;
             return false; // Skip original method
+        }
+        
+        /// <summary>
+        /// Prefix patch for BedUtility.CalculateBedValue.
+        /// For Second Floor staircases, we reimplement the calculation using virtual room stats
+        /// instead of physical room stats. This is called when guests evaluate if the bed was
+        /// worth the price after claiming it, which determines their thought stage.
+        /// </summary>
+        public static bool CalculateBedValue_Prefix(object bed, Pawn guest, int money, ref float __result)
+        {
+            if (bed == null) return true;
+            
+            var buildingBed = bed as Building_Bed;
+            if (buildingBed == null) return true;
+            
+            var upgradesComp = buildingBed.GetComp<CompStaircaseUpgrades>();
+            if (upgradesComp == null) return true;
+            
+            // This is a Second Floor staircase - calculate value using virtual stats
+            var virtualStats = upgradesComp.CalculateVirtualBedStats();
+            
+            int quality = virtualStats.quality;
+            int impressiveness = virtualStats.impressiveness;
+            int roomTypeScore = virtualStats.roomTypeScore;
+            int comfort = virtualStats.comfort;
+            int facilities = virtualStats.facilities;
+            
+            // Calculate fee penalty (same as original)
+            // Fee formula: higher rental fee relative to guest's money = worse score
+            int rentalFee = GetRentalFee(bed);
+            int fee = UnityEngine.Mathf.RoundToInt(money > 0 ? 250 * (1f * rentalFee / money) : 0);
+            
+            // Calculate temperature score using virtual temperature
+            float virtualTemp = upgradesComp.CurrentVirtualTemperature;
+            int temperature = CalculateVirtualTemperatureScore(guest, virtualTemp);
+            
+            // Royal expectations - minimal support, neutral for low-tier royalty
+            // Return 0 instead of -75 penalty for no room
+            int royalExpectations = 0;
+            
+            // Other pawn opinion - already handled by OtherOwnerScore_Prefix returning 0
+            int otherPawnOpinion = 0;
+            
+            // Ideology needs - try to call Hospitality's method if available
+            int ideologyNeeds = GetIdeologyFulfillment(bed, guest);
+            
+            // Distance - not relevant for staircase beds (use 0)
+            int distance = 0;
+            
+            // Apply trait modifiers (same as original Hospitality code)
+            ApplyTraitModifiers(guest, ref impressiveness, ref fee, ref comfort);
+            
+            // Calculate final score
+            // Formula from Hospitality: impressiveness + quality + comfort + roomType + temperature 
+            //                          + otherPawnOpinion + royalExpectations + ideologyNeeds + facilities - distance
+            int score = impressiveness + quality + comfort + roomTypeScore + temperature 
+                       + otherPawnOpinion + royalExpectations + ideologyNeeds + facilities - distance;
+            
+            // Apply score factor and subtract fee (same as original)
+            // ScoreFactor is 0.5f in Hospitality
+            const float ScoreFactor = 0.5f;
+            __result = UnityEngine.Mathf.CeilToInt(ScoreFactor * score - fee);
+            
+            return false; // Skip original method
+        }
+        
+        /// <summary>
+        /// Gets the rental fee from a guest bed using reflection.
+        /// </summary>
+        private static int GetRentalFee(object bed)
+        {
+            try
+            {
+                var rentalFeeField = AccessTools.Field(buildingGuestBedType, "rentalFee");
+                if (rentalFeeField != null)
+                {
+                    return (int)rentalFeeField.GetValue(bed);
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Calculates temperature score based on virtual temperature.
+        /// Mimics Hospitality's GetTemperatureScore logic.
+        /// </summary>
+        private static int CalculateVirtualTemperatureScore(Pawn guest, float virtualTemp)
+        {
+            if (guest?.def == null) return 0;
+            
+            var optimalRange = GenTemperature.ComfortableTemperatureRange(guest.def);
+            float pctTemperature = UnityEngine.Mathf.Abs(optimalRange.InverseLerpThroughRange(virtualTemp) - 0.5f) * 2;
+            
+            // Formula from Hospitality: Lerp from 0 to -200 based on how far outside comfort zone
+            // Returns -200 to 0 range
+            return UnityEngine.Mathf.RoundToInt(UnityEngine.Mathf.Lerp(0, -200, pctTemperature - 0.75f) * 4);
+        }
+        
+        /// <summary>
+        /// Gets ideology fulfillment score by calling Hospitality's method via reflection.
+        /// </summary>
+        private static int GetIdeologyFulfillment(object bed, Pawn guest)
+        {
+            try
+            {
+                var method = AccessTools.Method(bedUtilityType, "Ideology_GetFulfillment");
+                if (method != null)
+                {
+                    return (int)method.Invoke(null, new object[] { bed, guest });
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Applies trait modifiers to bed value calculation.
+        /// Mimics Hospitality's trait handling logic.
+        /// </summary>
+        private static void ApplyTraitModifiers(Pawn guest, ref int impressiveness, ref int fee, ref int comfort)
+        {
+            if (guest?.story?.traits == null) return;
+            
+            var traits = guest.story.traits;
+            
+            // Greedy: double fee penalty
+            if (traits.HasTrait(TraitDefOf.Greedy))
+            {
+                fee *= 2;
+            }
+            
+            // Kind: halve fee penalty
+            if (traits.HasTrait(TraitDefOf.Kind))
+            {
+                fee /= 2;
+            }
+            
+            // Ascetic: impressiveness is bad, comfort is less important
+            if (traits.HasTrait(TraitDefOf.Ascetic))
+            {
+                impressiveness = -impressiveness;
+                comfort /= 2;
+            }
+            
+            // Jealous: impressiveness matters more
+            if (traits.HasTrait(TraitDefOf.Jealous))
+            {
+                impressiveness = (int)(impressiveness * 1.5f);
+            }
         }
         
         /// <summary>

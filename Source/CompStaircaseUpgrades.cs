@@ -351,7 +351,10 @@ namespace SecondFloor
                 return BasementTotalSpace;
             }
             
-            // Upstairs staircases count cells with constructed roofs in a circular area (radius 10)
+            // Upstairs staircases count cells with roofs in a circular area (radius 10)
+            // Mountain upfloors count thick/thin rock roofs; regular upstairs count constructed roofs
+            bool isMountainUpfloor = ModExtension?.isMountainUpfloor ?? false;
+            
             float count = 0f;
             foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 10f, true))
             {
@@ -360,9 +363,21 @@ namespace SecondFloor
                     continue;
                 }
                 RoofDef roof = cell.GetRoof(map);
-                if (roof == RoofDefOf.RoofConstructed)
+                if (isMountainUpfloor)
                 {
-                    count += 1f;
+                    // Mountain upfloors count overhead mountain (thick) and thin rock roofs
+                    if (roof == RoofDefOf.RoofRockThick || roof == RoofDefOf.RoofRockThin)
+                    {
+                        count += 1f;
+                    }
+                }
+                else
+                {
+                    // Regular upstairs count constructed roofs only
+                    if (roof == RoofDefOf.RoofConstructed)
+                    {
+                        count += 1f;
+                    }
                 }
             }
             return count;

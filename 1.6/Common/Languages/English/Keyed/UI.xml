@@ -141,7 +141,9 @@
   
   <!-- PlaceWorker Messages -->
   <SF_AvailableSpace>Available space: {0}</SF_AvailableSpace>
+  <SF_AvailableMountainSpace>Available mountain space: {0}</SF_AvailableMountainSpace>
   <SF_TooCloseToAnotherStaircase>Must be at least 10 cells from another staircase of the same type.</SF_TooCloseToAnotherStaircase>
+  <SF_MustPlaceUnderMountain>Must be placed under overhead mountain or rock roof.</SF_MustPlaceUnderMountain>
   
   <!-- Basement Expansion -->
   <SF_BasementSpace>Basement space: {0}/{1}</SF_BasementSpace>

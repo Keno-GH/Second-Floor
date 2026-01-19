@@ -32,6 +32,21 @@
     </ResearchProjectDef>
 
     <ResearchProjectDef>
+        <defName>SF_MountainUpfloor</defName>
+        <label>Mountain Upfloor</label>
+        <description>Build a staircase leading to an upper floor carved into the mountain overhead. These upfloors are naturally insulated by the surrounding rock and can only be built under overhead mountain or rock roofs.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>500</baseCost>
+        <techLevel>Medieval</techLevel>
+        <researchViewX>2.00</researchViewX>
+        <researchViewY>0.00</researchViewY>
+        <prerequisites>
+            <li>SF_Downstairs</li>
+            <li>Stonecutting</li>
+        </prerequisites>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
         <defName>SF_TextileInsulation</defName>
         <label>Textile Insulation</label>
         <description>Use textiles to insulate rooms from the elements, improving temperature regulation.</description>

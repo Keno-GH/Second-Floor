@@ -195,4 +195,91 @@
     </placeWorkers>
   </ThingDef>
 
+  <!-- Mountain Upfloor staircase - builds under overhead mountain -->
+  <ThingDef ParentName="StaircaseBase">
+    <defName>SF_MountainUpfloor</defName>
+    <label>Mountain Upfloor</label>
+    <description>A staircase leading to an upper floor carved into the mountain overhead. The surrounding rock provides natural insulation. Can only be built under overhead mountain or rock roofs, making it ideal for cave bases.</description>
+    <graphicData>
+      <texPath>Things/Building/22staircase/22staircase</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(4,4)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
+    <size>(2,2)</size>
+    <holdsRoof>true</holdsRoof>
+    <blockWind>true</blockWind>
+    <techLevel>Medieval</techLevel>
+    <modExtensions>
+      <li Class="SecondFloor.SecondFloorModExtension">
+        <floorLevel>Upstairs</floorLevel>
+        <isMountainUpfloor>true</isMountainUpfloor>
+        <RemoveSoakingWet>true</RemoveSoakingWet>
+        <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
+        <RemoveSleptOutside>true</RemoveSleptOutside>
+        <bedCount>2</bedCount>
+        <thoughtDef>SF_Decent_Quality_Room</thoughtDef>
+      </li>
+    </modExtensions>
+    <statBases>
+      <MaxHitPoints>600</MaxHitPoints>
+      <Flammability>0.5</Flammability>
+      <Beauty>4</Beauty>
+      <BeautyOutdoors>6</BeautyOutdoors>
+      <WorkToBuild>50000</WorkToBuild>
+      <Mass>400</Mass>
+      <BedRestEffectiveness>0.8</BedRestEffectiveness>
+      <Comfort>0.57</Comfort>
+      <ImmunityGainSpeedFactor>1</ImmunityGainSpeedFactor>
+      <SurgerySuccessChanceFactor>0.5</SurgerySuccessChanceFactor>
+      <MedicalTendQualityOffset>-0.10</MedicalTendQualityOffset>
+      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">1.0</BirthRitualQualityOffset>
+    </statBases>
+    <researchPrerequisites>
+      <li>SF_MountainUpfloor</li>
+    </researchPrerequisites>
+    <costStuffCount>200</costStuffCount>
+    <stuffCategories>
+      <li>Stony</li>
+      <li>Metallic</li>
+    </stuffCategories>
+    <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
+    <comps>
+      <li Class="CompProperties_AffectedByFacilities">
+        <linkableFacilities>
+          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
+        </linkableFacilities>
+      </li>
+      <li Class="SecondFloor.CompProperties_StaircaseUpgrades">
+        <initialUpgrades>
+          <li>SF_MountainNaturalInsulation</li>
+        </initialUpgrades>
+      </li>
+      <li Class="CompProperties_Refuelable">
+        <fuelConsumptionRate>0</fuelConsumptionRate>
+        <fuelCapacity>50.0</fuelCapacity>
+        <fuelFilter>
+          <thingDefs>
+            <li>WoodLog</li>
+            <li>Chemfuel</li>
+          </thingDefs>
+        </fuelFilter>
+        <initialFuelPercent>0</initialFuelPercent>
+        <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
+      </li>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <shortCircuitInRain>false</shortCircuitInRain>
+        <basePowerConsumption>0</basePowerConsumption>
+      </li>
+    </comps>
+    <placeWorkers>
+      <li>SecondFloor.PlaceWorkerIndoors</li>
+      <li>SecondFloor.PlaceWorker_UnderMountainRoof</li>
+      <li>SecondFloor.PlaceWorker_MountainStaircaseVisualizer</li>
+      <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
+    </placeWorkers>
+  </ThingDef>
+
 </Defs>

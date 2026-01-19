@@ -585,5 +585,22 @@
         <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
+    <!-- Mountain Natural Insulation - built-in for mountain upfloors -->
+    <SecondFloor.StaircaseUpgradeDef>
+        <defName>SF_MountainNaturalInsulation</defName>
+        <label>Mountain Rock Insulation</label>
+        <description>The overhead mountain mass provides natural temperature insulation, helping to maintain a comfortable temperature in the upfloor. This is a permanent feature of building into the mountain.</description>
+        <category>SF_Category_Temperature</category>
+        <spaceCost>0</spaceCost>
+        <canRemove>false</canRemove>
+        <insulationAdjustment>2</insulationAdjustment>
+        <insulationTarget>21</insulationTarget>
+        <applyToStairs>
+            <li>SF_MountainUpfloor</li>
+        </applyToStairs>
+        <!-- No upgradeBuildingDef - this is a built-in feature, not constructable -->
+        <iconPath>Things/Item/Resource/StoneBlocks/StoneBlocks_b</iconPath>
+    </SecondFloor.StaircaseUpgradeDef>
+
 </Defs>
 

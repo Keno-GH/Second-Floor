@@ -28,6 +28,12 @@ namespace SecondFloor
         /// </summary>
         public StaircaseFloorLevel floorLevel = StaircaseFloorLevel.Upstairs;
         
+        /// <summary>
+        /// If true, this upstairs staircase counts mountain roofs (thick and thin rock) instead of constructed roofs.
+        /// Used for cave base staircases that build into the mountain overhead.
+        /// </summary>
+        public bool isMountainUpfloor = false;
+        
         // =====================================================
         // Thought Removal Flags
         // =====================================================

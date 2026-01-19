@@ -42,6 +42,28 @@ namespace SecondFloor
             }
             return true;
         }
+    }
+    
+    /// <summary>
+    /// Requires placement under overhead mountain (thick rock) or thin rock roof.
+    /// Used for mountain upfloor staircases that build into the mountain overhead.
+    /// </summary>
+    public class PlaceWorker_UnderMountainRoof : PlaceWorker
+    {
+        public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
+        {
+            if (DebugSettings.godMode)
+            {
+                return true;
+            }
+            
+            RoofDef roof = loc.GetRoof(map);
+            if (roof != RoofDefOf.RoofRockThick && roof != RoofDefOf.RoofRockThin)
+            {
+                return new AcceptanceReport("SF_MustPlaceUnderMountain".Translate());
+            }
+            return true;
+        }
     }    public class PlaceWorkerInSmallRoom : PlaceWorker
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
@@ -251,6 +273,83 @@ namespace SecondFloor
             // Display the available space count
             string label = "SF_AvailableSpace".Translate(roofedCount);
             Color textColor = roofedCount > 0 ? Color.green : Color.red;
+            
+            Widgets.Label(new Rect(curX, curY, 999f, 999f), label.Colorize(textColor));
+            curY += 22f;
+        }
+    }
+    
+    /// <summary>
+    /// Visualizes the mountain staircase's area of influence during placement.
+    /// Shows a 20x20 circular area and highlights cells with overhead mountain or thin rock roofs.
+    /// </summary>
+    public class PlaceWorker_MountainStaircaseVisualizer : PlaceWorker
+    {
+        private static readonly Color AreaRingColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        private static readonly Color MountainRoofHighlightColor = new Color(0.6f, 0.4f, 0.2f, 0.5f);
+        
+        // Reusable list to avoid allocations during DrawGhost
+        private static List<IntVec3> mountainRoofCellsCache = new List<IntVec3>();
+        
+        public override void DrawGhost(ThingDef def, IntVec3 center, Rot4 rot, Color ghostCol, Thing thing = null)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Draw the area ring (radius 10 for 20x20 area)
+            GenDraw.DrawRadiusRing(center, 10f, AreaRingColor);
+            
+            // Collect cells with mountain roofs (thick or thin rock)
+            mountainRoofCellsCache.Clear();
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofRockThick || roof == RoofDefOf.RoofRockThin)
+                {
+                    mountainRoofCellsCache.Add(cell);
+                }
+            }
+            
+            // Highlight mountain roof cells in brown/earthy color
+            if (mountainRoofCellsCache.Count > 0)
+            {
+                GenDraw.DrawFieldEdges(mountainRoofCellsCache, MountainRoofHighlightColor);
+            }
+        }
+        
+        public override void DrawPlaceMouseAttachments(float curX, ref float curY, BuildableDef bdef, IntVec3 center, Rot4 rot)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Count mountain roof cells (thick or thin rock)
+            int mountainRoofCount = 0;
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                RoofDef roof = cell.GetRoof(map);
+                if (roof == RoofDefOf.RoofRockThick || roof == RoofDefOf.RoofRockThin)
+                {
+                    mountainRoofCount++;
+                }
+            }
+            
+            // Display the available space count
+            string label = "SF_AvailableMountainSpace".Translate(mountainRoofCount);
+            Color textColor = mountainRoofCount > 0 ? Color.green : Color.red;
             
             Widgets.Label(new Rect(curX, curY, 999f, 999f), label.Colorize(textColor));
             curY += 22f;
