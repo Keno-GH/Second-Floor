@@ -78,11 +78,6 @@
     </stuffCategories>
     <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
     <comps>
-      <li Class="CompProperties_AffectedByFacilities">
-        <linkableFacilities>
-          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
-        </linkableFacilities>
-      </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
       <li Class="CompProperties_Refuelable">
         <fuelConsumptionRate>0</fuelConsumptionRate>
@@ -161,11 +156,6 @@
     </stuffCategories>
     <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
     <comps>
-      <li Class="CompProperties_AffectedByFacilities">
-        <linkableFacilities>
-          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
-        </linkableFacilities>
-      </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades">
         <initialUpgrades>
           <li>SF_NaturalInsulation</li>
@@ -247,11 +237,6 @@
     </stuffCategories>
     <constructionSkillPrerequisite>6</constructionSkillPrerequisite>
     <comps>
-      <li Class="CompProperties_AffectedByFacilities">
-        <linkableFacilities>
-          <li MayRequire="Ludeon.RimWorld.Ideology">SleepAccelerator</li>
-        </linkableFacilities>
-      </li>
       <li Class="SecondFloor.CompProperties_StaircaseUpgrades">
         <initialUpgrades>
           <li>SF_MountainNaturalInsulation</li>
