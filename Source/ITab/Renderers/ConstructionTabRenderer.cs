@@ -461,7 +461,8 @@ namespace SecondFloor
             }
             else if (inProgress)
             {
-                buttonLabel = "SF_ExpandBasement_InProgress".Translate(upgradesComp.MinedCountInBatch, 5);
+                int tilesRequired = Main.Settings.tilesPerExpansion;
+                buttonLabel = "SF_ExpandBasement_InProgress".Translate(upgradesComp.MinedCountInBatch, tilesRequired);
                 tooltip = "SF_ExpandBasement_InProgress_Tooltip".Translate();
             }
             else
@@ -469,12 +470,12 @@ namespace SecondFloor
                 if (isMountain)
                 {
                     buttonLabel = "SF_ExpandMountain".Translate();
-                    tooltip = "SF_ExpandMountain_Tooltip".Translate(upgradesComp.MountainTotalSpace, upgradesComp.MountainMaxSpace);
+                    tooltip = "SF_ExpandMountain_Tooltip".Translate(Main.Settings.tilesPerExpansion, upgradesComp.MountainTotalSpace, upgradesComp.MountainMaxSpace);
                 }
                 else
                 {
                     buttonLabel = "SF_ExpandBasement".Translate();
-                    tooltip = "SF_ExpandBasement_Tooltip".Translate(upgradesComp.BasementTotalSpace, upgradesComp.BasementMaxSpace);
+                    tooltip = "SF_ExpandBasement_Tooltip".Translate(Main.Settings.tilesPerExpansion, upgradesComp.BasementTotalSpace, upgradesComp.BasementMaxSpace);
                 }
             }
             

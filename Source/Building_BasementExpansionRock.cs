@@ -51,7 +51,7 @@ namespace SecondFloor
                 if (upgradesComp != null)
                 {
                     int currentProgress = upgradesComp.MinedCountInBatch;
-                    int total = 5;
+                    int total = Main.Settings.tilesPerExpansion;
                     string progressText = "SF_ExcavationProgress".Translate(currentProgress, total);
                     
                     if (string.IsNullOrEmpty(baseString))

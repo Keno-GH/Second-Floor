@@ -27,7 +27,7 @@ namespace SecondFloor
         
         /// <summary>
         /// Counter for how many rocks have been mined in the current batch.
-        /// When this reaches 5, the bonus is applied.
+        /// When this reaches the configured tiles per expansion, the bonus is applied.
         /// </summary>
         private int minedCountInBatch = 0;
         
@@ -233,7 +233,8 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Spawns 5 expansion rocks on free cells around the staircase with mining designations.
+        /// Spawns expansion rocks on free cells around the staircase with mining designations.
+        /// The number of rocks is determined by the mod settings (tiles per expansion).
         /// Works for both basements and mountain upfloors.
         /// </summary>
         public void SpawnExpansionRocks()
@@ -252,12 +253,13 @@ namespace SecondFloor
                 return;
             }
             
-            // Find 5 free cells around the staircase
-            List<IntVec3> freeCells = FindFreeCellsAroundStaircase(5);
+            // Find free cells around the staircase based on settings
+            int tilesRequired = Main.Settings.tilesPerExpansion;
+            List<IntVec3> freeCells = FindFreeCellsAroundStaircase(tilesRequired);
             
-            if (freeCells.Count < 5)
+            if (freeCells.Count < tilesRequired)
             {
-                Messages.Message("SF_NotEnoughFreeCells".Translate(freeCells.Count, 5), 
+                Messages.Message("SF_NotEnoughFreeCells".Translate(freeCells.Count, tilesRequired), 
                     parent, MessageTypeDefOf.RejectInput);
                 return;
             }
@@ -296,16 +298,17 @@ namespace SecondFloor
             currentBatchRocks.Remove(rock);
             minedCountInBatch++;
             
-            // Check if batch is complete (all 5 rocks mined)
-            if (minedCountInBatch >= 5)
+            // Check if batch is complete (all rocks mined based on settings)
+            int tilesRequired = Main.Settings.tilesPerExpansion;
+            if (minedCountInBatch >= tilesRequired)
             {
                 // Apply bonus space
-                bonusSpace += 5;
+                bonusSpace += tilesRequired;
                 minedCountInBatch = 0;
                 currentBatchRocks.Clear();
                 
                 // Notify player (use display properties that work for both basement and mountain)
-                Messages.Message("SF_ExcavationComplete".Translate(5, DisplayTotalSpace, DisplayMaxSpace), 
+                Messages.Message("SF_ExcavationComplete".Translate(tilesRequired, DisplayTotalSpace, DisplayMaxSpace), 
                     parent, MessageTypeDefOf.PositiveEvent);
             }
         }
@@ -364,9 +367,10 @@ namespace SecondFloor
                 
                 if (IsExcavationInProgress)
                 {
+                    int tilesRequired = Main.Settings.tilesPerExpansion;
                     int remaining = currentBatchRocks.Count;
-                    int mined = 5 - remaining;
-                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, 5);
+                    int mined = tilesRequired - remaining;
+                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, tilesRequired);
                 }
                 
                 return result;
@@ -379,9 +383,10 @@ namespace SecondFloor
                 
                 if (IsExcavationInProgress)
                 {
+                    int tilesRequired = Main.Settings.tilesPerExpansion;
                     int remaining = currentBatchRocks.Count;
-                    int mined = 5 - remaining;
-                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, 5);
+                    int mined = tilesRequired - remaining;
+                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, tilesRequired);
                 }
                 
                 return result;

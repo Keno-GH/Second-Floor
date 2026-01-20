@@ -19,13 +19,30 @@ namespace SecondFloor
 {
     class Main : Mod
     {
+        public static SecondFloorSettings Settings { get; private set; }
+        
         public Main(ModContentPack content) : base(content)
         {
+            Settings = GetSettings<SecondFloorSettings>();
         }
 
         public override void DoSettingsWindowContents(UnityEngine.Rect inRect)
         {
-            base.DoSettingsWindowContents(inRect);
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(inRect);
+            
+            // Tiles per expansion setting
+            listing.Label("SF_Settings_TilesPerExpansion".Translate(Settings.tilesPerExpansion));
+            Settings.tilesPerExpansion = (int)listing.Slider(
+                Settings.tilesPerExpansion, 
+                SecondFloorSettings.MinTilesPerExpansion, 
+                SecondFloorSettings.MaxTilesPerExpansion);
+            listing.Gap();
+            
+            // Description text
+            listing.Label("SF_Settings_TilesPerExpansion_Desc".Translate());
+            
+            listing.End();
         }
 
         public override string SettingsCategory()
