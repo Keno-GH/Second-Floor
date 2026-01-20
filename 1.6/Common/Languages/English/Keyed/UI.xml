@@ -2,6 +2,9 @@
 <LanguageData>
   <TabStaircase>Staircase</TabStaircase>
   
+  <!-- PlaceWorker Messages -->
+  <SF_CannotPlaceOnGravship>Cannot place normal staircases on gravship substructure.</SF_CannotPlaceOnGravship>
+  
   <!-- Header and Tabs -->
   <SF_StaircaseDetails>Staircase Details</SF_StaircaseDetails>
   <SF_Tab_Manage>Manage</SF_Tab_Manage>

@@ -12,6 +12,12 @@
       <bed_healPerDay>4</bed_healPerDay>
       <bed_caravansCanUse>false</bed_caravansCanUse>
     </building>
+    <!-- Override BedBase's facility links - staircases don't use end tables/dressers -->
+    <comps>
+      <li Class="CompProperties_AffectedByFacilities">
+        <linkableFacilities />
+      </li>
+    </comps>
     <fillPercent>0.8</fillPercent>
     <pathCost>70</pathCost>
     <castEdgeShadows>False</castEdgeShadows>
@@ -98,6 +104,7 @@
       </li>
     </comps>
     <placeWorkers>
+      <li>SecondFloor.PlaceWorker_NotOnGravship</li>
       <li>SecondFloor.PlaceWorkerIndoors</li>
       <li>SecondFloor.PlaceWorkerUnderRoof</li>
       <li>SecondFloor.PlaceWorker_StaircaseVisualizer</li>
@@ -180,6 +187,7 @@
       </li>
     </comps>
     <placeWorkers>
+      <li>SecondFloor.PlaceWorker_NotOnGravship</li>
       <li>SecondFloor.PlaceWorkerIndoors</li>
       <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
     </placeWorkers>
@@ -261,6 +269,7 @@
       </li>
     </comps>
     <placeWorkers>
+      <li>SecondFloor.PlaceWorker_NotOnGravship</li>
       <li>SecondFloor.PlaceWorkerIndoors</li>
       <li>SecondFloor.PlaceWorker_UnderMountainRoof</li>
       <li>SecondFloor.PlaceWorker_MountainStaircaseVisualizer</li>

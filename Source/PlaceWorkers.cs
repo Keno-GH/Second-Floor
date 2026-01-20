@@ -9,6 +9,37 @@ using Verse;
 
 namespace SecondFloor
 {
+    /// <summary>
+    /// Prevents placement on gravship substructure tiles.
+    /// Used for staircases that cannot be built on gravships.
+    /// </summary>
+    public class PlaceWorker_NotOnGravship : PlaceWorker
+    {
+        public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
+        {
+            if (!ModsConfig.IsActive("ludeon.rimworld.odyssey"))
+            {
+                return true;
+            }
+
+            foreach (IntVec3 cell in GenAdj.OccupiedRect(loc, rot, checkingDef.Size))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+
+                TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                if (foundation != null && foundation.IsSubstructure)
+                {
+                    return new AcceptanceReport("SF_CannotPlaceOnGravship".Translate());
+                }
+            }
+
+            return true;
+        }
+    }
+
     public class PlaceWorkerIndoors : PlaceWorker
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
