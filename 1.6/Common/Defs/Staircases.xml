@@ -39,7 +39,7 @@
       <drawSize>(4,4)</drawSize>
       <drawRotated>false</drawRotated>
     </graphicData>
-    <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
+    <uiIconPath>Icons/Bedrooms/secondfloornormal</uiIconPath>
     <size>(2,2)</size>
     <holdsRoof>true</holdsRoof>
     <blockWind>true</blockWind>
@@ -121,7 +121,7 @@
       <drawSize>(4,4)</drawSize>
       <drawRotated>false</drawRotated>
     </graphicData>
-    <uiIconPath>Icons/Bedrooms/CheapBasementTwo</uiIconPath>
+    <uiIconPath>Icons/Bedrooms/basementnormal</uiIconPath>
     <size>(2,2)</size>
     <holdsRoof>false</holdsRoof>
     <blockWind>false</blockWind>
@@ -206,7 +206,7 @@
       <drawSize>(4,4)</drawSize>
       <drawRotated>false</drawRotated>
     </graphicData>
-    <uiIconPath>Icons/Bedrooms/DecentFour</uiIconPath>
+    <uiIconPath>Icons/Bedrooms/secondfloormountain</uiIconPath>
     <size>(2,2)</size>
     <holdsRoof>true</holdsRoof>
     <blockWind>true</blockWind>
