@@ -42,12 +42,12 @@ namespace SecondFloor
             
             float scrollStartY = labelRect.yMax + TabLayout.ContentPadding;
             
-            // Check if this is a basement and draw expand button if so
+            // Check if this supports expansion (basement or mountain upfloor) and draw expand button if so
             var modExt = staircase.def.GetModExtension<SecondFloorModExtension>();
-            if (modExt != null && modExt.HasBasementExpansion)
+            if (modExt != null && (modExt.HasBasementExpansion || modExt.HasMountainExpansion))
             {
                 Rect buttonRect = new Rect(rect.x, scrollStartY, rect.width, ExpandButtonHeight);
-                DrawExpandBasementButton(buttonRect, comp);
+                DrawExpandButton(buttonRect, comp);
                 scrollStartY = buttonRect.yMax + TabLayout.ContentPadding;
             }
             
@@ -430,36 +430,52 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Draws the "Expand Basement" button for basement staircases.
+        /// Draws the "Expand" button for basements and mountain upfloor staircases.
         /// </summary>
-        private static void DrawExpandBasementButton(Rect rect, CompStaircaseUpgrades upgradesComp)
+        private static void DrawExpandButton(Rect rect, CompStaircaseUpgrades upgradesComp)
         {
             // Draw background
             Widgets.DrawLightHighlight(rect);
             
-            bool isMaxed = upgradesComp.IsMaxExpansion;
+            bool isMountain = upgradesComp.ModExtension?.HasMountainExpansion ?? false;
+            bool isMaxed = upgradesComp.IsAnyMaxExpansion;
             bool inProgress = upgradesComp.IsExcavationInProgress;
             bool canExpand = !isMaxed && !inProgress;
             
-            // Button text
+            // Button text - use appropriate labels for basement vs mountain
             string buttonLabel;
             string tooltip;
             
             if (isMaxed)
             {
-                buttonLabel = "SF_ExpandBasement_Maxed".Translate();
-                tooltip = "SF_ExpandBasement_Maxed_Tooltip".Translate(upgradesComp.BasementMaxSpace);
+                if (isMountain)
+                {
+                    buttonLabel = "SF_ExpandMountain_Maxed".Translate();
+                    tooltip = "SF_ExpandMountain_Maxed_Tooltip".Translate(upgradesComp.MountainMaxSpace);
+                }
+                else
+                {
+                    buttonLabel = "SF_ExpandBasement_Maxed".Translate();
+                    tooltip = "SF_ExpandBasement_Maxed_Tooltip".Translate(upgradesComp.BasementMaxSpace);
+                }
             }
             else if (inProgress)
             {
-                int mined = 5 - upgradesComp.MinedCountInBatch;
                 buttonLabel = "SF_ExpandBasement_InProgress".Translate(upgradesComp.MinedCountInBatch, 5);
                 tooltip = "SF_ExpandBasement_InProgress_Tooltip".Translate();
             }
             else
             {
-                buttonLabel = "SF_ExpandBasement".Translate();
-                tooltip = "SF_ExpandBasement_Tooltip".Translate(upgradesComp.BasementTotalSpace, upgradesComp.BasementMaxSpace);
+                if (isMountain)
+                {
+                    buttonLabel = "SF_ExpandMountain".Translate();
+                    tooltip = "SF_ExpandMountain_Tooltip".Translate(upgradesComp.MountainTotalSpace, upgradesComp.MountainMaxSpace);
+                }
+                else
+                {
+                    buttonLabel = "SF_ExpandBasement".Translate();
+                    tooltip = "SF_ExpandBasement_Tooltip".Translate(upgradesComp.BasementTotalSpace, upgradesComp.BasementMaxSpace);
+                }
             }
             
             // Draw the button

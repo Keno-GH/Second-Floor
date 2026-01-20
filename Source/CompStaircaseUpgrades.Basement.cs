@@ -71,6 +71,101 @@ namespace SecondFloor
         public int MinedCountInBatch => minedCountInBatch;
         
         // =====================================================
+        // Mountain Upfloor Expansion Properties
+        // =====================================================
+        
+        /// <summary>
+        /// Total space available for mountain upfloors (base + bonus). Uses mountainBaseSpace from mod extension.
+        /// </summary>
+        public int MountainTotalSpace => (ModExtension?.mountainBaseSpace ?? 0) + bonusSpace;
+        
+        /// <summary>
+        /// Maximum possible space for mountain upfloors. Dynamically calculated based on surrounding mountain roofs.
+        /// </summary>
+        public int MountainMaxSpace
+        {
+            get
+            {
+                Map map = parent.Map;
+                if (map == null)
+                    return ModExtension?.mountainBaseSpace ?? 0;
+                
+                int count = 0;
+                foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 10f, true))
+                {
+                    if (!cell.InBounds(map))
+                        continue;
+                    
+                    RoofDef roof = cell.GetRoof(map);
+                    if (roof == RoofDefOf.RoofRockThick || roof == RoofDefOf.RoofRockThin)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+        
+        /// <summary>
+        /// Whether the mountain upfloor has reached maximum expansion (bonus space >= mountain max space - base space).
+        /// </summary>
+        public bool IsMountainMaxExpansion
+        {
+            get
+            {
+                if (ModExtension == null || !ModExtension.HasMountainExpansion)
+                    return true;
+                
+                int maxBonusAvailable = MountainMaxSpace - (ModExtension?.mountainBaseSpace ?? 0);
+                return bonusSpace >= maxBonusAvailable;
+            }
+        }
+        
+        /// <summary>
+        /// Whether this staircase supports any expansion (basement or mountain).
+        /// </summary>
+        public bool HasAnyExpansion => (ModExtension?.HasBasementExpansion ?? false) || (ModExtension?.HasMountainExpansion ?? false);
+        
+        /// <summary>
+        /// Gets the max space for display purposes (works for both basements and mountain upfloors).
+        /// </summary>
+        public int DisplayMaxSpace
+        {
+            get
+            {
+                if (ModExtension?.HasMountainExpansion == true)
+                    return MountainMaxSpace;
+                return BasementMaxSpace;
+            }
+        }
+        
+        /// <summary>
+        /// Gets the total space for display purposes (works for both basements and mountain upfloors).
+        /// </summary>
+        public int DisplayTotalSpace
+        {
+            get
+            {
+                if (ModExtension?.HasMountainExpansion == true)
+                    return MountainTotalSpace;
+                return BasementTotalSpace;
+            }
+        }
+        
+        /// <summary>
+        /// Whether expansion has reached maximum (works for both basements and mountain upfloors).
+        /// </summary>
+        public bool IsAnyMaxExpansion
+        {
+            get
+            {
+                if (ModExtension?.HasMountainExpansion == true)
+                    return IsMountainMaxExpansion;
+                return IsMaxExpansion;
+            }
+        }
+
+        // =====================================================
         // Basement Expansion Methods
         // =====================================================
         
@@ -139,10 +234,11 @@ namespace SecondFloor
         
         /// <summary>
         /// Spawns 5 expansion rocks on free cells around the staircase with mining designations.
+        /// Works for both basements and mountain upfloors.
         /// </summary>
         public void SpawnExpansionRocks()
         {
-            if (IsExcavationInProgress || IsMaxExpansion)
+            if (IsExcavationInProgress || IsAnyMaxExpansion)
                 return;
             
             Map map = parent.Map;
@@ -190,6 +286,7 @@ namespace SecondFloor
         
         /// <summary>
         /// Called when a rock in the current batch is successfully mined.
+        /// Works for both basements and mountain upfloors.
         /// </summary>
         public void OnRockMined(Building_BasementExpansionRock rock)
         {
@@ -207,8 +304,8 @@ namespace SecondFloor
                 minedCountInBatch = 0;
                 currentBatchRocks.Clear();
                 
-                // Notify player
-                Messages.Message("SF_ExcavationComplete".Translate(5, BasementTotalSpace, BasementMaxSpace), 
+                // Notify player (use display properties that work for both basement and mountain)
+                Messages.Message("SF_ExcavationComplete".Translate(5, DisplayTotalSpace, DisplayMaxSpace), 
                     parent, MessageTypeDefOf.PositiveEvent);
             }
         }
@@ -253,23 +350,44 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Gets the basement expansion inspect string extra.
+        /// Gets the expansion inspect string extra for basements and mountain upfloors.
         /// </summary>
         private string GetBasementInspectString()
         {
-            if (ModExtension == null || !ModExtension.HasBasementExpansion)
+            if (ModExtension == null)
                 return null;
             
-            string result = "SF_BasementSpace".Translate(BasementTotalSpace, BasementMaxSpace);
-            
-            if (IsExcavationInProgress)
+            // Handle mountain upfloors with expansion
+            if (ModExtension.HasMountainExpansion)
             {
-                int remaining = currentBatchRocks.Count;
-                int mined = 5 - remaining;
-                result += "\n" + "SF_ExcavationInProgress".Translate(mined, 5);
+                string result = "SF_MountainSpace".Translate(MountainTotalSpace, MountainMaxSpace);
+                
+                if (IsExcavationInProgress)
+                {
+                    int remaining = currentBatchRocks.Count;
+                    int mined = 5 - remaining;
+                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, 5);
+                }
+                
+                return result;
             }
             
-            return result;
+            // Handle basements with expansion
+            if (ModExtension.HasBasementExpansion)
+            {
+                string result = "SF_BasementSpace".Translate(BasementTotalSpace, BasementMaxSpace);
+                
+                if (IsExcavationInProgress)
+                {
+                    int remaining = currentBatchRocks.Count;
+                    int mined = 5 - remaining;
+                    result += "\n" + "SF_ExcavationInProgress".Translate(mined, 5);
+                }
+                
+                return result;
+            }
+            
+            return null;
         }
     }
 }

@@ -351,8 +351,15 @@ namespace SecondFloor
                 return BasementTotalSpace;
             }
             
+            // Mountain upfloors use expansion mechanics similar to basements but with dynamic max
+            // MountainTotalSpace is defined in the Basement partial class
+            if (ModExtension != null && ModExtension.HasMountainExpansion)
+            {
+                return MountainTotalSpace;
+            }
+            
             // Upstairs staircases count cells with roofs in a circular area (radius 10)
-            // Mountain upfloors count thick/thin rock roofs; regular upstairs count constructed roofs
+            // Mountain upfloors without expansion count thick/thin rock roofs; regular upstairs count constructed roofs
             bool isMountainUpfloor = ModExtension?.isMountainUpfloor ?? false;
             
             float count = 0f;

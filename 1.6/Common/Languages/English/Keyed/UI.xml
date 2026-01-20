@@ -149,13 +149,20 @@
   <SF_BasementSpace>Basement space: {0}/{1}</SF_BasementSpace>
   <SF_ExcavationInProgress>Excavation in progress: {0}/5</SF_ExcavationInProgress>
   <SF_ExcavationProgress>Excavation progress: {0}/5</SF_ExcavationProgress>
-  <SF_ExcavationComplete>Basement excavation complete! +{0} space. Total: {1}/{2}</SF_ExcavationComplete>
-  <SF_ExcavationCanceled>Basement excavation canceled.</SF_ExcavationCanceled>
+  <SF_ExcavationComplete>Excavation complete! +{0} space. Total: {1}/{2}</SF_ExcavationComplete>
+  <SF_ExcavationCanceled>Excavation canceled.</SF_ExcavationCanceled>
   <SF_ExpandBasement>Expand Basement</SF_ExpandBasement>
   <SF_ExpandBasement_Tooltip>Order miners to excavate 5 additional spaces for the basement. Current: {0}/{1}</SF_ExpandBasement_Tooltip>
   <SF_ExpandBasement_Maxed>Maximum Expansion</SF_ExpandBasement_Maxed>
   <SF_ExpandBasement_Maxed_Tooltip>This basement has reached maximum expansion ({0} spaces).</SF_ExpandBasement_Maxed_Tooltip>
   <SF_ExpandBasement_InProgress>Excavating... ({0}/5)</SF_ExpandBasement_InProgress>
   <SF_ExpandBasement_InProgress_Tooltip>Miners are currently excavating. Wait for completion or cancel the mining designations to stop.</SF_ExpandBasement_InProgress_Tooltip>
-  <SF_NotEnoughFreeCells>Not enough free space around the basement. Found {0} cells, need {1}. Clear the area around the staircase.</SF_NotEnoughFreeCells>
+  <SF_NotEnoughFreeCells>Not enough free space around the staircase. Found {0} cells, need {1}. Clear the area around the staircase.</SF_NotEnoughFreeCells>
+  
+  <!-- Mountain Upfloor Expansion -->
+  <SF_MountainSpace>Mountain space: {0}/{1}</SF_MountainSpace>
+  <SF_ExpandMountain>Expand Mountain Floor</SF_ExpandMountain>
+  <SF_ExpandMountain_Tooltip>Order miners to excavate 5 additional spaces in the mountain overhead. Current: {0}/{1}</SF_ExpandMountain_Tooltip>
+  <SF_ExpandMountain_Maxed>Maximum Expansion</SF_ExpandMountain_Maxed>
+  <SF_ExpandMountain_Maxed_Tooltip>This mountain floor has reached maximum expansion based on surrounding mountain roofs ({0} spaces).</SF_ExpandMountain_Maxed_Tooltip>
 </LanguageData>

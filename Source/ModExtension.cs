@@ -88,5 +88,21 @@ namespace SecondFloor
         /// Whether this staircase supports basement expansion (has baseSpace > 0).
         /// </summary>
         public bool HasBasementExpansion => baseSpace > 0;
+        
+        // =====================================================
+        // Mountain Upfloor Expansion
+        // =====================================================
+        
+        /// <summary>
+        /// The base space available in the mountain upfloor before any expansion.
+        /// Only used when isMountainUpfloor is true. Max space is determined by surrounding mountain roofs.
+        /// </summary>
+        public int mountainBaseSpace = 0;
+        
+        /// <summary>
+        /// Whether this mountain upfloor supports expansion (has mountainBaseSpace > 0).
+        /// Mountain upfloors use mining to expand space up to the dynamic max determined by surrounding mountain roofs.
+        /// </summary>
+        public bool HasMountainExpansion => isMountainUpfloor && mountainBaseSpace > 0;
     }
 }
