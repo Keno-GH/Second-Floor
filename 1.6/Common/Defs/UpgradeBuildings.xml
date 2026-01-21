@@ -66,7 +66,7 @@
     
     <!-- Extra Beds / Extra Room 2 Upgrade -->
     <ThingDef ParentName="SF_UpgradeBuildingBase">
-        <defName>SF_UpgradeBuilding_ExtraBeds2</defName>
+        <defName>SF_UpgradeBuilding_ExtraBedsII</defName>
         <label>extra room 2 upgrade</label>
         <description>Construct an additional private room with a double bed.</description>
         <statBases>
@@ -81,7 +81,7 @@
         <constructionSkillPrerequisite>2</constructionSkillPrerequisite>
         <modExtensions>
             <li Class="SecondFloor.StaircaseUpgradeExtension">
-                <upgradeDef>SF_StaircaseUpgrade_ExtraBeds2</upgradeDef>
+                <upgradeDef>SF_StaircaseUpgrade_ExtraBedsII</upgradeDef>
                 <onePerBed>false</onePerBed>
             </li>
         </modExtensions>
@@ -347,7 +347,6 @@
             <li Class="SecondFloor.StaircaseUpgradeExtension">
                 <upgradeDef>SF_SleepAccelerator</upgradeDef>
                 <directlyToBed>true</directlyToBed>
-                <costPerBed>true</costPerBed>
             </li>
         </modExtensions>
     </ThingDef>

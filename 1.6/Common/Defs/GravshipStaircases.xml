@@ -12,7 +12,7 @@
       <drawSize>(4,4)</drawSize>
       <drawRotated>false</drawRotated>
     </graphicData>
-    <uiIconPath>Icons/Bedrooms/secondfloornormal</uiIconPath>
+    <uiIconPath>Icons/Bedrooms/secondfloor gravship</uiIconPath>
     <size>(2,2)</size>
     <holdsRoof>true</holdsRoof>
     <blockWind>true</blockWind>
@@ -92,7 +92,7 @@
       <drawSize>(4,4)</drawSize>
       <drawRotated>false</drawRotated>
     </graphicData>
-    <uiIconPath>Icons/Bedrooms/basementnormal</uiIconPath>
+    <uiIconPath>Icons/Bedrooms/basement gravship</uiIconPath>
     <size>(2,2)</size>
     <holdsRoof>false</holdsRoof>
     <blockWind>false</blockWind>
