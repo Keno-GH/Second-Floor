@@ -548,4 +548,112 @@ namespace SecondFloor
             }
         }
     }
+    
+    /// <summary>
+    /// Requires placement on gravship substructure tiles.
+    /// Used for gravship staircases that can only be built on gravships.
+    /// </summary>
+    public class PlaceWorker_OnGravship : PlaceWorker
+    {
+        public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
+        {
+            if (!ModsConfig.IsActive("ludeon.rimworld.odyssey"))
+            {
+                return new AcceptanceReport("SF_RequiresOdyssey".Translate());
+            }
+
+            foreach (IntVec3 cell in GenAdj.OccupiedRect(loc, rot, checkingDef.Size))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+
+                TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                if (foundation == null || !foundation.IsSubstructure)
+                {
+                    return new AcceptanceReport("SF_MustPlaceOnGravship".Translate());
+                }
+            }
+
+            return true;
+        }
+    }
+    
+    /// <summary>
+    /// Visualizes the gravship upstairs staircase's area of influence during placement.
+    /// Shows a 20x20 circular area and highlights cells with gravship substructures.
+    /// </summary>
+    public class PlaceWorker_GravshipStaircaseVisualizer : PlaceWorker
+    {
+        private static readonly Color AreaRingColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        private static readonly Color SubstructureHighlightColor = new Color(0.2f, 0.6f, 0.9f, 0.5f);
+        
+        // Reusable list to avoid allocations during DrawGhost
+        private static List<IntVec3> substructureCellsCache = new List<IntVec3>();
+        
+        public override void DrawGhost(ThingDef def, IntVec3 center, Rot4 rot, Color ghostCol, Thing thing = null)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Draw the area ring (radius 10 for 20x20 area)
+            GenDraw.DrawRadiusRing(center, 10f, AreaRingColor);
+            
+            // Collect cells with gravship substructures
+            substructureCellsCache.Clear();
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                if (foundation != null && foundation.IsSubstructure)
+                {
+                    substructureCellsCache.Add(cell);
+                }
+            }
+            
+            // Highlight substructure cells in blue
+            if (substructureCellsCache.Count > 0)
+            {
+                GenDraw.DrawFieldEdges(substructureCellsCache, SubstructureHighlightColor);
+            }
+        }
+        
+        public override void DrawPlaceMouseAttachments(float curX, ref float curY, BuildableDef bdef, IntVec3 center, Rot4 rot)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null)
+            {
+                return;
+            }
+            
+            // Count gravship substructure cells
+            int substructureCount = 0;
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 10f, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+                TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                if (foundation != null && foundation.IsSubstructure)
+                {
+                    substructureCount++;
+                }
+            }
+            
+            // Display the available space count
+            string label = "SF_AvailableGravshipSpace".Translate(substructureCount);
+            Color textColor = substructureCount > 0 ? Color.green : Color.red;
+            
+            Widgets.Label(new Rect(curX, curY, 999f, 999f), label.Colorize(textColor));
+            curY += 22f;
+        }
+    }
 }

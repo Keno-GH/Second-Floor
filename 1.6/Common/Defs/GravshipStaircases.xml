@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Gravship Upstairs staircase - builds on gravship substructures -->
+  <ThingDef MayRequire="ludeon.rimworld.odyssey" ParentName="StaircaseBase">
+    <defName>SF_GravshipUpstairs</defName>
+    <label>Gravship Upstairs</label>
+    <description>A staircase designed for gravship interiors, leading to an upper floor. Uses the gravship's substructure to determine available space. Can only be built on gravship substructure tiles.</description>
+    <graphicData>
+      <texPath>Things/Building/22staircase/22staircase</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(4,4)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <uiIconPath>Icons/Bedrooms/secondfloornormal</uiIconPath>
+    <size>(2,2)</size>
+    <holdsRoof>true</holdsRoof>
+    <blockWind>true</blockWind>
+    <techLevel>Spacer</techLevel>
+    <modExtensions>
+      <li Class="SecondFloor.SecondFloorModExtension">
+        <floorLevel>Upstairs</floorLevel>
+        <isGravshipStaircase>true</isGravshipStaircase>
+        <RemoveSoakingWet>true</RemoveSoakingWet>
+        <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
+        <RemoveSleptOutside>true</RemoveSleptOutside>
+        <bedCount>2</bedCount>
+        <thoughtDef>SF_Decent_Quality_Room</thoughtDef>
+        <gravshipBaseSpace>30</gravshipBaseSpace>
+      </li>
+    </modExtensions>
+    <statBases>
+      <MaxHitPoints>700</MaxHitPoints>
+      <Flammability>0.3</Flammability>
+      <Beauty>6</Beauty>
+      <BeautyOutdoors>6</BeautyOutdoors>
+      <WorkToBuild>60000</WorkToBuild>
+      <Mass>400</Mass>
+      <BedRestEffectiveness>0.8</BedRestEffectiveness>
+      <Comfort>0.60</Comfort>
+      <ImmunityGainSpeedFactor>1</ImmunityGainSpeedFactor>
+      <SurgerySuccessChanceFactor>0.5</SurgerySuccessChanceFactor>
+      <MedicalTendQualityOffset>-0.10</MedicalTendQualityOffset>
+      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">1.0</BirthRitualQualityOffset>
+    </statBases>
+    <researchPrerequisites>
+      <li>SF_GravshipStaircases</li>
+    </researchPrerequisites>
+    <costStuffCount>200</costStuffCount>
+    <costList>
+      <GravlitePanel>50</GravlitePanel>
+    </costList>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+    <comps>
+      <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
+      <li Class="CompProperties_Refuelable">
+        <fuelConsumptionRate>0</fuelConsumptionRate>
+        <fuelCapacity>50.0</fuelCapacity>
+        <fuelFilter>
+          <thingDefs>
+            <li>Chemfuel</li>
+          </thingDefs>
+        </fuelFilter>
+        <initialFuelPercent>0</initialFuelPercent>
+        <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
+      </li>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <shortCircuitInRain>false</shortCircuitInRain>
+        <basePowerConsumption>0</basePowerConsumption>
+      </li>
+    </comps>
+    <placeWorkers>
+      <li>SecondFloor.PlaceWorker_OnGravship</li>
+      <li>SecondFloor.PlaceWorkerIndoors</li>
+      <li>SecondFloor.PlaceWorker_GravshipStaircaseVisualizer</li>
+      <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
+    </placeWorkers>
+  </ThingDef>
+
+  <!-- Gravship Basement staircase - builds on gravship substructures -->
+  <ThingDef MayRequire="ludeon.rimworld.odyssey" ParentName="StaircaseBase">
+    <defName>SF_GravshipBasement</defName>
+    <label>Gravship Basement</label>
+    <description>A staircase designed for gravship interiors, leading to a lower deck. Uses the gravship's substructure to determine available space. No excavation is required - the space is already part of the ship's structure. Can only be built on gravship substructure tiles.</description>
+    <graphicData>
+      <texPath>Things/Building/22staircase_down/22staircase_down</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(4,4)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <uiIconPath>Icons/Bedrooms/basementnormal</uiIconPath>
+    <size>(2,2)</size>
+    <holdsRoof>false</holdsRoof>
+    <blockWind>false</blockWind>
+    <techLevel>Spacer</techLevel>
+    <modExtensions>
+      <li Class="SecondFloor.SecondFloorModExtension">
+        <floorLevel>Basement</floorLevel>
+        <isGravshipStaircase>true</isGravshipStaircase>
+        <RemoveSoakingWet>true</RemoveSoakingWet>
+        <RemoveSleptOutside>true</RemoveSleptOutside>
+        <ideologySecondFloorAssignmentAllowed>true</ideologySecondFloorAssignmentAllowed>
+        <bedCount>2</bedCount>
+        <thoughtDef>SF_Decent_Quality_Room</thoughtDef>
+        <gravshipBaseSpace>30</gravshipBaseSpace>
+      </li>
+    </modExtensions>
+    <statBases>
+      <MaxHitPoints>600</MaxHitPoints>
+      <Flammability>0.3</Flammability>
+      <Beauty>4</Beauty>
+      <BeautyOutdoors>4</BeautyOutdoors>
+      <WorkToBuild>50000</WorkToBuild>
+      <Mass>400</Mass>
+      <BedRestEffectiveness>0.8</BedRestEffectiveness>
+      <Comfort>0.60</Comfort>
+      <ImmunityGainSpeedFactor>1</ImmunityGainSpeedFactor>
+      <SurgerySuccessChanceFactor>0.5</SurgerySuccessChanceFactor>
+      <MedicalTendQualityOffset>-0.10</MedicalTendQualityOffset>
+      <BirthRitualQualityOffset MayRequire="Ludeon.RimWorld.Biotech">1.0</BirthRitualQualityOffset>
+    </statBases>
+    <researchPrerequisites>
+      <li>SF_GravshipStaircases</li>
+    </researchPrerequisites>
+    <costStuffCount>200</costStuffCount>
+    <costList>
+      <GravlitePanel>50</GravlitePanel>
+    </costList>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+    <comps>
+      <li Class="SecondFloor.CompProperties_StaircaseUpgrades" />
+      <li Class="CompProperties_Refuelable">
+        <fuelConsumptionRate>0</fuelConsumptionRate>
+        <fuelCapacity>50.0</fuelCapacity>
+        <fuelFilter>
+          <thingDefs>
+            <li>Chemfuel</li>
+          </thingDefs>
+        </fuelFilter>
+        <initialFuelPercent>0</initialFuelPercent>
+        <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
+      </li>
+      <li Class="CompProperties_Power">
+        <compClass>CompPowerTrader</compClass>
+        <shortCircuitInRain>false</shortCircuitInRain>
+        <basePowerConsumption>0</basePowerConsumption>
+      </li>
+    </comps>
+    <placeWorkers>
+      <li>SecondFloor.PlaceWorker_OnGravship</li>
+      <li>SecondFloor.PlaceWorkerIndoors</li>
+      <li>SecondFloor.PlaceWorker_GravshipStaircaseVisualizer</li>
+      <li>SecondFloor.PlaceWorker_MinStaircaseDistance</li>
+    </placeWorkers>
+  </ThingDef>
+
+</Defs>

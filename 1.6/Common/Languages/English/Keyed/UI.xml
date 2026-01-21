@@ -4,6 +4,8 @@
   
   <!-- PlaceWorker Messages -->
   <SF_CannotPlaceOnGravship>Cannot place normal staircases on gravship substructure.</SF_CannotPlaceOnGravship>
+  <SF_MustPlaceOnGravship>Must be placed on gravship substructure.</SF_MustPlaceOnGravship>
+  <SF_RequiresOdyssey>Requires the Odyssey DLC.</SF_RequiresOdyssey>
   
   <!-- Header and Tabs -->
   <SF_StaircaseDetails>Staircase Details</SF_StaircaseDetails>
@@ -145,6 +147,7 @@
   <!-- PlaceWorker Messages -->
   <SF_AvailableSpace>Available space: {0}</SF_AvailableSpace>
   <SF_AvailableMountainSpace>Available mountain space: {0}</SF_AvailableMountainSpace>
+  <SF_AvailableGravshipSpace>Available gravship space: {0}</SF_AvailableGravshipSpace>
   <SF_TooCloseToAnotherStaircase>Must be at least 10 cells from another staircase of the same type.</SF_TooCloseToAnotherStaircase>
   <SF_MustPlaceUnderMountain>Must be placed under overhead mountain or rock roof.</SF_MustPlaceUnderMountain>
   
@@ -168,6 +171,9 @@
   <SF_ExpandMountain_Tooltip>Order miners to excavate {0} additional spaces in the mountain overhead. Current: {1}/{2}</SF_ExpandMountain_Tooltip>
   <SF_ExpandMountain_Maxed>Maximum Expansion</SF_ExpandMountain_Maxed>
   <SF_ExpandMountain_Maxed_Tooltip>This mountain floor has reached maximum expansion based on surrounding mountain roofs ({0} spaces).</SF_ExpandMountain_Maxed_Tooltip>
+  
+  <!-- Gravship Staircase -->
+  <SF_GravshipSpace>Gravship space: {0}/{1}</SF_GravshipSpace>
   
   <!-- Mod Settings -->
   <SF_Settings_TilesPerExpansion>Tiles per expansion: {0}</SF_Settings_TilesPerExpansion>

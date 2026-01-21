@@ -358,9 +358,19 @@ namespace SecondFloor
                 return MountainTotalSpace;
             }
             
+            // Gravship staircases use surrounding substructures for space calculation
+            // They do not expand - space is determined by surrounding gravship substructures
+            if (ModExtension != null && ModExtension.HasGravshipSpace)
+            {
+                return GravshipMaxSpace;
+            }
+            
             // Upstairs staircases count cells with roofs in a circular area (radius 10)
-            // Mountain upfloors without expansion count thick/thin rock roofs; regular upstairs count constructed roofs
+            // Mountain upfloors without expansion count thick/thin rock roofs
+            // Gravship stairs count substructures
+            // Regular upstairs count constructed roofs
             bool isMountainUpfloor = ModExtension?.isMountainUpfloor ?? false;
+            bool isGravshipStaircase = ModExtension?.isGravshipStaircase ?? false;
             
             float count = 0f;
             foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 10f, true))
@@ -369,10 +379,20 @@ namespace SecondFloor
                 {
                     continue;
                 }
-                RoofDef roof = cell.GetRoof(map);
-                if (isMountainUpfloor)
+                
+                if (isGravshipStaircase)
+                {
+                    // Gravship staircases count gravship substructures
+                    TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                    if (foundation != null && foundation.IsSubstructure)
+                    {
+                        count += 1f;
+                    }
+                }
+                else if (isMountainUpfloor)
                 {
                     // Mountain upfloors count overhead mountain (thick) and thin rock roofs
+                    RoofDef roof = cell.GetRoof(map);
                     if (roof == RoofDefOf.RoofRockThick || roof == RoofDefOf.RoofRockThin)
                     {
                         count += 1f;
@@ -381,6 +401,7 @@ namespace SecondFloor
                 else
                 {
                     // Regular upstairs count constructed roofs only
+                    RoofDef roof = cell.GetRoof(map);
                     if (roof == RoofDefOf.RoofConstructed)
                     {
                         count += 1f;

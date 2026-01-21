@@ -108,6 +108,20 @@
         </prerequisites>
     </ResearchProjectDef>
 
+    <!-- Gravship Staircases - requires Odyssey DLC -->
+    <ResearchProjectDef MayRequire="ludeon.rimworld.odyssey">
+        <defName>SF_GravshipStaircases</defName>
+        <label>Gravship Staircases</label>
+        <description>Build staircases designed specifically for gravship interiors. These staircases use the gravship's substructure to create upper decks and lower decks, providing crew quarters without requiring ground-based construction.</description>
+        <tab>SF_StaircaseUpgrades</tab>
+        <baseCost>800</baseCost>
+        <techLevel>Spacer</techLevel>
+        <researchViewX>3.00</researchViewX>
+        <researchViewY>0.00</researchViewY>
+        <prerequisites>
+            <li>SF_MountainUpfloor</li>
+        </prerequisites>
+    </ResearchProjectDef>
 
 
 

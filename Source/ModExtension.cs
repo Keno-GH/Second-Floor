@@ -34,6 +34,12 @@ namespace SecondFloor
         /// </summary>
         public bool isMountainUpfloor = false;
         
+        /// <summary>
+        /// If true, this staircase uses gravship substructures to count available space instead of constructed roofs.
+        /// Used for staircases built on gravships.
+        /// </summary>
+        public bool isGravshipStaircase = false;
+        
         // =====================================================
         // Thought Removal Flags
         // =====================================================
@@ -104,5 +110,21 @@ namespace SecondFloor
         /// Mountain upfloors use mining to expand space up to the dynamic max determined by surrounding mountain roofs.
         /// </summary>
         public bool HasMountainExpansion => isMountainUpfloor && mountainBaseSpace > 0;
+        
+        // =====================================================
+        // Gravship Staircase Configuration
+        // =====================================================
+        
+        /// <summary>
+        /// The base space available in the gravship staircase.
+        /// Only used when isGravshipStaircase is true. Max space is determined by surrounding gravship substructures.
+        /// </summary>
+        public int gravshipBaseSpace = 0;
+        
+        /// <summary>
+        /// Whether this gravship staircase supports dynamic space (has gravshipBaseSpace > 0).
+        /// Gravship staircases do not use mining - space is determined by surrounding substructures.
+        /// </summary>
+        public bool HasGravshipSpace => isGravshipStaircase && gravshipBaseSpace > 0;
     }
 }

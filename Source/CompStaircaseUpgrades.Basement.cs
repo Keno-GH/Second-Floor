@@ -121,18 +121,58 @@ namespace SecondFloor
             }
         }
         
+        // =====================================================
+        // Gravship Staircase Properties
+        // =====================================================
+        
+        /// <summary>
+        /// Total space available for gravship staircases (base space).
+        /// Gravship staircases do not expand - space is determined by surrounding substructures.
+        /// </summary>
+        public int GravshipTotalSpace => ModExtension?.gravshipBaseSpace ?? 0;
+        
+        /// <summary>
+        /// Maximum possible space for gravship staircases. Dynamically calculated based on surrounding gravship substructures.
+        /// </summary>
+        public int GravshipMaxSpace
+        {
+            get
+            {
+                Map map = parent.Map;
+                if (map == null)
+                    return ModExtension?.gravshipBaseSpace ?? 0;
+                
+                int count = 0;
+                foreach (IntVec3 cell in GenRadial.RadialCellsAround(parent.Position, 10f, true))
+                {
+                    if (!cell.InBounds(map))
+                        continue;
+                    
+                    TerrainDef foundation = map.terrainGrid.FoundationAt(cell);
+                    if (foundation != null && foundation.IsSubstructure)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+        
         /// <summary>
         /// Whether this staircase supports any expansion (basement or mountain).
+        /// Gravship staircases do not expand.
         /// </summary>
         public bool HasAnyExpansion => (ModExtension?.HasBasementExpansion ?? false) || (ModExtension?.HasMountainExpansion ?? false);
         
         /// <summary>
-        /// Gets the max space for display purposes (works for both basements and mountain upfloors).
+        /// Gets the max space for display purposes (works for basements, mountain upfloors, and gravship staircases).
         /// </summary>
         public int DisplayMaxSpace
         {
             get
             {
+                if (ModExtension?.HasGravshipSpace == true)
+                    return GravshipMaxSpace;
                 if (ModExtension?.HasMountainExpansion == true)
                     return MountainMaxSpace;
                 return BasementMaxSpace;
@@ -140,12 +180,14 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Gets the total space for display purposes (works for both basements and mountain upfloors).
+        /// Gets the total space for display purposes (works for basements, mountain upfloors, and gravship staircases).
         /// </summary>
         public int DisplayTotalSpace
         {
             get
             {
+                if (ModExtension?.HasGravshipSpace == true)
+                    return GravshipTotalSpace;
                 if (ModExtension?.HasMountainExpansion == true)
                     return MountainTotalSpace;
                 return BasementTotalSpace;
