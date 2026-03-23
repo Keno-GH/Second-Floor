@@ -776,7 +776,7 @@
         </building>
         <!-- Invisible - use a very small draw size so it's effectively invisible -->
         <graphicData>
-            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <texPath>DBH/Things/Building/Toilets/basin_north</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(0.01,0.01)</drawSize>
         </graphicData>
@@ -807,7 +807,7 @@
         </costList>
         <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
         <graphicData>
-            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <texPath>DBH/Things/Building/Toilets/basin_north</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>
@@ -837,7 +837,7 @@
         </costList>
         <constructionSkillPrerequisite>5</constructionSkillPrerequisite>
         <graphicData>
-            <texPath>Things/Building/Furniture/Sink/Sink_south</texPath>
+            <texPath>DBH/Things/Building/Showers/shower_north</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>

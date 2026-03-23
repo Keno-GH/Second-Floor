@@ -14,28 +14,6 @@
     Example with custom icon:
     <iconPath>Icons/Upgrades/MyCustomIcon</iconPath>
     -->
-    
-    <!-- Testing upgrade - no construction required -->
-    <SecondFloor.StaircaseUpgradeDef>
-        <defName>SF_StaircaseUpgrade_NoTemperaturePenalties</defName>
-        <label>No Temperature Penalties</label>
-        <description>Removes temperature-related sleep penalties for pawns sleeping in this floor. - This is for testing only and has no effect as of now.</description>
-        <spaceCost>50</spaceCost>
-        <!-- No upgradeBuildingDef = instant apply for testing -->
-        <!-- No iconPath = will use default power icon since no cost list -->
-    </SecondFloor.StaircaseUpgradeDef>
-    
-    <!-- Testing upgrade for basements only - no construction required -->
-    <SecondFloor.StaircaseUpgradeDef>
-        <defName>SF_StaircaseUpgrade_OnlyForBasements</defName>
-        <label>Only For Basements</label>
-        <description>This upgrade only shows up for basements.</description>
-        <spaceCost>50</spaceCost>
-        <applyToStairs>
-            <li>SF_Basement</li>
-        </applyToStairs>
-        <!-- No iconPath = will use default power icon since no cost list -->
-    </SecondFloor.StaircaseUpgradeDef>
 
     <!-- Extra Room upgrade - requires construction -->
     <SecondFloor.StaircaseUpgradeDef>
@@ -535,7 +513,7 @@
         <waterPerUse>3</waterPerUse>
         <sewagePerUse>0</sewagePerUse>
         <hotWaterPerUse>0</hotWaterPerUse>
-        <iconPath>Things/Building/Furniture/Sink/Sink_south</iconPath>
+        <iconPath>DBH/Things/Building/Toilets/basin_north</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
     
     <!-- Full Bathroom - toilet and shower with hot water -->
@@ -560,7 +538,7 @@
         <waterPerUse>65</waterPerUse>
         <sewagePerUse>0</sewagePerUse>
         <hotWaterPerUse>32</hotWaterPerUse>
-        <iconPath>Things/Building/Furniture/Sink/Sink_south</iconPath>
+        <iconPath>DBH/Things/Building/Showers/shower_north</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
     
     <!-- =====================================================
