@@ -376,7 +376,6 @@ namespace SecondFloor
                         if (bed.OccupiedRect().Contains(actor.Position))
                         {
                             pathRetryAttempts.Remove(actor.thingIDNumber);
-                            Log.Message($"[SecondFloor] {actor.LabelShort} arrived at staircase bed at {bed.Position} ({actor.Position}).");
                             actor.jobs.curDriver.ReadyForNextToil();
                             return;
                         }
@@ -404,7 +403,6 @@ namespace SecondFloor
                             pathRetryAttempts.Remove(actor.thingIDNumber);
                             actor.Position = bed.Position;
                             actor.pather.StopDead();
-                            Log.Message($"[SecondFloor] Teleported {actor.LabelShort} to staircase bed at {bed.Position} after failed pathing.");
                             actor.jobs.curDriver.ReadyForNextToil();
                             return;
                         }
@@ -432,6 +430,14 @@ namespace SecondFloor
             // We can't conditionally change the defaultCompleteMode here since we don't know
             // which bed the pawn will target yet. Instead, the initAction and tickIntervalAction
             // handle completion for staircases by calling ReadyForNextToil() when appropriate.
+            
+            // Clean up retry tracking when toil ends (success, failure, or interruption)
+            __result.AddFinishAction(delegate
+            {
+                Pawn actor = __result.actor;
+                if (actor != null)
+                    pathRetryAttempts.Remove(actor.thingIDNumber);
+            });
         }
     }
 
@@ -616,6 +622,8 @@ namespace SecondFloor
     [HarmonyPatch(typeof(PawnUIOverlay), "DrawPawnGUIOverlay")]
     public static class PawnUIOverlay_DrawPawnGUIOverlay_Patch
     {
+        private static readonly FieldInfo pawnField = AccessTools.Field(typeof(PawnUIOverlay), "pawn");
+        
         public static bool Prefix(PawnUIOverlay __instance)
         {
 
@@ -624,7 +632,7 @@ namespace SecondFloor
                 return true;
             }
 
-            var pawn = (Pawn)AccessTools.Field(typeof(PawnUIOverlay), "pawn").GetValue(__instance);
+            var pawn = (Pawn)pawnField.GetValue(__instance);
             if (pawn == null)
             {
                 return true;
@@ -690,6 +698,10 @@ namespace SecondFloor
     [HarmonyPatch("UpdateOverlays")]
     public static class CompPowerTrader_UpdateOverlays_Patch
     {
+        private static readonly FieldInfo overlayNeedsPowerField = AccessTools.Field(typeof(CompPowerTrader), "overlayNeedsPower");
+        private static readonly FieldInfo overlayPowerOffField = AccessTools.Field(typeof(CompPowerTrader), "overlayPowerOff");
+        private static readonly MethodInfo disableMethod = AccessTools.Method(typeof(OverlayDrawer), "Disable", new[] { typeof(Thing), typeof(OverlayHandle?).MakeByRefType() });
+        
         public static void Postfix(CompPowerTrader __instance)
         {
             var upgradesComp = __instance.parent?.GetComp<CompStaircaseUpgrades>();
@@ -698,12 +710,7 @@ namespace SecondFloor
             float totalPower = upgradesComp.CalculateTotalPowerConsumption();
             if (totalPower > 0f || __instance.parent?.Map == null) return;
 
-            var overlayNeedsPowerField = AccessTools.Field(typeof(CompPowerTrader), "overlayNeedsPower");
-            var overlayPowerOffField = AccessTools.Field(typeof(CompPowerTrader), "overlayPowerOff");
-            if (overlayNeedsPowerField == null || overlayPowerOffField == null) return;
-
-            var disableMethod = AccessTools.Method(typeof(OverlayDrawer), "Disable", new[] { typeof(Thing), typeof(OverlayHandle?).MakeByRefType() });
-            if (disableMethod == null) return;
+            if (overlayNeedsPowerField == null || overlayPowerOffField == null || disableMethod == null) return;
 
             object overlayNeedsPowerValue = overlayNeedsPowerField.GetValue(__instance);
             if (overlayNeedsPowerValue != null)
@@ -736,6 +743,8 @@ namespace SecondFloor
     [HarmonyPatch(typeof(StatWorker), "GetValueUnfinalized")]
     public static class StatWorker_GetValueUnfinalized_Patch
     {
+        private static readonly FieldInfo statField = AccessTools.Field(typeof(StatWorker), "stat");
+        
         public static void Postfix(StatWorker __instance, ref float __result, StatRequest req)
         {
             // Only apply to things (not pawns or other stat requests)
@@ -747,8 +756,7 @@ namespace SecondFloor
             if (upgradesComp == null)
                 return;
             
-            // Access the protected stat field via Traverse
-            StatDef stat = Traverse.Create(__instance).Field("stat").GetValue<StatDef>();
+            StatDef stat = (StatDef)statField.GetValue(__instance);
             if (stat == null)
                 return;
             
@@ -785,6 +793,8 @@ namespace SecondFloor
     [HarmonyPatch(typeof(StatWorker), "GetExplanationUnfinalized")]
     public static class StatWorker_GetExplanationUnfinalized_Patch
     {
+        private static readonly FieldInfo statField = AccessTools.Field(typeof(StatWorker), "stat");
+        
         public static void Postfix(StatWorker __instance, ref string __result, StatRequest req, ToStringNumberSense numberSense)
         {
             // Only apply to things (not pawns or other stat requests)
@@ -796,8 +806,7 @@ namespace SecondFloor
             if (upgradesComp == null)
                 return;
             
-            // Access the protected stat field via Traverse
-            StatDef stat = Traverse.Create(__instance).Field("stat").GetValue<StatDef>();
+            StatDef stat = (StatDef)statField.GetValue(__instance);
             if (stat == null)
                 return;
             

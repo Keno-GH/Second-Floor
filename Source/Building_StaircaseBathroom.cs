@@ -36,6 +36,10 @@ namespace SecondFloor
         {
             base.Tick();
             
+            // Only check parent every 250 ticks — no need to check every single tick
+            if (!this.IsHashIntervalTick(250))
+                return;
+            
             // Self-destruct if parent staircase is gone
             if (parentStaircase == null || parentStaircase.Destroyed || !parentStaircase.Spawned)
             {

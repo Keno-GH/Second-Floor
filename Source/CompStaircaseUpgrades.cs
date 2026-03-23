@@ -75,6 +75,13 @@ namespace SecondFloor
         private float cachedFuelConsumptionRate = 0f;
         
         // =====================================================
+        // Active Upgrades Cache (avoids repeated list allocations)
+        // =====================================================
+        private static readonly List<StaircaseUpgradeDef> EmptyUpgradeList = new List<StaircaseUpgradeDef>();
+        private List<StaircaseUpgradeDef> cachedActiveUpgradeDefs;
+        private bool activeUpgradesDirty = true;
+        
+        // =====================================================
         // Cached Mod Extension (avoids repeated GetModExtension calls)
         // =====================================================
         private SecondFloorModExtension cachedModExtension;
@@ -147,6 +154,7 @@ namespace SecondFloor
         public void InvalidateBedCountCache()
         {
             bedCountDirty = true;
+            activeUpgradesDirty = true;
             
             // Update maxAssignedPawnsCount to match the new bed count
             if (parent is Building_Bed bed)
@@ -198,6 +206,12 @@ namespace SecondFloor
         /// Cached power consumption value for display
         /// </summary>
         private float cachedTotalPowerConsumption = 0f;
+        
+        // =====================================================
+        // Virtual Temperature Cache
+        // =====================================================
+        private float cachedVirtualTemperature = 21f;
+        private int virtualTempCacheTick = -999;
         
         // =====================================================
         // Linked Battery System
@@ -630,7 +644,13 @@ namespace SecondFloor
         /// </summary>
         public List<StaircaseUpgradeDef> GetConstructedUpgradeDefs()
         {
-            return constructedUpgrades.Select(au => au.def).ToList();
+            if (constructedUpgrades == null || constructedUpgrades.Count == 0)
+                return EmptyUpgradeList;
+            
+            var defs = new List<StaircaseUpgradeDef>(constructedUpgrades.Count);
+            foreach (var au in constructedUpgrades)
+                defs.Add(au.def);
+            return defs;
         }
         
         /// <summary>
@@ -1177,6 +1197,7 @@ namespace SecondFloor
             if (activeUpgrade != null)
             {
                 activeUpgrade.isToggledOff = toggledOff;
+                activeUpgradesDirty = true;
             }
         }
         
@@ -1194,6 +1215,7 @@ namespace SecondFloor
             if (activeUpgrade != null)
             {
                 activeUpgrade.isToggledOff = !activeUpgrade.isToggledOff;
+                activeUpgradesDirty = true;
             }
         }
 
@@ -1204,22 +1226,27 @@ namespace SecondFloor
         /// </summary>
         public List<StaircaseUpgradeDef> GetActiveUpgradeDefs()
         {
-
             if (constructedUpgrades == null || constructedUpgrades.Count == 0)
-                return new List<StaircaseUpgradeDef>();
+                return EmptyUpgradeList;
 
-            List<StaircaseUpgradeDef> activeDefs = new List<StaircaseUpgradeDef>();
+            if (!activeUpgradesDirty && cachedActiveUpgradeDefs != null)
+                return cachedActiveUpgradeDefs;
+
+            if (cachedActiveUpgradeDefs == null)
+                cachedActiveUpgradeDefs = new List<StaircaseUpgradeDef>();
+            else
+                cachedActiveUpgradeDefs.Clear();
             
             foreach (var constructedUpgrade in constructedUpgrades)
             {
-                // Use the new GetUpgradeDisableReason method to determine if upgrade is active
                 if (GetUpgradeDisableReason(constructedUpgrade.def) == UpgradeDisableReason.None)
                 {
-                    activeDefs.Add(constructedUpgrade.def);
+                    cachedActiveUpgradeDefs.Add(constructedUpgrade.def);
                 }
             }
             
-            return activeDefs;
+            activeUpgradesDirty = false;
+            return cachedActiveUpgradeDefs;
         }
         
         /// <summary>
@@ -1645,7 +1672,13 @@ namespace SecondFloor
         {
             get
             {
-                return CalculateVirtualTemperature();
+                int currentTick = Find.TickManager.TicksGame;
+                if (currentTick - virtualTempCacheTick < 60)
+                    return cachedVirtualTemperature;
+                
+                cachedVirtualTemperature = CalculateVirtualTemperature();
+                virtualTempCacheTick = currentTick;
+                return cachedVirtualTemperature;
             }
         }
         
@@ -1664,20 +1697,22 @@ namespace SecondFloor
             if (parent?.Map == null) return 21f;
             
             float temp = parent.Map.mapTemperature.OutdoorTemp;
-            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
-                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            var activeDefs = GetActiveUpgradeDefs();
             
-            float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
+            float totalInsulation = 0f;
+            foreach (var def in activeDefs)
+                totalInsulation += def.insulationAdjustment;
+            
             if (totalInsulation > 0)
             {
                 float weightedTargetSum = 0f;
                 float weightSum = 0f;
-                foreach (var activeUpgrade in activeUpgrades)
+                foreach (var def in activeDefs)
                 {
-                    if (activeUpgrade.def.insulationAdjustment > 0)
+                    if (def.insulationAdjustment > 0)
                     {
-                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
-                        weightSum += activeUpgrade.def.insulationAdjustment;
+                        weightedTargetSum += def.insulationTarget * def.insulationAdjustment;
+                        weightSum += def.insulationAdjustment;
                     }
                 }
                 float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
@@ -1698,21 +1733,23 @@ namespace SecondFloor
             if (parent?.Map == null) return 21f;
             
             float temp = parent.Map.mapTemperature.OutdoorTemp;
-            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
-                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
+            var activeDefs = GetActiveUpgradeDefs();
             
             // Step 1: Apply Insulation
-            float totalInsulation = activeUpgrades.Sum(au => au.def.insulationAdjustment);
+            float totalInsulation = 0f;
+            foreach (var def in activeDefs)
+                totalInsulation += def.insulationAdjustment;
+            
             if (totalInsulation > 0)
             {
                 float weightedTargetSum = 0f;
                 float weightSum = 0f;
-                foreach (var activeUpgrade in activeUpgrades)
+                foreach (var def in activeDefs)
                 {
-                    if (activeUpgrade.def.insulationAdjustment > 0)
+                    if (def.insulationAdjustment > 0)
                     {
-                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
-                        weightSum += activeUpgrade.def.insulationAdjustment;
+                        weightedTargetSum += def.insulationTarget * def.insulationAdjustment;
+                        weightSum += def.insulationAdjustment;
                     }
                 }
                 float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
@@ -1722,34 +1759,32 @@ namespace SecondFloor
             }
             
             // Step 2: Apply Dumb Heaters (clamped to their max caps)
-            var dumbHeaters = activeUpgrades.Where(au => au.def.IsDumbTempModifier && au.def.heatOffset > 0).ToList();
-            foreach (var heater in dumbHeaters)
+            foreach (var def in activeDefs)
             {
-                // Calculate clamped heat offset
-                float potentialTemp = temp + heater.def.heatOffset;
-                float actualHeat = heater.def.heatOffset;
+                if (!def.IsDumbTempModifier || def.heatOffset <= 0) continue;
                 
-                // Clamp: heater cannot push temp above its maxHeatCap
-                if (potentialTemp > heater.def.maxHeatCap)
+                float potentialTemp = temp + def.heatOffset;
+                float actualHeat = def.heatOffset;
+                
+                if (potentialTemp > def.maxHeatCap)
                 {
-                    actualHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                    actualHeat = Mathf.Max(0f, def.maxHeatCap - temp);
                 }
                 
                 temp += actualHeat;
             }
             
             // Step 3: Apply Dumb Coolers (clamped to their min caps)
-            var dumbCoolers = activeUpgrades.Where(au => au.def.IsDumbTempModifier && au.def.coolOffset > 0).ToList();
-            foreach (var cooler in dumbCoolers)
+            foreach (var def in activeDefs)
             {
-                // Calculate clamped cool offset
-                float potentialTemp = temp - cooler.def.coolOffset;
-                float actualCool = cooler.def.coolOffset;
+                if (!def.IsDumbTempModifier || def.coolOffset <= 0) continue;
                 
-                // Clamp: cooler cannot push temp below its minCoolCap
-                if (potentialTemp < cooler.def.minCoolCap)
+                float potentialTemp = temp - def.coolOffset;
+                float actualCool = def.coolOffset;
+                
+                if (potentialTemp < def.minCoolCap)
                 {
-                    actualCool = Mathf.Max(0f, temp - cooler.def.minCoolCap);
+                    actualCool = Mathf.Max(0f, temp - def.minCoolCap);
                 }
                 
                 temp -= actualCool;
@@ -1769,22 +1804,25 @@ namespace SecondFloor
             
             float temp = parent.Map.mapTemperature.OutdoorTemp;
             
-            // Get basically active upgrades (avoids circular dependency)
-            var basicActiveUpgrades = constructedUpgrades
-                .Where(au => IsUpgradeBasicallyActive(au.def)).ToList();
-            
             // Step 1: Apply Insulation
-            float totalInsulation = basicActiveUpgrades.Sum(au => au.def.insulationAdjustment);
+            float totalInsulation = 0f;
+            foreach (var au in constructedUpgrades)
+            {
+                if (IsUpgradeBasicallyActive(au.def))
+                    totalInsulation += au.def.insulationAdjustment;
+            }
+            
             if (totalInsulation > 0)
             {
                 float weightedTargetSum = 0f;
                 float weightSum = 0f;
-                foreach (var activeUpgrade in basicActiveUpgrades)
+                foreach (var au in constructedUpgrades)
                 {
-                    if (activeUpgrade.def.insulationAdjustment > 0)
+                    if (!IsUpgradeBasicallyActive(au.def)) continue;
+                    if (au.def.insulationAdjustment > 0)
                     {
-                        weightedTargetSum += activeUpgrade.def.insulationTarget * activeUpgrade.def.insulationAdjustment;
-                        weightSum += activeUpgrade.def.insulationAdjustment;
+                        weightedTargetSum += au.def.insulationTarget * au.def.insulationAdjustment;
+                        weightSum += au.def.insulationAdjustment;
                     }
                 }
                 float insulationTarget = weightSum > 0 ? weightedTargetSum / weightSum : 21f;
@@ -1794,29 +1832,31 @@ namespace SecondFloor
             }
             
             // Step 2: Apply Uncontrollable Dumb Heaters (those with followsDesiredTemp = false)
-            var uncontrollableHeaters = basicActiveUpgrades.Where(au => 
-                au.def.IsDumbTempModifier && au.def.heatOffset > 0 && !au.def.followsDesiredTemp).ToList();
-            foreach (var heater in uncontrollableHeaters)
+            foreach (var au in constructedUpgrades)
             {
-                float potentialTemp = temp + heater.def.heatOffset;
-                float actualHeat = heater.def.heatOffset;
-                if (potentialTemp > heater.def.maxHeatCap)
+                if (!IsUpgradeBasicallyActive(au.def)) continue;
+                if (!au.def.IsDumbTempModifier || au.def.heatOffset <= 0 || au.def.followsDesiredTemp) continue;
+                
+                float potentialTemp = temp + au.def.heatOffset;
+                float actualHeat = au.def.heatOffset;
+                if (potentialTemp > au.def.maxHeatCap)
                 {
-                    actualHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                    actualHeat = Mathf.Max(0f, au.def.maxHeatCap - temp);
                 }
                 temp += actualHeat;
             }
             
             // Step 3: Apply Uncontrollable Dumb Coolers (those with followsDesiredTemp = false)
-            var uncontrollableCoolers = basicActiveUpgrades.Where(au => 
-                au.def.IsDumbTempModifier && au.def.coolOffset > 0 && !au.def.followsDesiredTemp).ToList();
-            foreach (var cooler in uncontrollableCoolers)
+            foreach (var au in constructedUpgrades)
             {
-                float potentialTemp = temp - cooler.def.coolOffset;
-                float actualCool = cooler.def.coolOffset;
-                if (potentialTemp < cooler.def.minCoolCap)
+                if (!IsUpgradeBasicallyActive(au.def)) continue;
+                if (!au.def.IsDumbTempModifier || au.def.coolOffset <= 0 || au.def.followsDesiredTemp) continue;
+                
+                float potentialTemp = temp - au.def.coolOffset;
+                float actualCool = au.def.coolOffset;
+                if (potentialTemp < au.def.minCoolCap)
                 {
-                    actualCool = Mathf.Max(0f, temp - cooler.def.minCoolCap);
+                    actualCool = Mathf.Max(0f, temp - au.def.minCoolCap);
                 }
                 temp -= actualCool;
             }
@@ -1845,15 +1885,14 @@ namespace SecondFloor
             }
             
             // Get basically active controllable fueled heaters (avoids circular dependency)
-            var controllableHeaters = constructedUpgrades
-                .Where(au => IsUpgradeBasicallyActive(au.def) && 
-                             au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp)
-                .ToList();
+            float totalHeatingCapacity = 0f;
+            foreach (var au in constructedUpgrades)
+            {
+                if (!IsUpgradeBasicallyActive(au.def)) continue;
+                if (!au.def.IsDumbTempModifier || au.def.heatOffset <= 0 || !au.def.followsDesiredTemp) continue;
+                totalHeatingCapacity += au.def.heatOffset;
+            }
             
-            if (!controllableHeaters.Any())
-                return 0f;
-            
-            float totalHeatingCapacity = controllableHeaters.Sum(h => h.def.heatOffset);
             if (totalHeatingCapacity <= 0f)
                 return 0f;
             
@@ -1865,9 +1904,7 @@ namespace SecondFloor
                 return 0f;
             
             // Calculate ratio: how much of max capacity is needed
-            float ratio = Mathf.Clamp01(tempDiff / totalHeatingCapacity);
-            
-            return ratio;
+            return Mathf.Clamp01(tempDiff / totalHeatingCapacity);
         }
         
         /// <summary>
@@ -1895,12 +1932,18 @@ namespace SecondFloor
             if (Mathf.Abs(tempDiff) < 0.5f)
                 return 0.05f;
             
-            // Get smart modifiers
-            var smartModifiers = constructedUpgrades
-                .Where(au => IsUpgradeBasicallyActive(au.def) && au.def.IsSmartTempModifier)
-                .ToList();
+            // Check if any smart modifiers exist
+            bool hasSmartModifiers = false;
+            foreach (var au in constructedUpgrades)
+            {
+                if (IsUpgradeBasicallyActive(au.def) && au.def.IsSmartTempModifier)
+                {
+                    hasSmartModifiers = true;
+                    break;
+                }
+            }
             
-            if (!smartModifiers.Any())
+            if (!hasSmartModifiers)
                 return 0f;
             
             // If specific def provided, check if it can address the current need
@@ -1921,22 +1964,24 @@ namespace SecondFloor
             float totalCapacity = 0f;
             bool needsHeatingGeneral = tempDiff > 0f;
             
-            foreach (var mod in smartModifiers)
+            foreach (var au in constructedUpgrades)
             {
+                if (!IsUpgradeBasicallyActive(au.def) || !au.def.IsSmartTempModifier) continue;
+                
                 if (needsHeatingGeneral)
                 {
-                    if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
-                        mod.def.smartTempModifierType == TempModifierType.DualMode)
+                    if (au.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                        au.def.smartTempModifierType == TempModifierType.DualMode)
                     {
-                        totalCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
+                        totalCapacity += au.def.smartHeatEfficiency * (au.def.basePowerConsumption / 100f);
                     }
                 }
                 else
                 {
-                    if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
-                        mod.def.smartTempModifierType == TempModifierType.DualMode)
+                    if (au.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                        au.def.smartTempModifierType == TempModifierType.DualMode)
                     {
-                        totalCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
+                        totalCapacity += au.def.smartCoolEfficiency * (au.def.basePowerConsumption / 100f);
                     }
                 }
             }
@@ -1948,9 +1993,7 @@ namespace SecondFloor
             float ratio = Mathf.Clamp01(Mathf.Abs(tempDiff) / totalCapacity);
             
             // Minimum 10% when active to prevent rapid cycling
-            ratio = Mathf.Max(0.1f, ratio);
-            
-            return ratio;
+            return Mathf.Max(0.1f, ratio);
         }
         
         /// <summary>
@@ -1960,13 +2003,6 @@ namespace SecondFloor
         private float GetTempAfterSmartModifiers(float startTemp)
         {
             if (!HasPower()) return startTemp;
-            
-            var smartModifiers = constructedUpgrades
-                .Where(au => IsUpgradeBasicallyActive(au.def) && au.def.IsSmartTempModifier)
-                .ToList();
-            
-            if (!smartModifiers.Any())
-                return startTemp;
             
             float temp = startTemp;
             float tempDiff = targetTemperature - temp;
@@ -1978,19 +2014,24 @@ namespace SecondFloor
             float totalHeatingCapacity = 0f;
             float totalCoolingCapacity = 0f;
             
-            foreach (var mod in smartModifiers)
+            foreach (var au in constructedUpgrades)
             {
-                if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
-                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                if (!IsUpgradeBasicallyActive(au.def) || !au.def.IsSmartTempModifier) continue;
+                
+                if (au.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                    au.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
+                    totalHeatingCapacity += au.def.smartHeatEfficiency * (au.def.basePowerConsumption / 100f);
                 }
-                if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
-                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                if (au.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                    au.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
+                    totalCoolingCapacity += au.def.smartCoolEfficiency * (au.def.basePowerConsumption / 100f);
                 }
             }
+            
+            if (totalHeatingCapacity <= 0f && totalCoolingCapacity <= 0f)
+                return startTemp;
             
             // Apply toward target
             if (tempDiff > 0f && totalHeatingCapacity > 0f)
@@ -2011,14 +2052,6 @@ namespace SecondFloor
         /// </summary>
         private float GetTempAfterFueledHeaters(float startTemp)
         {
-            var controllableHeaters = constructedUpgrades
-                .Where(au => IsUpgradeBasicallyActive(au.def) && 
-                             au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp)
-                .ToList();
-            
-            if (!controllableHeaters.Any())
-                return startTemp;
-            
             float temp = startTemp;
             float tempDiff = targetTemperature - temp;
             
@@ -2028,15 +2061,21 @@ namespace SecondFloor
             
             // Calculate total capacity (clamped by maxHeatCap)
             float totalCapacity = 0f;
-            foreach (var heater in controllableHeaters)
+            foreach (var au in constructedUpgrades)
             {
-                float maxHeat = heater.def.heatOffset;
-                if (temp + maxHeat > heater.def.maxHeatCap)
+                if (!IsUpgradeBasicallyActive(au.def)) continue;
+                if (!au.def.IsDumbTempModifier || au.def.heatOffset <= 0 || !au.def.followsDesiredTemp) continue;
+                
+                float maxHeat = au.def.heatOffset;
+                if (temp + maxHeat > au.def.maxHeatCap)
                 {
-                    maxHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                    maxHeat = Mathf.Max(0f, au.def.maxHeatCap - temp);
                 }
                 totalCapacity += maxHeat;
             }
+            
+            if (totalCapacity <= 0f)
+                return startTemp;
             
             // Apply only what's needed
             float heatToAdd = Mathf.Min(tempDiff, totalCapacity);
@@ -2058,39 +2097,20 @@ namespace SecondFloor
             // Get base temperature (outdoor + insulation + uncontrollable dumb heaters/coolers)
             float temp = GetPreControllableTemperature();
             
-            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs()
-                .Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
-            
-            // Get controllable fueled heaters
-            var controllableHeaters = activeUpgrades.Where(au => 
-                au.def.IsDumbTempModifier && au.def.heatOffset > 0 && au.def.followsDesiredTemp).ToList();
-            
-            // Get smart temp modifiers
-            var smartTempModifiers = activeUpgrades.Where(au => au.def.IsSmartTempModifier).ToList();
             bool hasPower = HasPower();
             
             // Apply temperature modifiers based on priority
             if (preferFueledFirst)
             {
-                // Apply controllable fueled heaters first (toward target temp)
-                temp = ApplyControllableFueledHeaters(temp, controllableHeaters);
-                
-                // Then apply smart modifiers if still needed
-                if (smartTempModifiers.Any() && hasPower)
-                {
-                    temp = ApplySmartTempModifiers(temp, smartTempModifiers);
-                }
+                temp = ApplyControllableFueledHeaters(temp);
+                if (hasPower)
+                    temp = ApplySmartTempModifiers(temp);
             }
             else
             {
-                // Apply smart modifiers first
-                if (smartTempModifiers.Any() && hasPower)
-                {
-                    temp = ApplySmartTempModifiers(temp, smartTempModifiers);
-                }
-                
-                // Then apply controllable fueled heaters if still needed
-                temp = ApplyControllableFueledHeaters(temp, controllableHeaters);
+                if (hasPower)
+                    temp = ApplySmartTempModifiers(temp);
+                temp = ApplyControllableFueledHeaters(temp);
             }
 
             return temp;
@@ -2100,29 +2120,32 @@ namespace SecondFloor
         /// Applies controllable fueled heaters toward the target temperature.
         /// Unlike dumb heaters, these won't overshoot the target.
         /// </summary>
-        private float ApplyControllableFueledHeaters(float temp, List<ActiveUpgrade> controllableHeaters)
+        private float ApplyControllableFueledHeaters(float temp)
         {
-            if (!controllableHeaters.Any())
-                return temp;
-            
             float tempDiff = targetTemperature - temp;
             
             // Only heat if we need to (temp is below target)
             if (tempDiff <= 0f)
                 return temp;
             
-            // Calculate total heating capacity
+            // Calculate total heating capacity from active controllable fueled heaters
             float totalCapacity = 0f;
-            foreach (var heater in controllableHeaters)
+            var activeDefs = GetActiveUpgradeDefs();
+            foreach (var au in constructedUpgrades)
             {
-                // Calculate clamped capacity (can't heat above maxHeatCap)
-                float maxHeat = heater.def.heatOffset;
-                if (temp + maxHeat > heater.def.maxHeatCap)
+                if (!activeDefs.Contains(au.def)) continue;
+                if (!au.def.IsDumbTempModifier || au.def.heatOffset <= 0 || !au.def.followsDesiredTemp) continue;
+                
+                float maxHeat = au.def.heatOffset;
+                if (temp + maxHeat > au.def.maxHeatCap)
                 {
-                    maxHeat = Mathf.Max(0f, heater.def.maxHeatCap - temp);
+                    maxHeat = Mathf.Max(0f, au.def.maxHeatCap - temp);
                 }
                 totalCapacity += maxHeat;
             }
+            
+            if (totalCapacity <= 0f)
+                return temp;
             
             // Apply only what's needed to reach target
             float heatToAdd = Mathf.Min(tempDiff, totalCapacity);
@@ -2134,44 +2157,43 @@ namespace SecondFloor
         /// <summary>
         /// Applies smart (electric) temperature modifiers toward the target temperature.
         /// </summary>
-        private float ApplySmartTempModifiers(float temp, List<ActiveUpgrade> smartTempModifiers)
+        private float ApplySmartTempModifiers(float temp)
         {
             float tempDiff = targetTemperature - temp;
             
             if (Mathf.Abs(tempDiff) < 0.1f)
-            {
-                return temp; // Already at target
-            }
+                return temp;
             
-            // Calculate total heating and cooling capacity
+            // Calculate total heating and cooling capacity from active smart modifiers
             float totalHeatingCapacity = 0f;
             float totalCoolingCapacity = 0f;
+            var activeDefs = GetActiveUpgradeDefs();
             
-            foreach (var mod in smartTempModifiers)
+            foreach (var au in constructedUpgrades)
             {
-                if (mod.def.smartTempModifierType == TempModifierType.HeaterOnly || 
-                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                if (!activeDefs.Contains(au.def) || !au.def.IsSmartTempModifier) continue;
+                
+                if (au.def.smartTempModifierType == TempModifierType.HeaterOnly || 
+                    au.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    totalHeatingCapacity += mod.def.smartHeatEfficiency * (mod.def.basePowerConsumption / 100f);
+                    totalHeatingCapacity += au.def.smartHeatEfficiency * (au.def.basePowerConsumption / 100f);
                 }
                 
-                if (mod.def.smartTempModifierType == TempModifierType.CoolerOnly || 
-                    mod.def.smartTempModifierType == TempModifierType.DualMode)
+                if (au.def.smartTempModifierType == TempModifierType.CoolerOnly || 
+                    au.def.smartTempModifierType == TempModifierType.DualMode)
                 {
-                    totalCoolingCapacity += mod.def.smartCoolEfficiency * (mod.def.basePowerConsumption / 100f);
+                    totalCoolingCapacity += au.def.smartCoolEfficiency * (au.def.basePowerConsumption / 100f);
                 }
             }
             
             // Apply heating or cooling based on need
             if (tempDiff > 0f && totalHeatingCapacity > 0f)
             {
-                float heatToAdd = Mathf.Min(tempDiff, totalHeatingCapacity);
-                temp += heatToAdd;
+                temp += Mathf.Min(tempDiff, totalHeatingCapacity);
             }
             else if (tempDiff < 0f && totalCoolingCapacity > 0f)
             {
-                float coolToAdd = Mathf.Min(-tempDiff, totalCoolingCapacity);
-                temp -= coolToAdd;
+                temp -= Mathf.Min(-tempDiff, totalCoolingCapacity);
             }
             
             return temp;
@@ -2327,15 +2349,29 @@ namespace SecondFloor
 
         /// <summary>
         /// Called every tick to handle fuel consumption, power, thoughts, and bathroom.
+        /// Most operations are gated behind a 250-tick interval to reduce per-tick overhead.
         /// </summary>
         public override void CompTick()
         {
+            // Per-tick: only process active bathroom uses (rare - only during toilet/shower)
+            if (activeBathroomUses != null && activeBathroomUses.Count > 0)
+            {
+                ProcessActiveBathroomUses();
+            }
+            
+            // Everything else runs at 250-tick intervals, offset by thingID to spread load
+            if ((Find.TickManager.TicksGame + parent.thingIDNumber) % 250 != 0)
+                return;
+            
+            // Invalidate active upgrades cache to pick up external state changes (power loss, fuel depletion)
+            activeUpgradesDirty = true;
+            
             ConsumeFuel();
             UpdatePowerConsumption();
             
             // Partial class tick methods
             TickThoughtApplication();
-            TickBathroom();
+            TickBathroomInterval();
         }
         
         // =====================================================
@@ -2452,9 +2488,11 @@ namespace SecondFloor
             // Calculate total fuel to consume
             float totalFuelToConsume = 0f;
             
-            List<ActiveUpgrade> activeUpgrades = GetActiveUpgradeDefs().Select(def => constructedUpgrades.First(au => au.def == def)).ToList();
-            foreach (var activeUpgrade in activeUpgrades)
+            var activeDefs = GetActiveUpgradeDefs();
+            foreach (var activeUpgrade in constructedUpgrades)
             {
+                if (!activeDefs.Contains(activeUpgrade.def))
+                    continue;
                 if (activeUpgrade.def.fuelPerBed <= 0f)
                     continue;
                 

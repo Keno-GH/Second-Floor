@@ -89,19 +89,13 @@ namespace SecondFloor
         }
         
         /// <summary>
-        /// Called every tick to process bathroom functionality.
+        /// Called at 250-tick intervals to check sleeping pawns for bathroom needs.
+        /// ProcessActiveBathroomUses is called per-tick from CompTick only when needed.
         /// </summary>
-        private void TickBathroom()
+        private void TickBathroomInterval()
         {
             // Only run if DBH is active
             if (!DBHReflectionHelper.IsDBHActive)
-                return;
-            
-            // Process active bathroom uses every tick
-            ProcessActiveBathroomUses();
-            
-            // Check for new bathroom needs at intervals, offset by thingID to spread load
-            if ((Find.TickManager.TicksGame + parent.thingIDNumber) % BathroomCheckIntervalTicks != 0)
                 return;
             
             // Check cooldown

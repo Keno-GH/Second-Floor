@@ -40,6 +40,12 @@ namespace SecondFloor
         // ContaminationLevel type for PullWater out parameter
         private static Type _contaminationLevelType;
         
+        // Cached NeedDefs (looked up once on first access)
+        private static NeedDef _cachedHygieneNeedDef;
+        private static NeedDef _cachedBladderNeedDef;
+        private static NeedDef _cachedThirstNeedDef;
+        private static bool _needDefsCached;
+        
         // NeedDef names
         public const string HygieneNeedDefName = "Hygiene";
         public const string BladderNeedDefName = "Bladder";
@@ -180,7 +186,8 @@ namespace SecondFloor
         {
             if (!IsDBHActive || pawn?.needs == null)
                 return null;
-            return pawn.needs.TryGetNeed(DefDatabase<NeedDef>.GetNamedSilentFail(HygieneNeedDefName));
+            CacheNeedDefs();
+            return _cachedHygieneNeedDef != null ? pawn.needs.TryGetNeed(_cachedHygieneNeedDef) : null;
         }
         
         /// <summary>
@@ -190,7 +197,8 @@ namespace SecondFloor
         {
             if (!IsDBHActive || pawn?.needs == null)
                 return null;
-            return pawn.needs.TryGetNeed(DefDatabase<NeedDef>.GetNamedSilentFail(BladderNeedDefName));
+            CacheNeedDefs();
+            return _cachedBladderNeedDef != null ? pawn.needs.TryGetNeed(_cachedBladderNeedDef) : null;
         }
         
         /// <summary>
@@ -200,7 +208,17 @@ namespace SecondFloor
         {
             if (!IsThirstAvailable || pawn?.needs == null)
                 return null;
-            return pawn.needs.TryGetNeed(DefDatabase<NeedDef>.GetNamedSilentFail(ThirstNeedDefName));
+            CacheNeedDefs();
+            return _cachedThirstNeedDef != null ? pawn.needs.TryGetNeed(_cachedThirstNeedDef) : null;
+        }
+        
+        private static void CacheNeedDefs()
+        {
+            if (_needDefsCached) return;
+            _needDefsCached = true;
+            _cachedHygieneNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail(HygieneNeedDefName);
+            _cachedBladderNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail(BladderNeedDefName);
+            _cachedThirstNeedDef = DefDatabase<NeedDef>.GetNamedSilentFail(ThirstNeedDefName);
         }
         
         /// <summary>

@@ -15,14 +15,10 @@ namespace SecondFloor
         // =====================================================
         
         /// <summary>
-        /// Called every 60 ticks to apply thoughts to sleeping pawns.
+        /// Called at 250-tick intervals to apply thoughts to sleeping pawns.
         /// </summary>
         private void TickThoughtApplication()
         {
-            // Only run every 60 ticks, offset by thingID to spread load
-            if ((Find.TickManager.TicksGame + parent.thingIDNumber) % 60 != 0)
-                return;
-            
             ApplyThought();
         }
         
