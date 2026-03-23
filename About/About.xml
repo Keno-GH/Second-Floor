@@ -7,7 +7,7 @@
         <li>1.6</li>
     </supportedVersions>
     <packageId>Keno.SecondFloor</packageId>
-    <description>Create staircases leading to different floors that hold one purpose
+    <description>Create staircases leading to virtual floors
         Check the Steam workshop page for more info.</description>
     <modDependencies>
 		<li>
