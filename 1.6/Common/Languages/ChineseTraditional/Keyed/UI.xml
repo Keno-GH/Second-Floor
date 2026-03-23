@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+<TabStaircase>樓梯</TabStaircase>
+
+<!-- PlaceWorker Messages -->
+<SF_CannotPlaceOnGravship>無法將普通樓梯放置在重力船底層結構上。</SF_CannotPlaceOnGravship>
+<SF_MustPlaceOnGravship>必須放置在重力船底層結構上。</SF_MustPlaceOnGravship>
+<SF_RequiresOdyssey>需要 Odyssey DLC。</SF_RequiresOdyssey>
+
+<!-- Header and Tabs -->
+<SF_StaircaseDetails>樓梯詳細資訊</SF_StaircaseDetails>
+<SF_Tab_Manage>管理</SF_Tab_Manage>
+<SF_Tab_Control>控制</SF_Tab_Control>
+<SF_Tab_Construction>建造</SF_Tab_Construction>
+<SF_Tab_Manage_Tooltip>檢視並管理目前已建造的升級。切換、拆除或擴充可堆疊的升級。</SF_Tab_Manage_Tooltip>
+<SF_Tab_Control_Tooltip>快速存取需要電力和燃料的升級開關。</SF_Tab_Control_Tooltip>
+<SF_Tab_Construction_Tooltip>瀏覽並建造按類別分類的新升級。</SF_Tab_Construction_Tooltip>
+
+<!-- Tab Content Labels -->
+<SF_ManageTab_Title>已建升級</SF_ManageTab_Title>
+<SF_ManageTab_NoUpgrades>尚未建造任何升級。切換到「建造」分頁來新增升級。</SF_ManageTab_NoUpgrades>
+<SF_ControlTab_Title>開關控制</SF_ControlTab_Title>
+<SF_ControlTab_NoToggleables>未安裝可切換的升級。\n\n建造暖爐、冷氣或白噪音機等升級後，即可在此看到開關控制。</SF_ControlTab_NoToggleables>
+<SF_ConstructionTab_Title>可用升級</SF_ConstructionTab_Title>
+<SF_Category_Other>其他</SF_Category_Other>
+
+<!-- Stats Labels -->
+<SF_Stat_BedSpaces>床位：{0}</SF_Stat_BedSpaces>
+<SF_Stat_RoomType>房間類型：{0}</SF_Stat_RoomType>
+<SF_Stat_Impressiveness>觀感：{0}</SF_Stat_Impressiveness>
+<SF_Stat_Comfort>舒適度：{0}</SF_Stat_Comfort>
+<SF_Stat_RestEffectiveness>休息效率：{0}</SF_Stat_RestEffectiveness>
+<SF_Stat_Temperature>溫度：{0}</SF_Stat_Temperature>
+<SF_Stat_CurrentTemp>目前溫度：{0}</SF_Stat_CurrentTemp>
+<SF_Stat_TargetTemp>目標溫度：{0}</SF_Stat_TargetTemp>
+<SF_Stat_PowerUsage>電力：{0}</SF_Stat_PowerUsage>
+<SF_Stat_FuelUsage>燃料：{0}</SF_Stat_FuelUsage>
+<SF_Stat_BatteryStored>電池：{0}</SF_Stat_BatteryStored>
+<SF_Stat_Space>空間：{0}（可用：{1}）</SF_Stat_Space>
+<SF_Stat_HygieneCapacity>衛生容量：{0}</SF_Stat_HygieneCapacity>
+<SF_Stat_NoiseProtection>噪音防護：{0}</SF_Stat_NoiseProtection>
+<SF_Stat_NoiseProtected>受防護</SF_Stat_NoiseProtected>
+<SF_Stat_NoiseExposed>暴露於干擾</SF_Stat_NoiseExposed>
+<SF_NoFuel>（無燃料）</SF_NoFuel>
+
+<!-- Room Types -->
+<SF_RoomType_Basement>地下室</SF_RoomType_Basement>
+<SF_RoomType_BasementBarracks>地下室營房</SF_RoomType_BasementBarracks>
+<SF_RoomType_Barracks>營房</SF_RoomType_Barracks>
+<SF_RoomType_MultipleRooms>多個私人房間</SF_RoomType_MultipleRooms>
+<SF_RoomType_SingleBedroom>單人臥室</SF_RoomType_SingleBedroom>
+
+<!-- Control Tab Status -->
+<SF_Status_Active>運作中</SF_Status_Active>
+<SF_Status_ToggledOff>已關閉</SF_Status_ToggledOff>
+<SF_Status_NoPower>無電力</SF_Status_NoPower>
+<SF_Status_OutOfFuel>燃料耗盡</SF_Status_OutOfFuel>
+<SF_Status_Incomplete>未完成</SF_Status_Incomplete>
+<SF_Status_ReachedTemperature>待機</SF_Status_ReachedTemperature>
+<SF_Toggle_TurnOn>開啟</SF_Toggle_TurnOn>
+<SF_Toggle_TurnOff>關閉</SF_Toggle_TurnOff>
+
+<!-- Disable Reasons -->
+<SF_DisableReason_ToggledOff>已停用：手動關閉</SF_DisableReason_ToggledOff>
+<SF_DisableReason_OutOfFuel>已停用：燃料耗盡</SF_DisableReason_OutOfFuel>
+<SF_DisableReason_NoPower>已停用：無電力</SF_DisableReason_NoPower>
+<SF_DisableReason_InsufficientCount>已停用：建造數量不足（每張床需要一個）</SF_DisableReason_InsufficientCount>
+<SF_DisableReason_Unknown>已停用：未知原因</SF_DisableReason_Unknown>
+
+<!-- Tooltips -->
+<SF_Tooltip_ToggledOff>此升級已手動關閉。點擊以重新啟用。</SF_Tooltip_ToggledOff>
+<SF_Tooltip_NoPower>此升級需要電力，但樓梯未連接電源。</SF_Tooltip_NoPower>
+<SF_Tooltip_OutOfFuel>此升級需要燃料，但樓梯的燃料已耗盡。</SF_Tooltip_OutOfFuel>
+<SF_Tooltip_InsufficientCount>此升級每張床需要一個，但建造數量不足。</SF_Tooltip_InsufficientCount>
+<SF_Tooltip_ReachedTemperature>此升級處於待機狀態，因為已達到目標溫度。</SF_Tooltip_ReachedTemperature>
+<SF_Tooltip_RequiresUpgrades>此升級需要先安裝其他升級。</SF_Tooltip_RequiresUpgrades>
+<SF_Tooltip_SkillsUnavailable>沒有殖民者具備此升級所需的建造或藝術技能等級。</SF_Tooltip_SkillsUnavailable>
+<SF_BuildMore_Tooltip>再建造 {0} 個 {1} 升級以完成安裝。</SF_BuildMore_Tooltip>
+
+<!-- Upgrade system messages -->
+<SF_UpgradeInstalled>已在 {1} 上安裝 {0} 升級！</SF_UpgradeInstalled>
+<SF_UpgradeCountIncreased>已將 {0} 升級新增至 {1}！</SF_UpgradeCountIncreased>
+<SF_UpgradePlanned>已計畫建造 {0} 升級。</SF_UpgradePlanned>
+<SF_CannotPlaceBlueprint>無法在此處放置升級藍圖。</SF_CannotPlaceBlueprint>
+<SF_NotEnoughSpaceMessage>此升級空間不足！</SF_NotEnoughSpaceMessage>
+
+<!-- PlaceWorker messages -->
+<SF_MustPlaceOnStaircase>必須放置在樓梯上。</SF_MustPlaceOnStaircase>
+<SF_AlreadyHasUpgrade>此樓梯已擁有 {0} 升級。</SF_AlreadyHasUpgrade>
+<SF_UpgradeNotForThisStaircase>此升級無法套用於此類型的樓梯。</SF_UpgradeNotForThisStaircase>
+<SF_NotEnoughSpace>空間不足！需要 {0}，現有 {1}。</SF_NotEnoughSpace>
+<SF_UpgradeAlreadyPlanned>此樓梯已計畫進行 {0} 升級。</SF_UpgradeAlreadyPlanned>
+<SF_UpgradeUnderConstruction>{0} 升級已在建造中。</SF_UpgradeUnderConstruction>
+
+<!-- Upgrade removal and management -->
+<SF_UpgradeRemoved>已移除 {0} 升級。</SF_UpgradeRemoved>
+<SF_UpgradeCancelled>已取消 {0} 升級的建造。</SF_UpgradeCancelled>
+<SF_BedAssignmentsReset>{0} 的床位分配已重設。現在僅有 {1} 個床位可用。</SF_BedAssignmentsReset>
+
+<!-- Building inspection -->
+<SF_UpgradeType>升級：{0}</SF_UpgradeType>
+
+<!-- Temperature control UI -->
+<SF_TargetTemp>目標溫度</SF_TargetTemp>
+<SF_TempMin>-10°C</SF_TempMin>
+<SF_TempMax>40°C</SF_TempMax>
+<SF_NoPower>無電力</SF_NoPower>
+<SF_PowerUsage>電力消耗：{0}W</SF_PowerUsage>
+
+<!-- Temperature priority toggle -->
+<SF_PreferFueledFirst>優先使用燃料</SF_PreferFueledFirst>
+<SF_PreferElectricFirst>優先使用電力</SF_PreferElectricFirst>
+<SF_PreferFueledFirst_Tooltip>當同時安裝了燃料和電力溫度調節器時，將優先使用燃料來源（火盆、營火）來達到目標溫度，並以電力作為備用。</SF_PreferFueledFirst_Tooltip>
+<SF_PreferElectricFirst_Tooltip>當同時安裝了燃料和電力溫度調節器時，將優先使用電力來源來達到目標溫度，並以燃料作為備用。</SF_PreferElectricFirst_Tooltip>
+
+<!-- Toggle upgrade UI -->
+<SF_ToggleOff>關閉</SF_ToggleOff>
+<SF_ToggleOn>開啟</SF_ToggleOn>
+<SF_ToggleOffTooltip>關閉此升級。關閉期間，它不會消耗燃料或電力，也不會提供任何效果。</SF_ToggleOffTooltip>
+<SF_ToggleOnTooltip>開啟此升級。它將恢復消耗燃料或電力並提供其效果。</SF_ToggleOnTooltip>
+
+<!-- OnePerBed upgrade tooltips -->
+<SF_OnePerBedDirect>此升級直接安裝在每張床上（需要 {0} 個）。您已建造 {1} 個。點擊以放置 {2} 個藍圖來達到所需數量。</SF_OnePerBedDirect>
+<SF_OnePerBedAmbientBarracks>此環境升級在營房內的床位之間共用（只需要 {0} 個，而非 {1} 個）。您已建造 {2} 個。點擊以放置 {3} 個藍圖來達到所需數量。</SF_OnePerBedAmbientBarracks>
+
+<!-- Power usage labels -->
+<SF_PowerUsagePerBed> 電力消耗：每張床 {0}W</SF_PowerUsagePerBed>
+<SF_PowerUsagePerBedAmbient> 電力消耗：每張床 {0}W（在營房中減半）</SF_PowerUsagePerBedAmbient>
+
+<!-- Bathroom upgrade status (DBH integration) -->
+<SF_BathroomNoPipes>浴室：未連接水管</SF_BathroomNoPipes>
+<SF_BathroomNoWater>浴室：管網中無水</SF_BathroomNoWater>
+<SF_BathroomReady>浴室：就緒</SF_BathroomReady>
+
+<!-- Impressiveness Levels -->
+<SF_Impressiveness_Awful>極糟</SF_Impressiveness_Awful>
+<SF_Impressiveness_Dull>沉悶</SF_Impressiveness_Dull>
+<SF_Impressiveness_Mediocre>平庸</SF_Impressiveness_Mediocre>
+<SF_Impressiveness_Decent>尚可</SF_Impressiveness_Decent>
+<SF_Impressiveness_SlightlyImpressive>稍有觀感</SF_Impressiveness_SlightlyImpressive>
+<SF_Impressiveness_Impressive>頗有觀感</SF_Impressiveness_Impressive>
+<SF_Impressiveness_VeryImpressive>很有觀感</SF_Impressiveness_VeryImpressive>
+<SF_Impressiveness_ExtremelyImpressive>極有觀感</SF_Impressiveness_ExtremelyImpressive>
+<SF_Impressiveness_UnbelievablyImpressive>令人難以置信</SF_Impressiveness_UnbelievablyImpressive>
+<SF_Impressiveness_WondrouslyImpressive>令人嘆為觀止</SF_Impressiveness_WondrouslyImpressive>
+
+<!-- PlaceWorker Messages -->
+<SF_AvailableSpace>可用空間：{0}</SF_AvailableSpace>
+<SF_AvailableMountainSpace>可用山體空間：{0}</SF_AvailableMountainSpace>
+<SF_AvailableGravshipSpace>可用重力船空間：{0}</SF_AvailableGravshipSpace>
+<SF_TooCloseToAnotherStaircase>必須距離另一個同類型的樓梯至少 10 格。</SF_TooCloseToAnotherStaircase>
+<SF_MustPlaceUnderMountain>必須放置在厚岩屋頂或岩石屋頂下方。</SF_MustPlaceUnderMountain>
+
+<!-- Basement Expansion -->
+<SF_BasementSpace>地下室空間：{0}/{1}</SF_BasementSpace>
+<SF_ExcavationInProgress>挖掘進行中：{0}/{1}</SF_ExcavationInProgress>
+<SF_ExcavationProgress>挖掘進度：{0}/{1}</SF_ExcavationProgress>
+<SF_ExcavationComplete>挖掘完成！+{0} 空間。總計：{1}/{2}</SF_ExcavationComplete>
+<SF_ExcavationCanceled>挖掘已取消。</SF_ExcavationCanceled>
+<SF_ExpandBasement>擴建地下室</SF_ExpandBasement>
+<SF_ExpandBasement_Tooltip>命令礦工為地下室額外挖掘 {0} 個空間。目前：{1}/{2}</SF_ExpandBasement_Tooltip>
+<SF_ExpandBasement_Maxed>最大擴建</SF_ExpandBasement_Maxed>
+<SF_ExpandBasement_Maxed_Tooltip>此地下室已達到最大擴建限制（{0} 個空間）。</SF_ExpandBasement_Maxed_Tooltip>
+<SF_ExpandBasement_InProgress>挖掘中...（{0}/{1}）</SF_ExpandBasement_InProgress>
+<SF_ExpandBasement_InProgress_Tooltip>礦工目前正在挖掘。請等待完成，或取消採礦指定以停止。</SF_ExpandBasement_InProgress_Tooltip>
+<SF_NotEnoughFreeCells>樓梯周圍的可用空間不足。找到 {0} 格，需要 {1} 格。請清理樓梯周圍的區域。</SF_NotEnoughFreeCells>
+
+<!-- Mountain Upfloor Expansion -->
+<SF_MountainSpace>山體空間：{0}/{1}</SF_MountainSpace>
+<SF_ExpandMountain>擴建山體樓層</SF_ExpandMountain>
+<SF_ExpandMountain_Tooltip>命令礦工在上方山體額外挖掘 {0} 個空間。目前：{1}/{2}</SF_ExpandMountain_Tooltip>
+<SF_ExpandMountain_Maxed>最大擴建</SF_ExpandMountain_Maxed>
+<SF_ExpandMountain_Maxed_Tooltip>根據周圍的山體屋頂，此山體樓層已達到最大擴建限制（{0} 個空間）。</SF_ExpandMountain_Maxed_Tooltip>
+
+<!-- Gravship Staircase -->
+<SF_GravshipSpace>重力船空間：{0}/{1}</SF_GravshipSpace>
+
+<!-- Mod Settings -->
+<SF_Settings_TilesPerExpansion>每次擴建格數：{0}</SF_Settings_TilesPerExpansion>
+<SF_Settings_TilesPerExpansion_Desc>地下室和山體樓上每次擴建批次必須挖掘的格數。較高的數值意味著每次擴建需要更多工作量，但同時也能一次獲得更多空間。</SF_Settings_TilesPerExpansion_Desc>
+</LanguageData>
