@@ -5,3 +5,4 @@
 # Ignore Copilot path-specific instructions folder
 .github/instructions/
 About/*.png
+_PublisherPlus.xml
