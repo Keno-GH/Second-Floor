@@ -25,6 +25,11 @@
         <bedCountOffset>2</bedCountOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBeds</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
         <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
@@ -38,6 +43,11 @@
         <bedCountOffset>2</bedCountOffset>
         <upgradeBuildingDef>SF_UpgradeBuilding_ExtraBedsII</upgradeBuildingDef>
         <minConstructionSkill>4</minConstructionSkill>
+        <stuffCategories>
+            <li>Woody</li>
+            <li>Metallic</li>
+            <li>Stony</li>
+        </stuffCategories>
         <iconPath>Things/Building/Furniture/Bed/DoubleBed_South</iconPath>
     </SecondFloor.StaircaseUpgradeDef>
 
