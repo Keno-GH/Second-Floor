@@ -782,8 +782,8 @@
         </graphicData>
         <size>(1,1)</size>
         <comps>
-            <!-- DBH CompPipe for connecting to plumbing network -->
-            <li Class="DubsBadHygiene.CompProperties_Pipe" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
+            <!-- DBH CompPipe for connecting to plumbing network (Full DBH only - Lite has no plumbing) -->
+            <li Class="DubsBadHygiene.CompProperties_Pipe" MayRequire="dubwise.dubsbadhygiene">
                 <mode>Sewage</mode>
             </li>
         </comps>
@@ -793,9 +793,10 @@
     <ThingDef ParentName="SF_UpgradeBuildingBase" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
         <defName>SF_UpgradeBuilding_BasicBathroom</defName>
         <label>basic bathroom upgrade</label>
-        <description>Install a basic bathroom with toilet and wash basin. Requires plumbing connection after construction.</description>
+        <description MayRequire="dubwise.dubsbadhygiene">Install a basic bathroom with toilet and wash basin. Requires plumbing connection after construction.</description>
+        <description MayRequire="dubwise.dubsbadhygiene.lite">Install a basic bathroom with toilet and wash basin.</description>
         <researchPrerequisites>
-            <li MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">Plumbing</li>
+            <li MayRequire="dubwise.dubsbadhygiene">Plumbing</li>
         </researchPrerequisites>
         <statBases>
             <WorkToBuild>6000</WorkToBuild>
@@ -823,9 +824,11 @@
     <ThingDef ParentName="SF_UpgradeBuildingBase" MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">
         <defName>SF_UpgradeBuilding_FullBathroom</defName>
         <label>full bathroom upgrade</label>
-        <description>Upgrade the basic bathroom with a shower for full hygiene restoration. Requires hot water connection for best results.</description>
+        <description MayRequire="dubwise.dubsbadhygiene">Upgrade the basic bathroom with a shower for full hygiene restoration. Requires hot water connection for best results.</description>
+        <description MayRequire="dubwise.dubsbadhygiene.lite">Upgrade the basic bathroom with a shower for full hygiene restoration.</description>
         <researchPrerequisites>
-            <li MayRequireAnyOf="dubwise.dubsbadhygiene,dubwise.dubsbadhygiene.lite">Plumbing</li>
+            <li MayRequire="dubwise.dubsbadhygiene">Plumbing</li>
+            <li MayRequire="dubwise.dubsbadhygiene.lite">ModernFixtures</li>
         </researchPrerequisites>
         <statBases>
             <WorkToBuild>8000</WorkToBuild>

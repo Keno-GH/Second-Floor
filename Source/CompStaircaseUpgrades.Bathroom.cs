@@ -321,6 +321,14 @@ namespace SecondFloor
                     break;
             }
             
+            // DBH Lite has no plumbing system — bathrooms work without water
+            if (!DBHReflectionHelper.HasPlumbingSystem)
+            {
+                waterNeeded = 0f;
+                hotWaterNeeded = 0f;
+                sewageProduced = 0f;
+            }
+            
             // Check if we have enough water
             if (bathroom != null && waterNeeded > 0)
             {
@@ -405,6 +413,10 @@ namespace SecondFloor
         private string GetBathroomInspectString()
         {
             if (!DBHReflectionHelper.IsDBHActive)
+                return null;
+            
+            // DBH Lite has no plumbing — skip pipe/water status
+            if (!DBHReflectionHelper.HasPlumbingSystem)
                 return null;
             
             // Check if we have any bathroom upgrades

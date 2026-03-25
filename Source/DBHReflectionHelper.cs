@@ -72,6 +72,12 @@ namespace SecondFloor
         /// </summary>
         public static bool IsThirstAvailable => IsDBHLoaded || IsDBHThirstLoaded;
         
+        /// <summary>
+        /// Returns true if the full plumbing system is available (Full DBH only, not Lite).
+        /// DBH Lite has bathroom needs but no water/pipe management.
+        /// </summary>
+        public static bool HasPlumbingSystem => IsDBHLoaded;
+        
         public static bool IsDBHLoaded
         {
             get
